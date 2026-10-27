@@ -1,0 +1,6 @@
+node_modules/
+.env
+*.log
+test-results/
+# dist/ and public/assets/ are committed on purpose: they are the prebuilt, self-contained
+# app, so a host can run it without npm install. Rebuild with `npm run build` after changes.

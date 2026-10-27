@@ -1,0 +1,44 @@
+# Render Blueprint: Dashboard → New → Blueprint → pick this repository → Apply.
+# Creates the web app and a PostgreSQL database in Frankfurt (closest to Cyprus).
+# Render asks for two values: ADMIN_EMAIL and ADMIN_PASSWORD (12+ characters) — your
+# platform-admin login. Everything else is generated or set here.
+#
+# Free plans: the web app sleeps after 15 minutes without visitors (about a minute to wake),
+# and Render's free database expires 30 days after it is created. Fine for testing and demos;
+# move to paid plans or a permanent database before real cafés depend on it.
+services:
+  - type: web
+    name: perkora
+    runtime: node
+    plan: free
+    region: frankfurt
+    # dist/ and public/assets/ are prebuilt and committed, so there is nothing to install
+    buildCommand: node --version
+    startCommand: node dist/cli.cjs bootstrap && node dist/server.cjs
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: perkora-db
+          property: connectionString
+      - key: APP_SECRET
+        generateValue: true
+      - key: DEMO_MODE
+        value: "true"
+      - key: DEMO_PASSWORD
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: perkora-db
+    plan: free
+    region: frankfurt
+    databaseName: perkora
+    user: perkora
