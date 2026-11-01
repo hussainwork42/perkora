@@ -1,6 +1,6 @@
 # Test report
 
-**Run date:** 27 October 2026, on the build delivered with this report.
+**Run date:** 1 November 2026, on the build delivered with this report (second release: camera scanning, two plans, referrals, messages, sign-up paths, café look).
 
 **Environment:**
 
@@ -11,12 +11,14 @@
 
 | Suite | Command | Tests | Passed | Failed |
 |---|---|---:|---:|---:|
-| Unit | `npm run test:unit` | 20 | 20 | 0 |
+| Unit | `npm run test:unit` | 23 | 23 | 0 |
 | Loyalty engine (integration, real PostgreSQL) | `npm run test:integration` | 43 | 43 | 0 |
-| HTTP: auth, roles, tenancy, CSRF (integration) | `npm run test:integration` | 24 | 24 | 0 |
-| **Unit and integration total** | `npm test` | **87** | **87** | **0** |
+| New features: referrals, plans (integration) | `npm run test:integration` | 6 | 6 | 0 |
+| HTTP: auth, roles, tenancy, CSRF, new pages (integration) | `npm run test:integration` | 32 | 32 | 0 |
+| **Unit and integration total** | `npm test` | **104** | **104** | **0** |
 | Browser: 15-step sales demo | `npm run test:e2e` | 11 steps | 11 | 0 |
-| Browser: owner onboarding to first customer | `npm run test:e2e` | 1 | 1 | 0 |
+| Browser: onboarding, café look and a referral | `npm run test:e2e` | 1 | 1 | 0 |
+| Browser: camera scanning (staff terminal and customer) | `npm run test:e2e` | 2 | 2 | 0 |
 | TypeScript | `npm run typecheck` | — | clean | — |
 
 ## How each suite runs
@@ -137,6 +139,32 @@
 - A customer can export and delete their account.
 - A draft campaign is hidden from customers, and a published one is shown.
 
+### Second release (November 2026)
+
+**Camera scanning:**
+
+- Perkora now reads QR codes with its own decoder, so scanning no longer depends on a browser feature that iPhones and most laptops lack.
+- Unit tests decode perfect and damaged codes at all error-correction levels, and camera-like frames that are rotated, tilted, unevenly lit and noisy. A frame without a code never produces a result.
+- Browser tests film a customer's live QR code with a simulated camera; the staff terminal finds the customer. A second test scans a café's counter code from the customer side and lands on the join page.
+- During development the decoder read 95% of 320 randomly distorted test frames in a single frame each (the misses were codes cut off by the frame edge or about 2 pixels per module), with no wrong results. The scanner reads several frames a second, so a scan usually succeeds within a second or two.
+
+**Referrals:**
+
+- Rewarding on join pays the inviter at once, and only once; rewarding on first visit waits for a verified purchase.
+- The friend's reward can be "nothing". The per-member limit applies. Turning the programme off stops new rewards.
+- Referrals work on the Basic plan.
+- Over HTTP: only the owner can change the settings, invalid amounts are refused, and the customer's invite page shows the right wording and the WhatsApp button.
+
+**Plans:** exactly two active plans (Basic €9, Premium €19 recommended). The migration moves existing cafés from Starter to Basic and from Growth to Premium; this was also run against a copy of the previous database, including a non-demo café.
+
+**Messages:** a contact message is saved, café owners can't read it, the platform admin sees it with a "new" count and can mark it as replied.
+
+**Navigation and sign-up:** the start page links to every café and customer path, the logo leads home, the sign-up pages switch between customer and café accounts, and the café list shows only active cafés that opted in, with search.
+
+**Café look:** layout, stamp design and welcome message are saved and shown on the join page; unknown values fall back to safe defaults. The onboarding browser test uploads a banner photo (resized in the browser before upload) and checks it on the public page.
+
+**Campaign names:** any name is accepted ("Student exam week").
+
 ### Unit tests
 
 - **Member QR tokens:** round-trip, expiry, tamper rejection, extraction from a scanned URL.
@@ -179,12 +207,14 @@
 - **Audit-log crash.** Some audit inserts failed with a PostgreSQL type-inference error (`42P08`) when activating a café or joining a team. Fixed.
 - **Offers shown to the wrong members.** Segment-targeted offers were shown to every member in the wallet. They are now filtered per member.
 - **Time-dependent demo test.** The demo café's weekday-afternoon double-stamp offer made one browser test fail between 14:00 and 17:00 local time. The test now accounts for the offer being live.
+- **Arbitrary CSS classes with commas.** Layouts using `grid-cols-[minmax(0,1fr)_340px]` were missing from the stylesheet, so some two-column pages stacked. The build now picks these up.
+- **Banner logo hidden.** In the photo-banner layout the café logo slid behind the photo. Fixed.
 - **Test database safety.** The test helper could fall back to an exported `DATABASE_URL` and wipe it. Tests now use only `TEST_DATABASE_URL` and refuse any database whose name does not end in `_test`.
 - **QR test flakiness.** OpenCV's detector is scale-sensitive (about 0.6% misreads at a single scale). The test now tries several scales; the encoder itself was correct.
 
 ## Not tested (see KNOWN_LIMITATIONS.md)
 
-- Camera scanning on physical phones and tablets. The terminal's camera code uses the browser's `BarcodeDetector` and has only been exercised through the manual-code path and the scan URL.
+- Camera scanning on physical phones and tablets. It is tested with a simulated camera in Chromium; try it on the café's own device before relying on it.
 - Email, SMS, push notifications and payments. None are integrated.
 - Load beyond a single small server.
 - Screen readers. Semantic markup, labels, focus states and contrast were checked by hand, but no assistive-technology audit has been done.

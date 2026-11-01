@@ -19,7 +19,7 @@ export interface PlanCardData {
 export function PlanCards({ plans, compact }: { plans: PlanCardData[]; compact?: boolean }) {
   const { t, locale } = usePage();
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className={cn('mx-auto grid gap-4', plans.length === 2 ? 'max-w-[820px] md:grid-cols-2' : 'md:grid-cols-3')}>
       {plans.map((p) => {
         const items = locale === 'tr' ? p.highlightsTr : p.highlights;
         return (

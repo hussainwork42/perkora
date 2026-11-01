@@ -1,1 +1,0 @@
-import{a as n}from"./chunk-76V3PPGB.js";import{b as t}from"./chunk-FTQION3I.js";var o=t(n(),1);function i({label:b}){return(0,o.jsx)("button",{type:"button",className:"btn btn-primary",onClick:()=>window.print(),children:b})}export{i as default};

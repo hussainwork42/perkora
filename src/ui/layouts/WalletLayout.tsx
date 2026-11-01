@@ -2,15 +2,14 @@ import type { ReactNode } from 'react';
 import { LuActivity, LuGift, LuIdCard, LuTicket, LuUserPlus, LuUser } from 'react-icons/lu';
 import { usePage } from '../page-context';
 import { CafeMark, Logo } from '../components/brand';
+import { CafeBar, lightHeader, type CafeLook } from '../components/cafe-look';
 import { DemoBanner, LanguageSwitcher } from '../components/ui';
 import { cn, contrastText } from '../cn';
 
-export interface WalletCafe {
-  name: string;
+export interface WalletCafe extends CafeLook {
   slug: string;
-  logoUrl: string | null;
-  primaryColour: string;
   isDemo: boolean;
+  stampIcon: string;
 }
 
 export function WalletLayout({ cafe, tab, children, showTabs = true, referralsOn = true }: { cafe: WalletCafe; tab: string; children: ReactNode; showTabs?: boolean; referralsOn?: boolean }) {
@@ -26,20 +25,16 @@ export function WalletLayout({ cafe, tab, children, showTabs = true, referralsOn
   return (
     <div className="min-h-screen bg-cream pb-24">
       {cafe.isDemo && <DemoBanner />}
-      <header className="relative" style={{ background: cafe.primaryColour, color: contrastText(cafe.primaryColour) }}>
-        <div className="mx-auto flex max-w-[520px] items-center gap-3 px-4 py-4">
-          <a href="/wallet" className="flex min-w-0 flex-1 items-center gap-3">
-            <CafeMark name={cafe.name} logoUrl={cafe.logoUrl} colour={cafe.primaryColour} size={40} className="ring-1 ring-white/20" />
-            <span className="min-w-0">
-              <span className="block truncate font-display text-[18px] font-semibold leading-tight">{cafe.name}</span>
-              <span className="block text-[12.5px] opacity-75">{t.common.poweredBy}</span>
-            </span>
-          </a>
-          <a href="/account" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20" aria-label={t.account.title}>
+      <CafeBar
+        look={cafe}
+        href="/wallet"
+        subtitle={t.common.poweredBy}
+        right={
+          <a href="/account" className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full', lightHeader(cafe) ? 'bg-sand hover:bg-beige' : 'bg-white/15 hover:bg-white/25')} aria-label={t.account.title}>
             <LuUser className="h-5 w-5" aria-hidden="true" />
           </a>
-        </div>
-      </header>
+        }
+      />
       <main className="mx-auto max-w-[520px] px-4 pt-5">{children}</main>
       {showTabs && (
         <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-beige bg-paper/95 backdrop-blur" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} aria-label="Card sections">
@@ -68,8 +63,11 @@ export function PlainCustomerLayout({ children, title }: { children: ReactNode; 
     <div className="min-h-screen bg-cream pb-16">
       <header className="border-b border-beige bg-paper">
         <div className="mx-auto flex max-w-[640px] items-center justify-between px-4 py-3.5">
-          <Logo href="/wallet" />
+          <Logo />
           <div className="flex items-center gap-2">
+            <a href="/wallet" className="btn btn-ghost btn-sm">
+              {t.nav.wallet}
+            </a>
             <LanguageSwitcher />
             <a href="/account" className="btn btn-ghost btn-sm" aria-label={t.account.title}>
               <LuUser className="h-5 w-5" aria-hidden="true" />

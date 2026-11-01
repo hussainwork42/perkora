@@ -38,7 +38,10 @@ async function buildCss(): Promise<string> {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) walk(p);
       else if (/\.(tsx?|css)$/.test(e.name)) {
-        for (const tok of fs.readFileSync(p, 'utf8').split(/[\s"'`{}()<>,;\\]+/)) if (tok && tok.length < 120) candidates.add(tok);
+        const src = fs.readFileSync(p, 'utf8');
+        for (const tok of src.split(/[\s"'`{}()<>,;\\]+/)) if (tok && tok.length < 120) candidates.add(tok);
+        // arbitrary values can contain parentheses and commas, e.g. grid-cols-[minmax(0,1fr)_340px]
+        for (const m of src.matchAll(/[\w:!./-]*\[[^\]\s"'`]+\][\w/.-]*/g)) if (m[0].length < 120) candidates.add(m[0]);
       }
     }
   };

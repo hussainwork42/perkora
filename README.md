@@ -9,9 +9,12 @@ This repository holds the whole product:
 - **Marketing site:** home, features, how it works, pricing, demo request, privacy, terms.
 - **Owner sign-up and onboarding:** 5 steps, resumable, ending with a printable QR poster.
 - **Customer wallet:** mobile-first. Card, rewards, offers, activity, invite a friend, and account (export and deletion).
-- **Staff counter terminal:** scan or look up a member, add stamps or points, redeem rewards. Every action needs confirmation.
+- **Staff counter terminal:** scan a customer's QR code with the camera (works on iPhone, Android and laptops) or type their code, add stamps or points, redeem rewards. Every action needs confirmation.
+- **One link for everyone:** `/start` sends café owners, staff and customers to the right place; customers can also find cafés at `/cafes` or scan a café's code inside Perkora.
+- **Referrals:** each café can reward customers who bring a friend, paid on the friend's first purchase or as soon as they join.
+- **Café look:** logo, colours, a photo banner, three page layouts, six stamp designs and a welcome message, with a live preview.
 - **Owner dashboard:** overview, customers, programmes, rewards, campaigns, challenges, transactions, analytics, team, settings, branding, subscription, help.
-- **Platform admin:** cafés, plans, demo requests, error log, demo reset.
+- **Platform admin:** cafés, plans, messages from the website (with a new-message count), error log, demo reset.
 - **Loyalty engine:** stamps and points; idempotent awards and atomic redemptions; reversals and corrections; visit challenges; campaigns; referrals; birthday rewards; segments.
 - **Languages and money:** English (default) and Turkish. EUR and TRY, never converted. Per-café timezones.
 - **Demo environment:** a fictional demo café that can be reset without touching real data.
@@ -97,7 +100,7 @@ Every variable is documented in [.env.example](.env.example). The ones you must 
 | `npm run demo:reset` | Deletes and rebuilds **only** demo records (`is_demo = true`); real cafés are untouched |
 | `npm run admin:create -- --email you@example.com --name "Your Name"` | Creates a platform admin (see below) |
 | `npm run typecheck` | TypeScript check |
-| `npm test` | Unit and integration tests (needs a PostgreSQL database named `*_test`, via `TEST_DATABASE_URL`) |
+| `npm test` | Unit and integration tests (104; needs a PostgreSQL database named `*_test`, via `TEST_DATABASE_URL`) |
 | `npm run test:e2e` | Browser tests (needs the server running, Playwright, and a fresh `demo:reset`) |
 
 ### Creating the platform admin
@@ -127,7 +130,7 @@ All three use the password set in `DEMO_PASSWORD`. Every person, visit and trans
 ```bash
 createdb perkora_test        # integration tests wipe and rebuild this database
 export TEST_DATABASE_URL='postgres://user:pass@127.0.0.1:5432/perkora_test?sslmode=disable'
-npm test                     # 87 unit + integration tests
+npm test                     # 104 unit + integration tests
 npm run demo:reset && npm run test:e2e   # with the server running on :3000
 ```
 

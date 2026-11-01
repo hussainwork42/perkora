@@ -4977,7 +4977,7 @@ function parseSettings(raw) {
   const r = businessSettingsSchema.safeParse(raw ?? {});
   return r.success ? r.data : businessSettingsSchema.parse({});
 }
-var stampConfigSchema, pointsConfigSchema, SEGMENTS, businessSettingsSchema, grantSchema, campaignBenefitSchema, campaignEligibilitySchema, referralConfigSchema, planFeaturesSchema;
+var stampConfigSchema, pointsConfigSchema, SEGMENTS, businessSettingsSchema, grantSchema, campaignBenefitSchema, campaignEligibilitySchema, optionalGrantSchema, referralConfigSchema, planFeaturesSchema;
 var init_schemas = __esm({
   "src/shared/schemas.ts"() {
     "use strict";
@@ -5008,7 +5008,11 @@ var init_schemas = __esm({
       refundPolicy: external_exports.enum(["reverse", "keep"]).default("reverse"),
       staffInstructions: external_exports.string().max(1e3).default(""),
       operationalAlerts: external_exports.boolean().default(true),
-      showOffersPublicly: external_exports.boolean().default(true)
+      showOffersPublicly: external_exports.boolean().default(true),
+      /** Look of the café's customer pages. */
+      pageLayout: external_exports.enum(["classic", "banner", "minimal"]).default("classic"),
+      stampIcon: external_exports.enum(["bean", "cup", "star", "heart", "leaf", "check"]).default("bean"),
+      tagline: external_exports.string().max(140).default("")
     });
     grantSchema = external_exports.discriminatedUnion("kind", [
       external_exports.object({ kind: external_exports.literal("voucher"), rewardId: external_exports.string().uuid() }),
@@ -5029,10 +5033,13 @@ var init_schemas = __esm({
       startTime: external_exports.string().regex(/^\d{2}:\d{2}$/).optional(),
       endTime: external_exports.string().regex(/^\d{2}:\d{2}$/).optional()
     });
+    optionalGrantSchema = external_exports.union([grantSchema, external_exports.object({ kind: external_exports.literal("none") })]);
     referralConfigSchema = external_exports.object({
       referrerGrant: grantSchema,
-      referredGrant: grantSchema,
-      maxPerReferrer: external_exports.number().int().min(1).max(100).default(5)
+      referredGrant: optionalGrantSchema,
+      maxPerReferrer: external_exports.number().int().min(1).max(100).default(10),
+      /** When the inviter is rewarded: at the friend's first verified visit (default) or as soon as the friend joins. */
+      qualifyOn: external_exports.enum(["first_visit", "join"]).default("first_visit")
     });
     planFeaturesSchema = external_exports.object({
       features: external_exports.object({
@@ -5072,109 +5079,94 @@ var init_plans = __esm({
     init_schemas();
     DEFAULT_PLANS = [
       {
-        id: "starter",
-        name: "Starter",
-        description: "A digital stamp card for one caf\xE9.",
-        monthly_price_minor: 900,
-        is_recommended: false,
-        sort_order: 1,
-        feature_configuration: {
-          features: { stamps: true, csvExport: true },
-          limits: { locations: 1, programmes: 1, staffSeats: 2, activeCampaigns: 0 },
-          inheritsFrom: null,
-          highlights: [
-            "One caf\xE9 location",
-            "One digital loyalty programme",
-            "Digital stamp card",
-            "Basic rewards",
-            "QR-code enrolment",
-            "Basic customer list",
-            "Basic visit and redemption reporting"
-          ],
-          highlightsTr: [
-            "Bir kafe \u015Fubesi",
-            "Bir dijital sadakat program\u0131",
-            "Dijital damga kart\u0131",
-            "Temel \xF6d\xFCller",
-            "QR kod ile kat\u0131l\u0131m",
-            "Temel m\xFC\u015Fteri listesi",
-            "Temel ziyaret ve \xF6d\xFCl kullan\u0131m raporlar\u0131"
-          ]
-        }
-      },
-      {
-        id: "growth",
-        name: "Growth",
-        description: "Points, streaks and offers to bring regulars back.",
-        monthly_price_minor: 1900,
-        is_recommended: true,
-        sort_order: 2,
-        feature_configuration: {
-          features: { stamps: true, points: true, challenges: true, offers: true, campaigns: true, referrals: true, segments: true, inactiveReport: true, csvExport: true },
-          limits: { locations: 1, programmes: 2, staffSeats: 5, activeCampaigns: 5 },
-          inheritsFrom: "Starter",
-          highlights: [
-            "Points-based loyalty",
-            "Configurable visit streaks",
-            "Promotional offers",
-            "Referral functionality",
-            "Customer segmentation",
-            "Inactive-customer reporting",
-            "Campaign management",
-            "Improved analytics"
-          ],
-          highlightsTr: [
-            "Puan tabanl\u0131 sadakat",
-            "Ayarlanabilir ziyaret serileri",
-            "Promosyon teklifleri",
-            "Arkada\u015F getirme \xF6zelli\u011Fi",
-            "M\xFC\u015Fteri segmentasyonu",
-            "Gelmeyen m\xFC\u015Fteri raporlar\u0131",
-            "Kampanya y\xF6netimi",
-            "Geli\u015Fmi\u015F analizler"
-          ]
-        }
-      },
-      {
-        id: "premium",
-        name: "Premium",
-        description: "Deeper insights and more flexible campaigns.",
-        monthly_price_minor: 3500,
-        is_recommended: false,
-        sort_order: 3,
-        feature_configuration: {
-          features: {
-            stamps: true,
-            points: true,
-            challenges: true,
-            offers: true,
-            campaigns: true,
-            referrals: true,
-            segments: true,
-            inactiveReport: true,
-            advancedInsights: true,
-            flexibleCampaignRules: true,
-            automatedWinback: true,
-            advancedReports: true,
-            csvExport: true,
-            prioritySupport: true
+        "id": "basic",
+        "name": "Basic",
+        "description": "A digital stamp card with rewards and referrals.",
+        "monthly_price_minor": 900,
+        "is_recommended": false,
+        "sort_order": 1,
+        "feature_configuration": {
+          "features": {
+            "stamps": true,
+            "referrals": true,
+            "csvExport": true
           },
-          limits: { locations: 1, programmes: 4, staffSeats: 15, activeCampaigns: 20 },
-          inheritsFrom: "Growth",
-          highlights: [
-            "Advanced customer insights",
-            "More flexible campaign rules",
-            "Automated win-back campaigns, when the required messaging service is configured",
-            "Advanced reports",
-            "Additional staff management capabilities",
+          "limits": {
+            "locations": 1,
+            "programmes": 1,
+            "staffSeats": 3,
+            "activeCampaigns": 0
+          },
+          "inheritsFrom": null,
+          "highlights": [
+            "Digital stamp card",
+            "Rewards customers collect on their phone",
+            "QR code to join, no app needed",
+            "Bring-a-friend referral rewards",
+            "Your own logo, colours and banner",
+            "Customer list and visit reports",
+            "Up to 3 staff accounts"
+          ],
+          "highlightsTr": [
+            "Dijital damga kart\u0131",
+            "M\xFC\u015Fterilerin telefonda toplad\u0131\u011F\u0131 \xF6d\xFCller",
+            "Kat\u0131l\u0131m i\xE7in QR kod, uygulama gerekmez",
+            "Arkada\u015F\u0131n\u0131 getir \xF6d\xFClleri",
+            "Kendi logonuz, renkleriniz ve kapak g\xF6rseliniz",
+            "M\xFC\u015Fteri listesi ve ziyaret raporlar\u0131",
+            "3 personel hesab\u0131na kadar"
+          ]
+        }
+      },
+      {
+        "id": "premium",
+        "name": "Premium",
+        "description": "Points, campaigns and insights to bring regulars back more often.",
+        "monthly_price_minor": 1900,
+        "is_recommended": true,
+        "sort_order": 2,
+        "feature_configuration": {
+          "features": {
+            "stamps": true,
+            "points": true,
+            "challenges": true,
+            "offers": true,
+            "campaigns": true,
+            "referrals": true,
+            "segments": true,
+            "inactiveReport": true,
+            "advancedInsights": true,
+            "flexibleCampaignRules": true,
+            "automatedWinback": true,
+            "advancedReports": true,
+            "csvExport": true,
+            "prioritySupport": true
+          },
+          "limits": {
+            "locations": 1,
+            "programmes": 4,
+            "staffSeats": 15,
+            "activeCampaigns": 20
+          },
+          "inheritsFrom": "Basic",
+          "highlights": [
+            "Points programme as well as stamps",
+            "Campaigns and offers with your own names",
+            "Happy-hour and day-of-week offers",
+            "Visit challenges",
+            "Customer groups and win-back offers",
+            "Full analytics",
+            "Up to 15 staff accounts",
             "Priority support"
           ],
-          highlightsTr: [
-            "Geli\u015Fmi\u015F m\xFC\u015Fteri i\xE7g\xF6r\xFCleri",
-            "Daha esnek kampanya kurallar\u0131",
-            "Gerekli mesajla\u015Fma hizmeti yap\u0131land\u0131r\u0131ld\u0131\u011F\u0131nda otomatik geri kazanma kampanyalar\u0131",
-            "Geli\u015Fmi\u015F raporlar",
-            "Ek personel y\xF6netimi olanaklar\u0131",
+          "highlightsTr": [
+            "Damgan\u0131n yan\u0131nda puan program\u0131",
+            "Kendi adlar\u0131n\u0131zla kampanyalar ve teklifler",
+            "Saat ve g\xFCn bazl\u0131 teklifler",
+            "Ziyaret g\xF6revleri",
+            "M\xFC\u015Fteri gruplar\u0131 ve geri kazanma teklifleri",
+            "Tam analizler",
+            "15 personel hesab\u0131na kadar",
             "\xD6ncelikli destek"
           ]
         }
@@ -6106,7 +6098,7 @@ async function awardPurchase(q, input) {
   }
   let referralQualified = false;
   if (newVisit && firstEverVisit) {
-    referralQualified = await qualifyReferral(q, { biz, member, operationId: op.id, actorUserId: input.actorUserId, now, today }, notices);
+    referralQualified = await qualifyReferral(q, { biz, member, operationId: op.id, actorUserId: input.actorUserId, now, today, on: "first_visit" }, notices);
     if (referralQualified) balance = await lockBalance(q, biz.id, member.id, programme.id);
   }
   const result = {
@@ -6148,6 +6140,7 @@ async function qualifyReferral(q, a, notices) {
   if (!campaign) return reject("no_active_referral_campaign");
   const cfg = referralConfigSchema.safeParse(campaign.config);
   if (!cfg.success) return reject("referral_campaign_misconfigured");
+  if (cfg.data.qualifyOn !== a.on) return false;
   const referrer = await maybeOne(
     q,
     "select id, status, customer_id from loyalty_memberships where id = $1 and business_id = $2",
@@ -6174,7 +6167,9 @@ async function qualifyReferral(q, a, notices) {
     sourceRefId: ref.id,
     extraEndDates: []
   };
-  await applyGrant(q, { ...common, membershipId: a.member.id, grant: cfg.data.referredGrant, description: "Welcome referral reward" }, notices);
+  if (cfg.data.referredGrant.kind !== "none") {
+    await applyGrant(q, { ...common, membershipId: a.member.id, grant: cfg.data.referredGrant, description: "Welcome referral reward" }, notices);
+  }
   await applyGrant(q, { ...common, membershipId: referrer.id, grant: cfg.data.referrerGrant, description: "Referral reward" }, notices);
   await q.query(
     `update referrals set status = 'qualified', qualified_at = $2, qualifying_operation_id = $3, campaign_id = $4 where id = $1`,
@@ -6471,6 +6466,12 @@ async function joinBusiness(q, input) {
         now
       });
     }
+  }
+  const refNow = referral === "pending" ? (await runningCampaigns(q, biz.id, today, ["referral"]))[0] : null;
+  if (refNow && referralConfigSchema.safeParse(refNow.config).data?.qualifyOn === "join") {
+    const member = await lockMembership(q, biz.id, m.id);
+    const done = await qualifyReferral(q, { biz, member, operationId: op.id, actorUserId: input.actorUserId ?? null, now, today, on: "join" }, notices);
+    if (done) referral = "qualified";
   }
   const result = { membershipId: m.id, memberCode, alreadyMember: false, welcome, referral };
   await finishOperation(q, op.id, result);
@@ -6907,7 +6908,7 @@ async function seedDemo() {
     [bakeryOwnerId, TZ]
   );
   await db.query(`insert into business_members (business_id, user_id, role) values ($1, $2, 'owner')`, [bakery.id, bakeryOwnerId]);
-  await db.query(`insert into subscriptions (business_id, plan_id, status, payment_status, notes) values ($1, 'starter', 'demo', 'not_configured', 'Demonstration account')`, [bakery.id]);
+  await db.query(`insert into subscriptions (business_id, plan_id, status, payment_status, notes) values ($1, 'basic', 'demo', 'not_configured', 'Demonstration account')`, [bakery.id]);
   const bStamps = await one(
     db,
     `insert into loyalty_programmes (business_id, name, programme_type, config) values ($1, 'Bread Card', 'stamps', $2) returning id`,

@@ -9,7 +9,7 @@ import { cn } from '../../cn';
 
 type Prog = MemberView['programmes'][number];
 
-export function StampCardPanel({ p, color, fresh = 0 }: { p: Prog; color: string; fresh?: number }) {
+export function StampCardPanel({ p, color, icon, fresh = 0 }: { p: Prog; color: string; icon?: string; fresh?: number }) {
   const { t } = usePage();
   const need = Number(p.config?.stampsRequired ?? 9);
   const have = Math.min(p.balance, need);
@@ -26,7 +26,7 @@ export function StampCardPanel({ p, color, fresh = 0 }: { p: Prog; color: string
         </span>
       </div>
       <div className="mt-4">
-        <StampGrid required={need} filled={have} color={color} fresh={fresh} size={46} ariaLabel={progress} />
+        <StampGrid required={need} filled={have} color={color} icon={icon} fresh={fresh} size={46} ariaLabel={progress} />
       </div>
       <p className="mt-4 text-[16px] font-semibold">{progress}</p>
       <p className="text-[14px] text-muted-ink">{have >= need ? t.wallet.cardFull : plural(t.wallet.stampsToGo, need - have, { reward })}</p>

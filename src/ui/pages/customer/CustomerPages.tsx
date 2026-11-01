@@ -1,11 +1,12 @@
-import { LuChevronRight, LuMapPin, LuQrCode, LuSparkles } from 'react-icons/lu';
+import { LuChevronRight, LuMapPin, LuMessageCircle, LuQrCode, LuSparkles, LuUserPlus } from 'react-icons/lu';
 import { usePage } from '../../page-context';
 import { Island } from '../../islands/Island';
 import { CafeMark, Logo, RewardBadgeIcon } from '../../components/brand';
+import { CafeHero } from '../../components/cafe-look';
 import { Alert, Button, Checkbox, DemoBanner, Field, FlashMessage, Form, Input, LanguageSwitcher, Select, TermsNote } from '../../components/ui';
 import { PlainCustomerLayout, WalletLayout, type WalletCafe } from '../../layouts/WalletLayout';
 import { ActivityList, ChallengeCard, OfferCard, PointsPanel, ProgrammeSummary, StampCardPanel, VoucherCard } from './parts';
-import { fmt, plural } from '../../../shared/i18n';
+import { fmt, plural, type Messages } from '../../../shared/i18n';
 import { dateShort, formatMemberCode, num } from '../../../shared/format';
 import type { MemberView, OfferView, ProgrammeView, PublicCafe } from '../../../server/domain/views';
 import { contrastText } from '../../cn';
@@ -19,32 +20,31 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
   state: 'guest' | 'signed-in' | 'member' | 'unavailable';
   errors?: Record<string, string>;
   values?: Record<string, string>;
-  referral?: { code: string; valid: boolean } | null;
+  referral?: { code: string; valid: boolean; on: 'join' | 'first_visit'; friendReward: string } | null;
 }) {
   const { t, user } = usePage();
   const fg = contrastText(cafe.primaryColour);
   return (
     <div className="min-h-screen bg-cream pb-16">
       {cafe.isDemo && <DemoBanner />}
-      <header style={{ background: cafe.primaryColour, color: fg }}>
-        <div className="mx-auto flex max-w-[560px] items-center justify-between px-4 pt-4">
-          <span className="text-[12.5px] opacity-75">{t.common.poweredBy}</span>
-          <LanguageSwitcher tone={fg === '#292421' ? 'light' : 'dark'} />
-        </div>
-        <div className="mx-auto max-w-[560px] px-4 pb-10 pt-6">
-          <CafeMark name={cafe.name} logoUrl={cafe.logoUrl} colour={cafe.secondaryColour} size={64} className="ring-2 ring-white/25" />
-          <h1 className="mt-4 text-[30px] font-semibold leading-tight" style={{ color: fg }}>
-            {fmt(t.cafe.joinTitle, { cafe: cafe.name })}
-          </h1>
-          {cafe.description && <p className="mt-2 max-w-[46ch] text-[15.5px] opacity-80">{cafe.description}</p>}
-          {(cafe.city || cafe.address) && (
-            <p className="mt-3 flex items-center gap-1.5 text-[13.5px] opacity-75">
-              <LuMapPin className="h-4 w-4" aria-hidden="true" />
-              {[cafe.address, cafe.city].filter(Boolean).join(', ')}
-            </p>
-          )}
-        </div>
-      </header>
+      <CafeHero
+        look={{ name: cafe.name, logoUrl: cafe.logoUrl, bannerUrl: cafe.bannerUrl, primaryColour: cafe.primaryColour, secondaryColour: cafe.secondaryColour, layout: cafe.settings.pageLayout, tagline: cafe.settings.tagline }}
+        title={fmt(t.cafe.joinTitle, { cafe: cafe.name })}
+        topBar={
+          <>
+            <span className="text-[12.5px] opacity-80">{t.common.poweredBy}</span>
+            <LanguageSwitcher tone={cafe.settings.pageLayout === 'minimal' || (cafe.settings.pageLayout === 'classic' && fg === '#292421') ? 'light' : 'dark'} />
+          </>
+        }
+      >
+        {cafe.description && <p className="mt-2 max-w-[46ch] text-[15.5px]">{cafe.description}</p>}
+        {(cafe.city || cafe.address) && (
+          <p className="mt-3 flex items-center gap-1.5 text-[13.5px]">
+            <LuMapPin className="h-4 w-4" aria-hidden="true" />
+            {[cafe.address, cafe.city].filter(Boolean).join(', ')}
+          </p>
+        )}
+      </CafeHero>
 
       <main className="mx-auto -mt-5 max-w-[560px] space-y-4 px-4">
         <FlashMessage />
@@ -52,7 +52,13 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
           <Alert tone="warning">{t.cafe.unavailable}</Alert>
         ) : (
           <>
-            {referral && <Alert tone={referral.valid ? 'success' : 'info'}>{referral.valid ? t.cafe.referralApplied : t.cafe.referralInvalid}</Alert>}
+            {referral && (
+              <Alert tone={referral.valid ? 'success' : 'info'}>
+                {referral.valid
+                  ? `${referral.on === 'join' ? t.cafe.referralAppliedJoin : t.cafe.referralAppliedVisit}${referral.friendReward ? ' ' + fmt(t.cafe.referralYouGet, { reward: referral.friendReward }) : ''}`
+                  : t.cafe.referralInvalid}
+              </Alert>
+            )}
             <section className="card p-5">
               <h2 className="text-[17px] font-semibold">{t.cafe.programmes}</h2>
               <div className="mt-3 space-y-4 divide-y divide-beige">
@@ -172,6 +178,21 @@ export interface WalletListItem {
   ready: number;
 }
 
+export function cafeScannerLabels(t: Messages) {
+  return {
+    open: t.wallet.scanCafe,
+    scanning: t.wallet.scanCafeHint,
+    starting: t.terminal.cameraStarting,
+    close: t.terminal.stopScan,
+    notCafe: t.wallet.scanNotCafe,
+    memberCode: t.wallet.scanMemberCode,
+    denied: t.wallet.cameraDenied,
+    unsupported: t.wallet.cameraUnsupported,
+    insecure: t.wallet.cameraInsecure,
+    nocamera: t.wallet.cameraMissing,
+  };
+}
+
 export function WalletListPage({ items }: { items: WalletListItem[] }) {
   const { t, user } = usePage();
   return (
@@ -188,9 +209,12 @@ export function WalletListPage({ items }: { items: WalletListItem[] }) {
           </span>
           <h2 className="mt-4 text-[18px] font-semibold">{t.wallet.empty}</h2>
           <p className="mx-auto mt-1.5 max-w-sm text-[14.5px] text-muted-ink">{t.wallet.emptyBody}</p>
-          <a href="/c/perkora-demo-cafe" className="btn btn-secondary mt-5">
-            Perkora Demo Café
-          </a>
+          <div className="mx-auto mt-5 grid max-w-xs gap-2.5">
+            <Island name="CafeScanner" props={{ labels: cafeScannerLabels(t) }} />
+            <a href="/cafes" className="btn btn-secondary w-full">
+              {t.wallet.findCafe}
+            </a>
+          </div>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -209,15 +233,26 @@ export function WalletListPage({ items }: { items: WalletListItem[] }) {
           ))}
         </ul>
       )}
-      <p className="mt-6 text-center text-[13.5px] text-muted-ink">{t.wallet.addAnother}</p>
+      {items.length > 0 && (
+        <div className="card mt-6 p-5">
+          <h2 className="text-[16px] font-semibold">{t.wallet.addAnotherTitle}</h2>
+          <p className="mt-1 text-[14px] text-muted-ink">{t.wallet.addAnother}</p>
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+            <Island name="CafeScanner" props={{ labels: cafeScannerLabels(t), variant: 'secondary' }} />
+            <a href="/cafes" className="btn btn-secondary w-full">
+              {t.wallet.findCafe}
+            </a>
+          </div>
+        </div>
+      )}
     </PlainCustomerLayout>
   );
 }
 
-export function WalletCardPage({ cafe, view, offers, welcome, referralsOn, tz }: { cafe: WalletCafe; view: MemberView; offers: OfferView[]; welcome?: boolean; referralsOn: boolean; tz: string }) {
+export function WalletCardPage({ cafe, view, offers, welcome, referralsOn, referralPitch, tz }: { cafe: WalletCafe; view: MemberView; offers: OfferView[]; welcome?: boolean; referralsOn: boolean; referralPitch?: string | null; tz: string }) {
   const { t, user } = usePage();
   const ready = view.vouchers.filter((v) => v.status === 'available');
-  const stampColour = '#B86F52';
+  const stampColour = cafe.secondaryColour;
   return (
     <WalletLayout cafe={cafe} tab="card" referralsOn={referralsOn}>
       <Island name="WalletLive" props={{ url: `/api/wallet/${cafe.slug}/state`, hash: view.stateHash, message: t.wallet.updated }} />
@@ -258,11 +293,24 @@ export function WalletCardPage({ cafe, view, offers, welcome, referralsOn, tz }:
       )}
 
       <div className="mt-5 space-y-4">
-        {view.programmes.map((p) => (p.type === 'stamps' ? <StampCardPanel key={p.id} p={p} color={stampColour} /> : <PointsPanel key={p.id} p={p} />))}
+        {view.programmes.map((p) => (p.type === 'stamps' ? <StampCardPanel key={p.id} p={p} color={stampColour} icon={cafe.stampIcon} /> : <PointsPanel key={p.id} p={p} />))}
         {view.challenges.map((c) => (
           <ChallengeCard key={c.id} c={c} tz={tz} />
         ))}
       </div>
+
+      {referralsOn && referralPitch && (
+        <a href={`/wallet/${cafe.slug}/refer`} className="card mt-5 flex items-center gap-4 p-4 hover:border-beige-strong">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-espresso">
+            <LuUserPlus className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15.5px] font-semibold">{t.wallet.inviteCardTitle}</span>
+            <span className="block text-[13.5px] text-muted-ink">{fmt(t.wallet.inviteCardBody, { reward: referralPitch })}</span>
+          </span>
+          <LuChevronRight className="h-5 w-5 text-muted" aria-hidden="true" />
+        </a>
+      )}
 
       {offers.length > 0 && (
         <section className="mt-6">
@@ -402,23 +450,47 @@ export function WalletActivityPage({ cafe, view, referralsOn, tz }: { cafe: Wall
   );
 }
 
-export function WalletReferPage({ cafe, view, link, rewards, joined }: { cafe: WalletCafe; view: MemberView; link: string | null; rewards: { mine: string; friend: string } | null; joined: number }) {
+export function WalletReferPage({ cafe, view, link, rewards, joined, rewarded }: {
+  cafe: WalletCafe;
+  view: MemberView;
+  link: string | null;
+  rewards: { mine: string; friend: string; on: 'join' | 'first_visit'; name: string } | null;
+  joined: number;
+  rewarded: number;
+}) {
   const { t } = usePage();
+  const shareText = link ? fmt(t.wallet.referShareText, { cafe: cafe.name, link }) : '';
   return (
     <WalletLayout cafe={cafe} tab="refer" referralsOn>
-      <h1 className="text-[24px] font-semibold">{t.wallet.referTitle}</h1>
+      <h1 className="text-[24px] font-semibold">{rewards?.name || t.wallet.referTitle}</h1>
       {!link || !rewards ? (
         <p className="card mt-4 p-6 text-[14.5px] text-muted-ink">{fmt(t.wallet.referUnavailable, { cafe: cafe.name })}</p>
       ) : (
-        <div className="card mt-4 p-5">
-          <p className="text-[15px]">{fmt(t.wallet.referBody, { reward: rewards.mine, friend: rewards.friend, friendReward: rewards.friend })}</p>
-          <p className="mt-5 text-[13px] font-medium text-muted-ink">{t.wallet.referLink}</p>
-          <Island name="CopyField" props={{ value: link, copyLabel: t.common.copy, copiedLabel: t.common.copied, shareLabel: t.wallet.share, shareTitle: cafe.name }} />
-          <p className="mt-4 text-[13.5px] text-muted-ink">{plural(t.wallet.referStats, joined)}</p>
-          <p className="mt-1 text-[12.5px] text-muted-ink">
-            {t.wallet.referYourCode}: <span className="font-medium tracking-[0.06em]">{view.membership.referralCode}</span>
-          </p>
-        </div>
+        <>
+          <div className="card mt-4 p-5">
+            <p className="text-[16px] font-medium">{fmt(rewards.on === 'join' ? t.wallet.referYouGetJoin : t.wallet.referYouGetVisit, { reward: rewards.mine, cafe: cafe.name })}</p>
+            {rewards.friend && <p className="mt-1.5 text-[14.5px] text-muted-ink">{fmt(t.wallet.referFriendGets, { reward: rewards.friend })}</p>}
+            <a className="btn btn-primary mt-5 w-full" href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer">
+              <LuMessageCircle className="h-5 w-5" aria-hidden="true" /> {t.wallet.shareWhatsApp}
+            </a>
+            <p className="mt-5 text-[13px] font-medium text-muted-ink">{t.wallet.referLink}</p>
+            <Island name="CopyField" props={{ value: link, copyLabel: t.common.copy, copiedLabel: t.common.copied, shareLabel: t.wallet.share, shareTitle: cafe.name }} />
+            <p className="mt-1 text-[12.5px] text-muted-ink">
+              {t.wallet.referYourCode}: <span className="font-medium tracking-[0.06em]">{view.membership.referralCode}</span>
+            </p>
+          </div>
+          <div className="card mt-4 grid grid-cols-2 divide-x divide-beige">
+            <div className="p-4 text-center">
+              <p className="font-display text-[26px] font-semibold tnum">{joined}</p>
+              <p className="text-[13px] text-muted-ink">{t.wallet.referJoined}</p>
+            </div>
+            <div className="p-4 text-center">
+              <p className="font-display text-[26px] font-semibold tnum">{rewarded}</p>
+              <p className="text-[13px] text-muted-ink">{t.wallet.referRewarded}</p>
+            </div>
+          </div>
+          <p className="mt-4 text-[13px] text-muted-ink">{t.wallet.referRules}</p>
+        </>
       )}
     </WalletLayout>
   );

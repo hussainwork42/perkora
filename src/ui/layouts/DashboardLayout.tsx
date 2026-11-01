@@ -14,6 +14,7 @@ import {
   LuStamp,
   LuUsers,
   LuUserCog,
+  LuUserPlus,
 } from 'react-icons/lu';
 import { usePage } from '../page-context';
 import { CafeMark, LogoMark } from '../components/brand';
@@ -39,6 +40,7 @@ export function dashboardNav(biz: BusinessContext): NavItem[] {
     { key: 'programmes', href: '/dashboard/programmes', label: 'Loyalty Programmes', Icon: LuStamp, show: owner },
     { key: 'rewards', href: '/dashboard/rewards', label: 'Rewards', Icon: LuGift, show: can(biz, 'manage_rewards') },
     { key: 'campaigns', href: '/dashboard/campaigns', label: 'Campaigns', Icon: LuMegaphone, show: can(biz, 'manage_rewards') },
+    { key: 'referrals', href: '/dashboard/referrals', label: 'Referrals', Icon: LuUserPlus, show: owner },
     { key: 'transactions', href: '/dashboard/transactions', label: 'Transactions', Icon: LuReceiptText, show: true },
     { key: 'analytics', href: '/dashboard/analytics', label: 'Analytics', Icon: LuChartColumn, show: can(biz, 'view_reports') },
     { key: 'team', href: '/dashboard/team', label: 'Team', Icon: LuUserCog, show: owner },

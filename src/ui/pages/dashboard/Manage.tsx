@@ -217,7 +217,7 @@ export function ProgrammeFormPage({ biz, mode, type, values, errors = {}, points
             </a>
           ) : (
             <span className="btn btn-secondary btn-sm" aria-disabled="true">
-              <LuLock className="h-3.5 w-3.5" aria-hidden="true" /> Points (Growth plan)
+              <LuLock className="h-3.5 w-3.5" aria-hidden="true" /> Points (Premium plan)
             </span>
           )}
         </div>
@@ -703,14 +703,14 @@ export interface CampaignRowView {
 }
 
 export const CAMPAIGN_TYPE_LABEL: Record<string, string> = {
-  welcome: 'Welcome offer',
-  bonus_points: 'Bonus points',
-  limited_time: 'Limited-time reward',
-  weekday: 'Weekday promotion',
-  birthday: 'Birthday offer',
-  referral: 'Referral offer',
-  win_back: 'Win-back offer',
-  custom: 'Custom promotion',
+  custom: 'Bonus on purchases or a reward (most offers)',
+  weekday: 'Certain days or hours (e.g. happy hour)',
+  limited_time: 'A reward added to members’ cards',
+  bonus_points: 'Extra points or stamps for a period',
+  welcome: 'Welcome gift for new members',
+  birthday: 'Birthday treat',
+  win_back: 'Win back customers who stopped coming',
+  referral: 'Referral (managed on the Referrals page)',
 };
 
 export function CampaignsPage({ biz, campaigns, allowed }: { biz: BusinessContext; campaigns: CampaignRowView[]; allowed: boolean }) {
@@ -824,22 +824,29 @@ export function CampaignFormPage({ biz, mode, values, errors = {}, rewards, prog
       <Card className="max-w-3xl p-6">
         <Form action={mode === 'new' ? '/dashboard/campaigns/new' : `/dashboard/campaigns/${values.id}/edit`} className="grid gap-5" noValidate>
           {errors.form && <Alert tone="error">{errors.form}</Alert>}
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Campaign type" name="campaign_type">
-              <Select name="campaign_type" defaultValue={values.campaign_type ?? 'weekday'}>
-                {Object.entries(CAMPAIGN_TYPE_LABEL)
-                  .filter(([k]) => k !== 'referral' || referralsAllowed)
-                  .map(([k, l]) => (
-                    <option key={k} value={k}>
-                      {l}
-                    </option>
-                  ))}
-              </Select>
-            </Field>
-            <Field label="Name" name="name" error={errors.name} hint="Shown to customers.">
-              <Input name="name" required maxLength={80} defaultValue={values.name} placeholder="Afternoon Coffee Offer" error={errors.name} />
-            </Field>
-          </div>
+          <Field label="Campaign name" name="name" error={errors.name} hint="Call it anything you like. Customers see this name on their card.">
+            <Input name="name" required maxLength={80} defaultValue={values.name} placeholder="Student exam week" error={errors.name} />
+          </Field>
+          <Island
+            name="FillInput"
+            props={{ target: 'name', label: 'Ideas:', options: ['Student exam week', 'Happy hour', 'Rainy day special', 'Weekend treat', 'Morning commuter offer', 'Thank-you week'] }}
+          />
+          <Field label="What kind of offer is it?" name="campaign_type" hint="This only decides how the offer works. The name above is what customers see.">
+            <Select name="campaign_type" defaultValue={values.campaign_type ?? 'custom'}>
+              {Object.entries(CAMPAIGN_TYPE_LABEL)
+                .filter(([k]) => k !== 'referral' || values.campaign_type === 'referral')
+                .map(([k, l]) => (
+                  <option key={k} value={k}>
+                    {l}
+                  </option>
+                ))}
+            </Select>
+          </Field>
+          {referralsAllowed && values.campaign_type !== 'referral' && (
+            <p className="-mt-2 text-[13.5px] text-muted-ink">
+              Looking for “bring a friend” rewards? Set them up on the <a className="link" href="/dashboard/referrals">Referrals</a> page.
+            </p>
+          )}
           <Field label="Description" name="description" optional>
             <Textarea name="description" rows={2} maxLength={400} defaultValue={values.description} placeholder="Double stamps on weekday afternoons." />
           </Field>

@@ -22,10 +22,8 @@ export const key = () => crypto.randomUUID();
 export async function resetDb() {
   await db.query('drop schema if exists public cascade; create schema public;');
   await migrate(undefined, () => undefined);
-  await db.query(`insert into plans (id, name, monthly_price_minor, currency, feature_configuration, sort_order)
-    values ('starter','Starter',900,'EUR','{}',1), ('growth','Growth',1900,'EUR','{"features":{"points":true,"challenges":true,"offers":true,"campaigns":true,"referrals":true,"segments":true,"inactiveReport":true}}',2),
-           ('premium','Premium',3500,'EUR','{"features":{"points":true,"challenges":true,"offers":true,"campaigns":true,"referrals":true,"segments":true,"inactiveReport":true,"advancedInsights":true}}',3)
-    on conflict do nothing`);
+  const { seedPlans } = await import('../src/server/seed/seed');
+  await seedPlans();
 }
 
 let counter = 0;

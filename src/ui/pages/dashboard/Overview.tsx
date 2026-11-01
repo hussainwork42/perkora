@@ -312,7 +312,7 @@ export function AnalyticsPage({ biz, range, m, d, series, segments, top, campaig
                   ))}
                 </ul>
               ) : (
-                <p className="px-5 pb-5 text-[14px] text-muted-ink">Customer segmentation is included in the Growth and Premium plans.</p>
+                <p className="px-5 pb-5 text-[14px] text-muted-ink">Customer segmentation is included in the Premium plan.</p>
               )}
             </Card>
           </div>

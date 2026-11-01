@@ -46,6 +46,7 @@ export function pageInfo(ctx: Ctx): PageInfo {
     user: ctx.user ? { id: ctx.user.id, name: ctx.user.name, email: ctx.user.email, isAdmin: ctx.user.platformRole === 'admin' } : null,
     flash: ctx.flash,
     query: Object.fromEntries(ctx.query.entries()),
+    badges: (ctx.state.badges as Record<string, number> | undefined) ?? {},
   };
 }
 

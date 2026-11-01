@@ -30,6 +30,12 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
               </a>
             </div>
             <p className="mt-6 text-[14.5px] text-muted-ink">{h.heroNote}</p>
+            <p className="mt-2 text-[14.5px] text-muted-ink">
+              {h.heroCustomer}{' '}
+              <a href="/start" className="link font-medium text-ink">
+                {h.heroCustomerLink}
+              </a>
+            </p>
           </div>
           <div className="relative mx-auto w-full max-w-[560px] sm:min-h-[520px] lg:mx-0" aria-label="Product preview: a customer loyalty card and the café dashboard">
             <DashboardMock className="hidden w-[76%] sm:block" />

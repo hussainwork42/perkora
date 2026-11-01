@@ -11,6 +11,10 @@ const registry: Record<string, () => Promise<{ default: (p: any) => any }>> = {
   RewardPreview: () => import('../ui/islands/RewardPreview'),
   PrintButton: () => import('../ui/islands/PrintButton'),
   ShowWhen: () => import('../ui/islands/ShowWhen'),
+  CafeScanner: () => import('../ui/islands/CafeScanner'),
+  FillInput: () => import('../ui/islands/FillInput'),
+  ImagePicker: () => import('../ui/islands/ImagePicker'),
+  BrandPreview: () => import('../ui/islands/BrandPreview'),
 };
 
 for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-island]'))) {

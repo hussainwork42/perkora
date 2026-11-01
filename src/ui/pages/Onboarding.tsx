@@ -3,10 +3,11 @@ import { usePage } from '../page-context';
 import { CafeMark, Logo, StampGrid } from '../components/brand';
 import { Alert, Button, Checkbox, Field, FlashMessage, Form, Input, Select, Textarea } from '../components/ui';
 import { Island } from '../islands/Island';
+import { LookFields } from '../components/branding-fields';
 import { cn, contrastText } from '../cn';
 
 type V = Record<string, string>;
-const STEPS = ['Business information', 'Loyalty programme', 'First reward', 'QR code', 'Review'];
+const STEPS = ['Business information', 'Loyalty programme', 'Rewards', 'Look & QR code', 'Review'];
 
 function Shell({ step, children, maxStep }: { step: number; children: React.ReactNode; maxStep: number }) {
   const { user } = usePage();
@@ -147,7 +148,7 @@ export function OnboardingStep2({ values, pointsAllowed, maxStep }: { values: V;
                   <span className="block text-[16px] font-semibold">
                     {o.title} {o.v === 'stamps' && <span className="badge badge-sage ml-1">Recommended</span>}
                   </span>
-                  <span className="block text-[14.5px] text-muted-ink">{disabled ? 'Points are included in the Growth and Premium plans.' : o.body}</span>
+                  <span className="block text-[14.5px] text-muted-ink">{disabled ? 'Points are included in the Premium plan.' : o.body}</span>
                 </span>
               </label>
             );
@@ -212,6 +213,25 @@ export function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, cur
               </div>
             </fieldset>
           )}
+          <fieldset className="grid gap-3 rounded-[14px] border border-beige p-4">
+            <legend className="px-1 text-[14px] font-semibold">Bring a friend</legend>
+            <Checkbox
+              name="referral_on"
+              value="1"
+              defaultChecked={values.referral_on !== '0'}
+              label="Reward customers who bring a friend"
+              hint="Each customer gets an invite link. When their friend makes a first purchase, both of them get a reward. You can change this later under Referrals."
+            />
+            <input type="hidden" name="referral_seen" value="1" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label={`The inviter gets (${hasStamps ? 'stamps' : 'points'})`} name="referral_referrer">
+                <Input name="referral_referrer" type="number" min={1} max={1000} defaultValue={values.referral_referrer ?? (hasStamps ? '1' : '20')} />
+              </Field>
+              <Field label={`Their friend gets (${hasStamps ? 'stamps' : 'points'})`} name="referral_referred" optional hint="Leave empty for nothing.">
+                <Input name="referral_referred" type="number" min={0} max={1000} defaultValue={values.referral_referred ?? (hasStamps ? '1' : '20')} />
+              </Field>
+            </div>
+          </fieldset>
           <Field label="Programme terms" name="terms" optional hint="Shown on your public loyalty page.">
             <Textarea name="terms" rows={3} maxLength={2000} defaultValue={values.terms ?? 'One stamp per qualifying drink. Rewards have no cash value and cannot be exchanged.'} />
           </Field>
@@ -227,30 +247,55 @@ export function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, cur
   );
 }
 
-export function OnboardingStep4({ svg, url, slug, maxStep }: { svg: string; url: string; slug: string; maxStep: number }) {
+export function OnboardingStep4({ svg, url, slug, maxStep, cafe, values, errors = {} }: {
+  svg: string;
+  url: string;
+  slug: string;
+  maxStep: number;
+  cafe: { name: string; logoUrl: string | null; bannerUrl: string | null; primaryColour: string; secondaryColour: string };
+  values: V;
+  errors?: V;
+}) {
   return (
     <Shell step={4} maxStep={maxStep}>
-      <div className="panel grid max-w-3xl gap-6 p-6 sm:grid-cols-[260px_1fr] sm:p-8">
-        <div className="aspect-square w-full rounded-[14px] border border-beige bg-white p-2 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
-        <div>
-          <h1 className="text-[26px] font-semibold">Your QR code</h1>
-          <p className="mt-1 text-muted-ink">Customers scan it to open your loyalty page and join. It always points to:</p>
-          <p className="mt-2 break-all text-[14px] font-medium">{url}</p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a href={`/c/${slug}/qr.svg?download=1`} className="btn btn-secondary">
-              <LuDownload className="h-4 w-4" aria-hidden="true" /> Download SVG
-            </a>
-            <a href="/dashboard/settings/qr/poster" target="_blank" className="btn btn-secondary">
-              <LuPrinter className="h-4 w-4" aria-hidden="true" /> Print-ready poster
-            </a>
-          </div>
-          <p className="mt-3 text-[13px] text-muted-ink">The page shows “not available yet” until you activate the programme in the next step.</p>
-          <Form action="/onboarding/4" className="mt-6 flex gap-3">
-            <Button size="lg">Continue to review</Button>
-            <a href="/onboarding?step=3" className="btn btn-ghost btn-lg">
-              Back
-            </a>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="panel p-6 sm:p-8">
+          <h1 className="text-[26px] font-semibold">Make it yours</h1>
+          <p className="mt-1 text-muted-ink">Pick how your page and stamp card look to customers. Everything here is optional and can be changed later in Café Settings.</p>
+          <Form action="/onboarding/4" multipart className="mt-6 grid gap-6" id="look-form" noValidate>
+            {errors.form && <Alert tone="error">{errors.form}</Alert>}
+            <LookFields values={values} errors={errors} primary={cafe.primaryColour} secondary={cafe.secondaryColour} bannerUrl={cafe.bannerUrl} showRemoveBanner />
+            <div className="flex gap-3">
+              <Button size="lg">Continue to review</Button>
+              <a href="/onboarding?step=3" className="btn btn-ghost btn-lg">
+                Back
+              </a>
+            </div>
           </Form>
+        </div>
+        <div className="grid content-start gap-4">
+          <div>
+            <p className="mb-2 text-[13px] font-medium text-muted-ink">Live preview</p>
+            <Island
+              name="BrandPreview"
+              props={{ formId: 'look-form', initial: { ...cafe, layout: values.page_layout || 'classic', tagline: values.tagline ?? '' }, stampIcon: values.stamp_icon || 'bean', subtitle: 'Loyalty by Perkora', label: 'Preview of the customer card' }}
+            />
+          </div>
+          <div className="panel p-5">
+            <h2 className="text-[16px] font-semibold">Your QR code</h2>
+            <div className="mx-auto mt-3 aspect-square w-40 rounded-[12px] border border-beige bg-white p-1.5 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
+            <p className="mt-3 text-[13px] text-muted-ink">Customers scan it to open your page and join:</p>
+            <p className="mt-1 break-all text-[13px] font-medium">{url}</p>
+            <div className="mt-3 grid gap-2">
+              <a href={`/c/${slug}/qr.svg?download=1`} className="btn btn-secondary btn-sm">
+                <LuDownload className="h-4 w-4" aria-hidden="true" /> Download QR code
+              </a>
+              <a href="/dashboard/settings/qr/poster" target="_blank" className="btn btn-secondary btn-sm">
+                <LuPrinter className="h-4 w-4" aria-hidden="true" /> Print-ready poster
+              </a>
+            </div>
+            <p className="mt-2 text-[12.5px] text-muted-ink">The page says “not available yet” until you activate in the next step.</p>
+          </div>
         </div>
       </div>
     </Shell>
@@ -305,7 +350,7 @@ function CardPreview({ cafe }: { cafe: any }) {
         <span className="font-display text-[17px] font-semibold">{cafe.name}</span>
       </div>
       <div className="p-5">
-        <StampGrid required={Number(cafe.stamps_required ?? 9)} filled={3} size={34} ariaLabel="Preview of the stamp card" />
+        <StampGrid required={Number(cafe.stamps_required ?? 9)} filled={3} size={34} color={cafe.secondary_colour} icon={cafe.settings?.stampIcon} ariaLabel="Preview of the stamp card" />
         <p className="mt-3 text-[14px] text-muted-ink">Customer card preview</p>
       </div>
     </div>

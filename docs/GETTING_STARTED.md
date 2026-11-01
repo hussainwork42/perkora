@@ -110,14 +110,15 @@ If you add your own domain later (for example `perkora.app`), set `APP_URL=https
 
 ### The café owner signs up
 
-1. The owner opens your address and clicks **Get started** (or goes to `/sign-up`) and creates their account.
-2. They complete the five setup steps:
+1. Send everyone the same link: `your-address/start`. Café owners choose **Set up my café**; customers choose **Find a café**. (`/get-started` goes straight to café sign-up.)
+2. The owner creates their account.
+3. They complete the five setup steps:
    - **café details:** name, city, currency (EUR or TRY), colours;
    - **loyalty programme:** stamps and/or points;
    - **first reward;**
-   - **QR code;**
+   - **look and QR code:** layout, photo banner, stamp design, welcome message;
    - **review**, then **Activate loyalty programme**.
-3. The café is now live, with a 30-day free trial recorded on its subscription.
+4. The café is now live, with a 30-day free trial on Premium recorded on its subscription.
 
 ### The QR codes ("barcodes")
 

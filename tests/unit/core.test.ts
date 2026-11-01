@@ -7,6 +7,7 @@ process.env.DATABASE_URL ??= 'postgres://localhost/unused';
 
 const { issueMemberToken, verifyMemberToken, extractToken } = await import('../../src/server/domain/qrtoken');
 const { encodeQr, qrSvg } = await import('../../src/shared/qr/qrcode');
+const { decodeQrFromImage, decodeQrMatrix } = await import('../../src/shared/qr/qrdecode');
 const { parseMoneyToMinor, money, shortName, formatMemberCode } = await import('../../src/shared/format');
 const { isoWeekKey, weekRange, monthRange, localParts, addDays } = await import('../../src/shared/time');
 const { slugify } = await import('../../src/server/routes/onboarding');
@@ -79,6 +80,96 @@ sys.stdout.write(data)`,
         assert.equal(out.stdout, s, `ECC ${ecc}`);
       }
     }
+  });
+});
+
+describe('QR reader (camera scanning)', () => {
+  // deterministic pseudo-random numbers
+  const rng = (seed: number) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+
+  /** Unit square -> quad, as a 3x3 matrix (row-major, column vectors). */
+  const sq2quad = (q: number[][]) => {
+    const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = q;
+    const dx3 = x0 - x1 + x2 - x3, dy3 = y0 - y1 + y2 - y3;
+    const dx1 = x1 - x2, dx2 = x3 - x2, dy1 = y1 - y2, dy2 = y3 - y2;
+    const den = dx1 * dy2 - dx2 * dy1;
+    const a13 = (dx3 * dy2 - dx2 * dy3) / den, a23 = (dx1 * dy3 - dx3 * dy1) / den;
+    return [x1 - x0 + a13 * x1, x3 - x0 + a23 * x3, x0, y1 - y0 + a13 * y1, y3 - y0 + a23 * y3, y0, a13, a23, 1];
+  };
+  const adj = (m: number[]) => {
+    const [a, b, c, d, e, f, g, h, i] = m;
+    return [e * i - f * h, c * h - b * i, b * f - c * e, f * g - d * i, a * i - c * g, c * d - a * f, d * h - e * g, b * g - a * h, a * e - b * d];
+  };
+
+  /** Draw a QR code into a W×H "camera frame" with perspective, lighting and noise. */
+  function frame(text: string, opts: { seed: number; ecc?: 'L' | 'M' | 'Q' | 'H'; size?: number; tilt?: number; noise?: number }) {
+    const r = rng(opts.seed);
+    const W = 480, H = 360;
+    const { modules } = encodeQr(text, opts.ecc ?? 'M');
+    const n = modules.length + 8; // with quiet zone
+    const side = opts.size ?? 230;
+    const ang = r() * Math.PI * 2;
+    const cx = W / 2 + (r() - 0.5) * 60, cy = H / 2 + (r() - 0.5) * 40;
+    const tilt = opts.tilt ?? 0.08;
+    const quad = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ].map(([u, v]) => {
+      const x = (u * side) / 2 + (r() - 0.5) * tilt * side, y = (v * side) / 2 + (r() - 0.5) * tilt * side;
+      return [cx + x * Math.cos(ang) - y * Math.sin(ang), cy + x * Math.sin(ang) + y * Math.cos(ang)];
+    });
+    const inv = adj(sq2quad(quad)); // image -> unit square
+    const data = new Uint8ClampedArray(W * H * 4);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const w = inv[6] * x + inv[7] * y + inv[8];
+        const u = (inv[0] * x + inv[1] * y + inv[2]) / w, v = (inv[3] * x + inv[4] * y + inv[5]) / w;
+        let lum = 95 + 40 * (x / W); // background
+        if (u >= 0 && u < 1 && v >= 0 && v < 1) {
+          const mx = Math.floor(u * n) - 4, my = Math.floor(v * n) - 4;
+          const dark = mx >= 0 && my >= 0 && mx < modules.length && my < modules.length && modules[my][mx];
+          lum = dark ? 35 : 225;
+        }
+        lum = lum * (0.8 + 0.3 * (y / H)) + (r() - 0.5) * 2 * (opts.noise ?? 12);
+        const i = (y * W + x) * 4;
+        data[i] = data[i + 1] = data[i + 2] = lum;
+        data[i + 3] = 255;
+      }
+    return { data, width: W, height: H };
+  }
+
+  test('reads perfect and damaged module grids (error correction)', () => {
+    for (const ecc of ['L', 'M', 'Q', 'H'] as const) {
+      const text = 'https://perkora.example/t/m/PK1.abcdefghijklmnopqrstuv.k3j4h5.ABCDEFGHIJKLMNOPQRSTUV';
+      const m = encodeQr(text, ecc).modules.map((row) => row.slice());
+      assert.equal(decodeQrMatrix(m), text);
+      m[12][20] = !m[12][20];
+      m[25][14] = !m[25][14];
+      assert.equal(decodeQrMatrix(m), text, `with damage, ECC ${ecc}`);
+    }
+  });
+
+  test('reads codes from camera-like frames: rotated, tilted, uneven light, noise', () => {
+    const texts = [
+      'https://perkora.example/c/kahve-kosesi-girne',
+      `https://perkora.example/t/m/${issueMemberToken('3f2a9c1e-8b7d-4e6f-9a0b-1c2d3e4f5a6b', new Date('2026-10-27T10:00:00Z')).token}`,
+      'K7M29QXA',
+      'Türkçe ğüşıöç €₺',
+    ];
+    let seed = 7;
+    for (const t of texts)
+      for (let k = 0; k < 4; k++) {
+        const img = frame(t, { seed: seed++, size: 200 + k * 25 });
+        assert.equal(decodeQrFromImage(img), t, `seed ${seed - 1}`);
+      }
+  });
+
+  test('never invents a result from a frame without a code', () => {
+    const r = rng(3);
+    const data = new Uint8ClampedArray(320 * 240 * 4).map((_, i) => (i % 4 === 3 ? 255 : 100 + r() * 60));
+    assert.equal(decodeQrFromImage({ data, width: 320, height: 240 }), null);
   });
 });
 

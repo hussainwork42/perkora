@@ -16,10 +16,9 @@ Read this before selling Perkora or putting a real café on it. Everything below
 ## Built but not verified on real hardware
 
 - **Camera scanning at the counter.**
-  - The terminal uses the browser's `BarcodeDetector` API when the device offers it (Chrome on Android, recent Safari).
-  - It falls back to typing the 8-character member code, or to email or phone lookup.
-  - The member QR also encodes a scan URL (`/t/m/<token>`). Pointing any phone's own camera app at it opens the terminal for that member when a staff member is signed in on that phone.
-  - The manual and URL paths are covered by automated tests. Live camera decoding has **not** been tested on physical phones or tablets, so check it on the café's device before relying on it.
+  - Perkora reads QR codes with its own decoder, so scanning works in Safari on iPhone, Firefox and desktop browsers as well as Chrome. Where the browser has a built-in barcode reader (Chrome on Android), that is used too.
+  - The camera only opens on a secure `https://` address (the live site is). Typing the 8-character member code, or looking a customer up by email or phone, always works.
+  - It is tested end to end with a simulated camera in Chromium. It has **not** yet been tested on a physical phone or tablet camera, so try it on the café's device before relying on it.
 - **Printed QR posters.** Generated codes decode with an independent reader (OpenCV) in the tests, but a printed poster has not been scanned in a café.
 
 ## Product scope
@@ -29,7 +28,7 @@ Read this before selling Perkora or putting a real café on it. Everything below
 - **No automatic expiry of stamps or points.** Rewards (vouchers) can have an expiry period. Stamp and point balances do not expire.
 - **Photography and images.** The marketing site uses illustrations and interface mock-ups, not photographs. Café logos are stored in PostgreSQL (`uploads` table, 1 MB limit, PNG, JPEG or WebP checked by content), which is fine at this scale. Move them to object storage if many cafés upload images.
 - **Analytics are descriptive.** They count what happened, using the definitions in [METRICS.md](METRICS.md). They do not claim revenue uplift, because Perkora cannot see sales that did not go through the terminal.
-- **Pricing is a proposal.** Starter €9, Growth €19 and Premium €35 per month are shown as introductory proposals. Plan prices, limits and features are editable in the platform admin. There are no discount codes or countdowns.
+- **Pricing is a proposal.** Basic €9 and Premium €19 per month are shown as introductory proposals. Plan prices, limits and features are editable in the platform admin. There are no discount codes or countdowns.
 
 ## Legal and company details
 
@@ -45,4 +44,4 @@ Read this before selling Perkora or putting a real café on it. Everything below
 - **Rate limits live in PostgreSQL.** This suits one or a few app instances. For heavy traffic, move them to Redis.
 - **Background jobs run inside the web process.** Voucher expiry and session clean-up run on an in-process timer. With several instances this is safe (the work is idempotent), just redundant.
 - **Accessibility.** Semantic HTML, labelled inputs, visible focus, sufficient colour contrast and reduced-motion support were built in and checked by hand. No screen-reader audit has been done yet.
-- **Not deployed.** This build has not been deployed anywhere. Nothing in the repository claims it is live.
+- **Hosting.** The pilot runs on Render's free plan with Render's free database, which expires 30 days after it was created. Move to an always-on plan and a permanent database before real cafés depend on it.

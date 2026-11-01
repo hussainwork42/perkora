@@ -1,0 +1,1 @@
+import{a as n}from"./chunk-RZYP4BAP.js";import{b as t}from"./chunk-GJ32OMFE.js";var o=t(n(),1);function i({label:b}){return(0,o.jsx)("button",{type:"button",className:"btn btn-primary",onClick:()=>window.print(),children:b})}export{i as default};

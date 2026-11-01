@@ -409,7 +409,7 @@ export async function seedDemo() {
     [bakeryOwnerId, TZ],
   );
   await db.query(`insert into business_members (business_id, user_id, role) values ($1, $2, 'owner')`, [bakery.id, bakeryOwnerId]);
-  await db.query(`insert into subscriptions (business_id, plan_id, status, payment_status, notes) values ($1, 'starter', 'demo', 'not_configured', 'Demonstration account')`, [bakery.id]);
+  await db.query(`insert into subscriptions (business_id, plan_id, status, payment_status, notes) values ($1, 'basic', 'demo', 'not_configured', 'Demonstration account')`, [bakery.id]);
   const bStamps = await one<{ id: string }>(
     db,
     `insert into loyalty_programmes (business_id, name, programme_type, config) values ($1, 'Bread Card', 'stamps', $2) returning id`,

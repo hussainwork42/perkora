@@ -2,6 +2,7 @@ import { LuCheck, LuDownload, LuPrinter, LuX } from 'react-icons/lu';
 import { DashboardLayout } from '../../layouts/DashboardLayout';
 import { Alert, Badge, Button, Card, CardHeader, Checkbox, Field, Form, Input, PageHeader, Select, Tabs, Textarea } from '../../components/ui';
 import { CafeMark, Logo, StampGrid } from '../../components/brand';
+import { LookFields } from '../../components/branding-fields';
 import { Island } from '../../islands/Island';
 import type { BusinessContext } from '../../../server/auth/guards';
 import { STAFF_PERMISSIONS } from '../../../server/auth/guards';
@@ -250,51 +251,71 @@ export function SettingsProfilePage({ biz, values, errors = {}, publicUrl }: { b
 
 export function SettingsBrandingPage({ biz, errors = {} }: { biz: BusinessContext; errors?: V }) {
   const logo = biz.logoUploadId ? `/media/${biz.logoUploadId}` : null;
+  const banner = biz.bannerUploadId ? `/media/${biz.bannerUploadId}` : null;
+  const s = biz.settings;
   return (
     <DashboardLayout biz={biz} active="settings">
-      <PageHeader title="Café Settings" />
+      <PageHeader title="Café Settings" description="Choose how your café looks to customers on its join page and loyalty card." />
       <SettingsTabs current="branding" />
-      <div className="grid max-w-5xl gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Card className="p-6">
-          <Form action="/dashboard/settings/branding" multipart className="grid gap-5" id="branding-form">
-            <Field label="Logo" name="logo" optional hint="PNG, JPEG or WebP, up to 1 MB. Square images look best." error={errors.logo}>
-              <div className="flex items-center gap-4">
-                <CafeMark name={biz.name} logoUrl={logo} colour={biz.primaryColour} size={56} />
-                <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="text-[14px]" />
-              </div>
+          <Form action="/dashboard/settings/branding" multipart className="grid gap-6" id="branding-form">
+            {errors.form && <Alert tone="error">{errors.form}</Alert>}
+            <Field label="Logo" name="logo" optional hint="Square images look best." error={errors.logo}>
+              <Island name="ImagePicker" props={{ name: 'logo', label: 'Logo', current: logo, maxSide: 600, shape: 'square', hint: 'PNG, JPEG or WebP. Large images are resized automatically.' }} />
             </Field>
             {logo && <Checkbox name="remove_logo" value="1" label="Remove the current logo" />}
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Primary colour" name="primary_colour" hint="Card header and buttons." error={errors.primary_colour}>
+              <Field label="Main colour" name="primary_colour" hint="Header and buttons." error={errors.primary_colour}>
                 <div className="flex items-center gap-3">
                   <input type="color" id="primary_colour" name="primary_colour" defaultValue={biz.primaryColour} className="h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" />
                   <span className="text-[14px] tnum text-muted-ink">{biz.primaryColour}</span>
                 </div>
               </Field>
-              <Field label="Secondary colour" name="secondary_colour" hint="Logo background and accents." error={errors.secondary_colour}>
+              <Field label="Stamp colour" name="secondary_colour" hint="Stamps, logo background and accents." error={errors.secondary_colour}>
                 <div className="flex items-center gap-3">
                   <input type="color" id="secondary_colour" name="secondary_colour" defaultValue={biz.secondaryColour} className="h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" />
                   <span className="text-[14px] tnum text-muted-ink">{biz.secondaryColour}</span>
                 </div>
               </Field>
             </div>
+            <LookFields
+              values={{ page_layout: s.pageLayout, stamp_icon: s.stampIcon, tagline: s.tagline }}
+              errors={errors}
+              primary={biz.primaryColour}
+              secondary={biz.secondaryColour}
+              bannerUrl={banner}
+              showRemoveBanner
+            />
+            <Checkbox
+              name="list_in_directory"
+              value="1"
+              defaultChecked={biz.listInDirectory}
+              label="Show my café in the Perkora café list"
+              hint="Customers can find you at Find a café and join without scanning your QR code."
+            />
+            <input type="hidden" name="directory_seen" value="1" />
             <div>
-              <Button>Save branding</Button>
+              <Button>Save look</Button>
             </div>
           </Form>
         </Card>
-        <Card className="overflow-hidden">
-          <p className="px-5 pt-4 text-[13px] font-medium text-muted-ink">Customer card preview</p>
-          <div className="mt-3" style={{ background: biz.primaryColour, color: contrastText(biz.primaryColour) }}>
-            <div className="flex items-center gap-3 px-5 py-4">
-              <CafeMark name={biz.name} logoUrl={logo} colour={biz.secondaryColour} size={40} />
-              <span className="font-display text-[17px] font-semibold">{biz.name}</span>
-            </div>
-          </div>
-          <div className="p-5">
-            <StampGrid required={9} filled={6} size={36} ariaLabel="Preview" />
-          </div>
-        </Card>
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <p className="mb-2 text-[13px] font-medium text-muted-ink">Live preview of a customer’s card</p>
+          <Island
+            name="BrandPreview"
+            props={{
+              formId: 'branding-form',
+              initial: { name: biz.name, logoUrl: logo, bannerUrl: banner, primaryColour: biz.primaryColour, secondaryColour: biz.secondaryColour, layout: s.pageLayout, tagline: s.tagline },
+              stampIcon: s.stampIcon,
+              subtitle: 'Loyalty by Perkora',
+              label: 'Preview of the customer card',
+            }}
+          />
+          <a href={`/c/${biz.slug}`} target="_blank" rel="noopener" className="btn btn-secondary mt-3 w-full">
+            Open your join page
+          </a>
+        </div>
       </div>
     </DashboardLayout>
   );

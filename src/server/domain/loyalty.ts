@@ -1003,7 +1003,7 @@ export async function awardPurchase(q: Queryable, input: AwardInput): Promise<Aw
   // 9. A referred member's first verified visit qualifies the referral.
   let referralQualified = false;
   if (newVisit && firstEverVisit) {
-    referralQualified = await qualifyReferral(q, { biz, member, operationId: op.id, actorUserId: input.actorUserId, now, today }, notices);
+    referralQualified = await qualifyReferral(q, { biz, member, operationId: op.id, actorUserId: input.actorUserId, now, today, on: 'first_visit' }, notices);
     if (referralQualified) balance = await lockBalance(q, biz.id, member.id, programme.id);
   }
 
@@ -1032,7 +1032,7 @@ export async function awardPurchase(q: Queryable, input: AwardInput): Promise<Aw
 
 async function qualifyReferral(
   q: Queryable,
-  a: { biz: BusinessCtx; member: MembershipRow; operationId: string; actorUserId: string | null; now: Date; today: string },
+  a: { biz: BusinessCtx; member: MembershipRow; operationId: string; actorUserId: string | null; now: Date; today: string; on: 'first_visit' | 'join' },
   notices: string[],
 ): Promise<boolean> {
   const ref = await maybeOne<any>(
@@ -1051,6 +1051,8 @@ async function qualifyReferral(
   if (!campaign) return reject('no_active_referral_campaign');
   const cfg = referralConfigSchema.safeParse(campaign.config);
   if (!cfg.success) return reject('referral_campaign_misconfigured');
+  // a programme set to reward on joining has already handled this referral at join time
+  if (cfg.data.qualifyOn !== a.on) return false;
   const referrer = await maybeOne<{ id: string; status: string; customer_id: string }>(
     q,
     'select id, status, customer_id from loyalty_memberships where id = $1 and business_id = $2',
@@ -1078,7 +1080,9 @@ async function qualifyReferral(
     sourceRefId: ref.id,
     extraEndDates: [],
   };
-  await applyGrant(q, { ...common, membershipId: a.member.id, grant: cfg.data.referredGrant, description: 'Welcome referral reward' }, notices);
+  if (cfg.data.referredGrant.kind !== 'none') {
+    await applyGrant(q, { ...common, membershipId: a.member.id, grant: cfg.data.referredGrant, description: 'Welcome referral reward' }, notices);
+  }
   await applyGrant(q, { ...common, membershipId: referrer.id, grant: cfg.data.referrerGrant, description: 'Referral reward' }, notices);
   await q.query(
     `update referrals set status = 'qualified', qualified_at = $2, qualifying_operation_id = $3, campaign_id = $4 where id = $1`,
@@ -1644,7 +1648,7 @@ export interface JoinResult {
   memberCode: string;
   alreadyMember: boolean;
   welcome: GrantOutcome[];
-  referral: 'none' | 'pending' | 'invalid' | 'self';
+  referral: 'none' | 'pending' | 'qualified' | 'invalid' | 'self';
 }
 
 async function allocateCodes(q: Queryable): Promise<{ memberCode: string; referralCode: string }> {
@@ -1771,6 +1775,13 @@ export async function joinBusiness(
         now,
       });
     }
+  }
+  // programmes that reward the inviter as soon as the friend joins
+  const refNow = referral === 'pending' ? (await runningCampaigns(q, biz.id, today, ['referral']))[0] : null;
+  if (refNow && referralConfigSchema.safeParse(refNow.config).data?.qualifyOn === 'join') {
+    const member = await lockMembership(q, biz.id, m.id);
+    const done = await qualifyReferral(q, { biz, member, operationId: op.id, actorUserId: input.actorUserId ?? null, now, today, on: 'join' }, notices);
+    if (done) referral = 'qualified';
   }
   const result: JoinResult = { membershipId: m.id, memberCode, alreadyMember: false, welcome, referral };
   await finishOperation(q, op.id, result);

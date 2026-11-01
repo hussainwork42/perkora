@@ -10,7 +10,7 @@ import { randomToken, sha256 } from '../auth/crypto';
 import { DomainError, notFound } from '../domain/errors';
 import { emailSchema, ensureCustomerForUser } from '../domain/accounts';
 import { loadPlans } from '../domain/plans';
-import { businessSettingsSchema } from '../../shared/schemas';
+import { businessSettingsSchema, PAGE_LAYOUTS, STAMP_ICONS } from '../../shared/schemas';
 import { isValidTimezone } from '../../shared/time';
 import { qrSvg } from '../../shared/qr/qrcode';
 import { withBiz, audit } from './dashboard-core';
@@ -36,8 +36,9 @@ export function detectImage(buf: Buffer): 'image/png' | 'image/jpeg' | 'image/we
   return null;
 }
 
-export async function storeImage(biz: BusinessContext, userId: string, file: { data: Buffer }, purpose: 'logo' | 'reward'): Promise<string> {
-  if (file.data.length > 1024 * 1024) throw new DomainError('validation', 'The image is larger than 1 MB.', 422);
+export async function storeImage(biz: { id: string }, userId: string, file: { data: Buffer }, purpose: 'logo' | 'reward' | 'banner'): Promise<string> {
+  const limit = purpose === 'banner' ? 2 : 1;
+  if (file.data.length > limit * 1024 * 1024) throw new DomainError('validation', `The image is larger than ${limit} MB. Choose a smaller photo.`, 422);
   const type = detectImage(file.data);
   if (!type) throw new DomainError('validation', 'Upload a PNG, JPEG or WebP image.', 422);
   const r = await one<{ id: string }>(
@@ -46,6 +47,19 @@ export async function storeImage(biz: BusinessContext, userId: string, file: { d
     [biz.id, userId, purpose, type, file.data.length, crypto.createHash('sha256').update(file.data).digest('hex'), file.data],
   );
   return r.id;
+}
+
+/** Layout, stamp icon and welcome message from a branding form. */
+export function parseLook(body: { fields: Record<string, string[]> } | any, errors: Record<string, string>) {
+  const layout = field(body, 'page_layout');
+  const icon = field(body, 'stamp_icon');
+  const tagline = field(body, 'tagline').trim().replace(/\s+/g, ' ');
+  if (tagline.length > 140) errors.tagline = 'Use up to 140 characters.';
+  return {
+    pageLayout: (PAGE_LAYOUTS as readonly string[]).includes(layout) ? (layout as (typeof PAGE_LAYOUTS)[number]) : 'classic',
+    stampIcon: (STAMP_ICONS as readonly string[]).includes(icon) ? (icon as (typeof STAMP_ICONS)[number]) : 'bean',
+    tagline: tagline.slice(0, 140),
+  };
 }
 
 async function seatsUsed(bizId: string) {
@@ -263,30 +277,38 @@ export function dashboardSettingsRoutes(r: Router) {
   r.post(
     '/dashboard/settings/branding',
     withBiz({ owner: true }, async (ctx, biz) => {
-      const body = await readBody(ctx, 2 * 1024 * 1024);
+      const body = await readBody(ctx, 5 * 1024 * 1024);
       const errors: Record<string, string> = {};
       const hex = /^#[0-9a-fA-F]{6}$/;
       const primary = field(body, 'primary_colour');
       const secondary = field(body, 'secondary_colour');
       if (!hex.test(primary)) errors.primary_colour = 'Choose a colour.';
       if (!hex.test(secondary)) errors.secondary_colour = 'Choose a colour.';
-      let logoId: string | null | undefined;
-      const file = body.files.find((f) => f.field === 'logo');
-      if (file) {
-        try {
-          logoId = await storeImage(biz, ctx.user!.id, file, 'logo');
-        } catch (e) {
-          if (e instanceof DomainError) errors.logo = e.message;
-          else throw e;
-        }
-      } else if (field(body, 'remove_logo') === '1') logoId = null;
+      const look = parseLook(body, errors);
+      const images: Record<'logo' | 'banner', string | null | undefined> = { logo: undefined, banner: undefined };
+      for (const kind of ['logo', 'banner'] as const) {
+        const file = body.files.find((f) => f.field === kind && f.data.length > 0);
+        if (file) {
+          try {
+            images[kind] = await storeImage(biz, ctx.user!.id, file, kind);
+          } catch (e) {
+            if (e instanceof DomainError) errors[kind] = e.message;
+            else throw e;
+          }
+        } else if (field(body, `remove_${kind}`) === '1') images[kind] = null;
+      }
       if (Object.keys(errors).length) return render(ctx, <SettingsBrandingPage biz={biz} errors={errors} />, { title: 'Branding', status: 422, noindex: true });
+      const listed = field(body, 'directory_seen') === '1' ? field(body, 'list_in_directory') === '1' : biz.listInDirectory;
       await db.query(
-        `update businesses set primary_colour = $2, secondary_colour = $3, logo_upload_id = case when $4 then $5::uuid else logo_upload_id end, updated_at = now() where id = $1`,
-        [biz.id, primary, secondary, logoId !== undefined, logoId ?? null],
+        `update businesses set primary_colour = $2, secondary_colour = $3,
+            logo_upload_id = case when $4 then $5::uuid else logo_upload_id end,
+            banner_upload_id = case when $6 then $7::uuid else banner_upload_id end,
+            list_in_directory = $8, updated_at = now() where id = $1`,
+        [biz.id, primary, secondary, images.logo !== undefined, images.logo ?? null, images.banner !== undefined, images.banner ?? null, listed],
       );
-      await audit(biz, ctx.user!.id, 'settings.branding', 'business', biz.id);
-      return redirect(ctx, '/dashboard/settings/branding', { type: 'success', message: 'Branding saved.' });
+      await updateSettings(biz, look);
+      await audit(biz, ctx.user!.id, 'settings.branding', 'business', biz.id, { layout: look.pageLayout });
+      return redirect(ctx, '/dashboard/settings/branding', { type: 'success', message: 'Saved. Customers see the new look straight away.' });
     }),
   );
 

@@ -38,7 +38,14 @@ export const businessSettingsSchema = z.object({
   staffInstructions: z.string().max(1000).default(''),
   operationalAlerts: z.boolean().default(true),
   showOffersPublicly: z.boolean().default(true),
+  /** Look of the café's customer pages. */
+  pageLayout: z.enum(['classic', 'banner', 'minimal']).default('classic'),
+  stampIcon: z.enum(['bean', 'cup', 'star', 'heart', 'leaf', 'check']).default('bean'),
+  tagline: z.string().max(140).default(''),
 });
+export const PAGE_LAYOUTS = ['classic', 'banner', 'minimal'] as const;
+export const STAMP_ICONS = ['bean', 'cup', 'star', 'heart', 'leaf', 'check'] as const;
+export type StampIcon = (typeof STAMP_ICONS)[number];
 export type BusinessSettings = z.infer<typeof businessSettingsSchema>;
 
 export function parseSettings(raw: unknown): BusinessSettings {
@@ -78,10 +85,13 @@ export const campaignEligibilitySchema = z.object({
 });
 export type CampaignEligibility = z.infer<typeof campaignEligibilitySchema>;
 
+export const optionalGrantSchema = z.union([grantSchema, z.object({ kind: z.literal('none') })]);
 export const referralConfigSchema = z.object({
   referrerGrant: grantSchema,
-  referredGrant: grantSchema,
-  maxPerReferrer: z.number().int().min(1).max(100).default(5),
+  referredGrant: optionalGrantSchema,
+  maxPerReferrer: z.number().int().min(1).max(100).default(10),
+  /** When the inviter is rewarded: at the friend's first verified visit (default) or as soon as the friend joins. */
+  qualifyOn: z.enum(['first_visit', 'join']).default('first_visit'),
 });
 export type ReferralConfig = z.infer<typeof referralConfigSchema>;
 

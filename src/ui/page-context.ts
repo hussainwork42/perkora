@@ -9,6 +9,8 @@ export interface PageInfo {
   user: { id: string; name: string; email: string; isAdmin: boolean } | null;
   flash: { type: 'success' | 'error' | 'info'; message: string } | null;
   query: Record<string, string>;
+  /** Small counters for navigation badges (e.g. unread admin messages). */
+  badges: Record<string, number>;
 }
 
 export const PageContext = createContext<PageInfo>(null as unknown as PageInfo);

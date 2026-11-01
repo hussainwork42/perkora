@@ -161,7 +161,7 @@ describe('roles', () => {
       assert.equal((await c.get(p)).status, 403, p);
     }
     assert.equal((await c.get('/admin')).status, 403);
-    const plan = await c.post('/dashboard/subscription', { plan_id: 'starter' });
+    const plan = await c.post('/dashboard/subscription', { plan_id: 'basic' });
     assert.equal(plan.status, 403);
   });
 
@@ -412,5 +412,167 @@ describe('team and membership flows', () => {
     const cust = await one(db, `select count(*)::int as n from customers where email = 'leaving@example.com'`);
     assert.equal(cust.n, 0, 'personal data removed');
     assert.equal((await new Client().signIn('leaving@example.com', 'leaving-password-1')).status, 401);
+  });
+});
+
+describe('navigation, sign-up paths and the café list', () => {
+  test('the start page offers café and customer paths, and the logo leads home', async () => {
+    const c = new Client();
+    const r = await c.get('/start');
+    assert.equal(r.status, 200);
+    for (const href of ['/get-started', '/sign-up', '/cafes', '/sign-in']) assert.ok(r.text.includes(`href="${href}"`), href);
+    assert.match(r.text, /aria-label="Perkora home" class="inline-flex" href="\/"|href="\/" aria-label="Perkora home"/);
+    const home = await c.get('/');
+    assert.ok(home.text.includes('href="/start"'));
+  });
+
+  test('sign-up pages switch between customer and café accounts', async () => {
+    const c = new Client();
+    const s = await c.get('/sign-up');
+    assert.ok(s.text.includes('href="/get-started"'));
+    const g = await c.get('/get-started');
+    assert.ok(g.text.includes('href="/sign-up"'));
+  });
+
+  test('the café list shows active cafés that opted in, with search', async () => {
+    const c = new Client();
+    const all = await c.get('/cafes');
+    assert.equal(all.status, 200);
+    assert.ok(all.text.includes('Alpha Café') && all.text.includes('Bravo Café'));
+    await db.query('update businesses set list_in_directory = false where id = $1', [B.businessId]);
+    const some = await c.get('/cafes');
+    assert.ok(some.text.includes('Alpha Café'));
+    assert.ok(!some.text.includes('Bravo Café'));
+    const q = await c.get('/cafes?q=zzz%25');
+    assert.ok(q.text.includes('No cafés match'));
+    await db.query('update businesses set list_in_directory = true where id = $1', [B.businessId]);
+  });
+
+  test('pricing shows the two plans', async () => {
+    const r = await new Client().get('/pricing');
+    assert.ok(r.text.includes('Start with Basic') && r.text.includes('Start with Premium'));
+    assert.ok(!r.text.includes('Growth') && !r.text.includes('Starter'));
+  });
+});
+
+describe('contact messages', () => {
+  test('a contact message is saved and only the platform admin can read it', async () => {
+    const visitor = new Client();
+    await visitor.get('/contact');
+    const sent = await visitor.post('/contact', { name: 'Deniz Visitor', email: 'deniz.visitor@example.com', message: 'Is there a Turkish version of the dashboard?' });
+    assert.equal(sent.status, 200);
+    const row = await one(db, `select kind, status from demo_requests where email = 'deniz.visitor@example.com'`);
+    assert.deepEqual([row.kind, row.status], ['contact', 'new']);
+
+    const owner = new Client();
+    await owner.signIn(ownerAEmail, PASSWORD);
+    assert.equal((await owner.get('/admin/requests')).status, 403);
+
+    const admin = await one(db, `insert into users (name, email, platform_role) values ('Pat Admin', 'pat.admin@example.com', 'admin') returning id`);
+    await setPassword(admin.id);
+    const a = new Client();
+    await a.signIn('pat.admin@example.com', PASSWORD);
+    const home = await a.get('/admin');
+    assert.match(home.text, /Messages \(\d+ new\)/);
+    const page = await a.get('/admin/requests');
+    assert.ok(page.text.includes('Is there a Turkish version of the dashboard?'));
+    const id = (await one(db, `select id from demo_requests where email = 'deniz.visitor@example.com'`)).id;
+    const done = await a.post(`/admin/requests/${id}`, { status: 'contacted' });
+    assert.equal(done.status, 303);
+    assert.equal((await one(db, 'select status from demo_requests where id = $1', [id])).status, 'contacted');
+  });
+});
+
+describe('referral settings, branding and campaign names', () => {
+  // sign-in attempts are rate limited per account, so the owner signs in once here
+  let ownerClient: Client | null = null;
+  const ownerA = async () => {
+    if (!ownerClient) {
+      ownerClient = new Client('owner');
+      await db.query(`delete from rate_limits where key like 'signin:%'`);
+      await ownerClient.signIn(ownerAEmail, PASSWORD);
+    }
+    return ownerClient;
+  };
+  test('the owner turns on referral rewards; staff cannot change them', async () => {
+    const staff = new Client();
+    await staff.signIn(staffAEmail, PASSWORD);
+    const denied = await staff.post('/dashboard/referrals', { enabled: '1' });
+    assert.ok([302, 303, 403].includes(denied.status));
+
+    const owner = await ownerA();
+    assert.equal((await owner.get('/dashboard/referrals')).status, 200);
+    const r = await owner.post('/dashboard/referrals', {
+      enabled: '1',
+      name: 'Coffee buddies',
+      referrer_kind: 'bonus',
+      referrer_amount: '2',
+      referrer_programme: A.stampProgrammeId,
+      referred_kind: 'none',
+      qualify_on: 'join',
+      max_per_referrer: '5',
+    });
+    assert.equal(r.status, 303);
+    const c = await one(db, `select name, status, config from campaigns where business_id = $1 and campaign_type = 'referral'`, [A.businessId]);
+    assert.equal(c.name, 'Coffee buddies');
+    assert.equal(c.status, 'published');
+    assert.equal(c.config.qualifyOn, 'join');
+    // invalid amounts are refused with a message
+    const bad = await owner.post('/dashboard/referrals', { enabled: '1', name: 'x', referrer_kind: 'bonus', referrer_amount: '0', referrer_programme: A.stampProgrammeId, referred_kind: 'none' });
+    assert.equal(bad.status, 422);
+    // the customer sees the invite page
+    const cust = new Client();
+    await cust.signIn(customerEmail, PASSWORD);
+    const slug = (await one(db, 'select slug from businesses where id = $1', [A.businessId])).slug;
+    const refer = await cust.get(`/wallet/${slug}/refer`);
+    assert.ok(refer.text.includes('Share on WhatsApp'));
+    assert.ok(refer.text.includes('As soon as they join'));
+  });
+
+  test('branding saves layout, stamp design and welcome message, and the join page uses them', async () => {
+    const owner = await ownerA();
+    await owner.get('/dashboard/settings/branding');
+    const r = await owner.post('/dashboard/settings/branding', {
+      primary_colour: '#22443A',
+      secondary_colour: '#C8A24A',
+      page_layout: 'minimal',
+      stamp_icon: 'heart',
+      tagline: 'Slow coffee, fast smiles',
+      directory_seen: '1',
+      list_in_directory: '1',
+    });
+    assert.equal(r.status, 303);
+    const b = await one(db, 'select slug, primary_colour, settings from businesses where id = $1', [A.businessId]);
+    assert.equal(b.primary_colour, '#22443A');
+    assert.equal(b.settings.pageLayout, 'minimal');
+    assert.equal(b.settings.stampIcon, 'heart');
+    const page = await new Client().get(`/c/${b.slug}`);
+    assert.ok(page.text.includes('Slow coffee, fast smiles'));
+    // unknown values fall back to safe defaults
+    await owner.post('/dashboard/settings/branding', { primary_colour: '#22443A', secondary_colour: '#C8A24A', page_layout: 'evil', stamp_icon: '<script>' });
+    const b2 = await one(db, 'select settings from businesses where id = $1', [A.businessId]);
+    assert.equal(b2.settings.pageLayout, 'classic');
+    assert.equal(b2.settings.stampIcon, 'bean');
+  });
+
+  test('campaign names are free text', async () => {
+    const owner = await ownerA();
+    const form = await owner.get('/dashboard/campaigns/new');
+    assert.ok(form.text.includes('Call it anything you like'));
+    const today = new Date().toISOString().slice(0, 10);
+    const r = await owner.post('/dashboard/campaigns/new', {
+      name: 'Student exam week',
+      campaign_type: 'custom',
+      start_date: today,
+      benefit_kind: 'bonus',
+      benefit_programme: A.stampProgrammeId,
+      benefit_mode: 'flat',
+      benefit_amount: '1',
+      target_segment: 'all',
+      intent: 'preview',
+    });
+    assert.equal(r.status, 303);
+    const c = await one(db, `select name, campaign_type from campaigns where business_id = $1 and name = 'Student exam week'`, [A.businessId]);
+    assert.equal(c.campaign_type, 'custom');
   });
 });

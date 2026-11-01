@@ -12,13 +12,15 @@ import { Logo } from '../../ui/components/brand';
 import { Alert, Badge, Button, Card, CardHeader, Checkbox, Field, FlashMessage, Form, Input, PageHeader, Select, Stat, Tabs } from '../../ui/components/ui';
 import { dateShort, dateTime, moneyWhole, num, relative } from '../../shared/format';
 import { config } from '../config';
+import { usePage } from '../../ui/page-context';
 
 function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
+  const { badges } = usePage();
   return (
     <div className="min-h-screen bg-cream">
       <header className="border-b border-beige bg-coffee text-cream">
         <div className="mx-auto flex h-14 max-w-[1240px] items-center gap-4 px-4">
-          <Logo tone="light" href="/admin" />
+          <Logo tone="light" />
           <span className="badge bg-terracotta text-white">Platform admin</span>
           <Form action="/sign-out" className="ml-auto">
             <button className="btn btn-sm text-cream hover:bg-cream/10" type="submit">
@@ -33,7 +35,7 @@ function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
           items={[
             { key: 'cafes', href: '/admin', label: 'Cafés' },
             { key: 'plans', href: '/admin/plans', label: 'Plans' },
-            { key: 'requests', href: '/admin/requests', label: 'Demo requests' },
+            { key: 'requests', href: '/admin/requests', label: badges.messages ? `Messages (${badges.messages} new)` : 'Messages' },
             { key: 'logs', href: '/admin/logs', label: 'Error logs' },
             { key: 'demo', href: '/admin/demo', label: 'Demo data' },
           ]}
@@ -49,6 +51,8 @@ function guard(fn: (ctx: Ctx) => Promise<any>) {
   return async (ctx: Ctx) => {
     const r = requireAdmin(ctx);
     if (r) return r;
+    const unread = await one<{ n: number }>(db, `select count(*)::int as n from demo_requests where status = 'new'`);
+    ctx.state.badges = { messages: unread.n };
     return fn(ctx);
   };
 }
@@ -83,11 +87,16 @@ export function adminRoutes(r: Router) {
         ctx,
         <AdminLayout tab="cafes">
           <PageHeader title="Cafés" description="Platform view. Customer personal data is not shown here." />
+          {m.requests > 0 && (
+            <Alert tone="warning" className="mb-4" title={`You have ${m.requests} new message${m.requests === 1 ? '' : 's'}`}>
+              People wrote to you through the website. <a className="link font-medium" href="/admin/requests">Read and reply</a>
+            </Alert>
+          )}
           <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
             <Stat label="Cafés (excl. demo)" value={num(m.cafes)} hint={`${m.active_cafes} active · ${m.onboarding} onboarding · ${m.suspended} suspended`} />
             <Stat label="Loyalty memberships" value={num(m.members)} hint="all cafés" />
             <Stat label="Transactions (30 days)" value={num(m.txns)} />
-            <Stat label="Open demo requests" value={num(m.requests)} hint={`${m.errors} errors in 7 days`} />
+            <Stat label="New messages" value={num(m.requests)} hint={`${m.errors} errors in 7 days`} />
           </div>
           <Card>
             <div className="overflow-x-auto">
@@ -296,68 +305,93 @@ export function adminRoutes(r: Router) {
   r.get(
     '/admin/requests',
     guard(async (ctx) => {
-      const rows = await many<any>(db, `select * from demo_requests order by created_at desc limit 200`);
+      const filter = ctx.query.get('show') === 'all' ? 'all' : ctx.query.get('show') === 'done' ? 'done' : 'open';
+      const where = filter === 'all' ? 'true' : filter === 'done' ? `status <> 'new'` : `status = 'new'`;
+      const rows = await many<any>(db, `select * from demo_requests where ${where} order by created_at desc limit 300`);
+      const counts = await one<{ open: number; done: number }>(db, `select count(*) filter (where status = 'new')::int as open, count(*) filter (where status <> 'new')::int as done from demo_requests`);
       return render(
         ctx,
         <AdminLayout tab="requests">
-          <PageHeader title="Demo and contact requests" description="From the public website. Reply to these personally." />
-          <Card>
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>When</th>
-                    <th>From</th>
-                    <th>Café</th>
-                    <th>Message</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="text-muted-ink">
-                        No requests yet.
-                      </td>
-                    </tr>
-                  )}
-                  {rows.map((d) => (
-                    <tr key={d.id}>
-                      <td className="whitespace-nowrap text-[13px] text-muted-ink">{relative(d.created_at)}</td>
-                      <td>
-                        <div className="font-medium">{d.name}</div>
-                        <div className="text-[12.5px] text-muted-ink">
-                          {d.email}
-                          {d.phone ? ` · ${d.phone}` : ''}
+          <PageHeader title="Messages" description="Contact-form messages and demo requests from the website. Reply by email or phone, then mark them as replied." />
+          <div className="mb-4 flex flex-wrap gap-2">
+            {[
+              ['open', `New (${counts.open})`],
+              ['done', `Replied or closed (${counts.done})`],
+              ['all', 'All'],
+            ].map(([k, l]) => (
+              <a key={k} href={k === 'open' ? '/admin/requests' : `/admin/requests?show=${k}`} className={`btn btn-sm ${filter === k ? 'btn-primary' : 'btn-secondary'}`} aria-current={filter === k ? 'page' : undefined}>
+                {l}
+              </a>
+            ))}
+          </div>
+          {rows.length === 0 ? (
+            <Card className="p-8 text-center text-muted-ink">{filter === 'open' ? 'No new messages. Messages people send through the Contact and Demo pages appear here.' : 'Nothing here yet.'}</Card>
+          ) : (
+            <ul className="grid gap-3">
+              {rows.map((d) => {
+                const wa = d.phone ? String(d.phone).replace(/[^0-9]/g, '') : '';
+                return (
+                  <li key={d.id}>
+                    <Card className={`p-5 ${d.status === 'new' ? 'border-terracotta' : ''}`}>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[16px] font-semibold">{d.name}</span>
+                            <Badge tone={d.kind === 'demo' ? 'accent' : 'neutral'}>{d.kind === 'demo' ? 'Demo request' : 'Contact message'}</Badge>
+                            {d.status === 'new' && <Badge tone="accent">New</Badge>}
+                            {d.status === 'contacted' && <Badge tone="success">Replied</Badge>}
+                            {d.status === 'closed' && <Badge tone="neutral">Closed</Badge>}
+                          </div>
+                          <p className="mt-0.5 text-[13.5px] text-muted-ink">
+                            {dateTime(d.created_at, 'Asia/Famagusta')} · {relative(d.created_at)}
+                            {d.cafe_name ? ` · ${d.cafe_name}` : ''}
+                            {d.city ? `, ${d.city}` : ''}
+                          </p>
                         </div>
-                      </td>
-                      <td className="text-[13.5px]">
-                        {d.cafe_name ?? '—'}
-                        <div className="text-[12px] text-muted-ink">
-                          {d.kind} {d.city ? `· ${d.city}` : ''}
+                        <div className="flex flex-wrap gap-2">
+                          <a className="btn btn-secondary btn-sm" href={`mailto:${d.email}?subject=${encodeURIComponent('Re: your message to Perkora')}`}>
+                            Email {d.email}
+                          </a>
+                          {wa && (
+                            <a className="btn btn-secondary btn-sm" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
+                              WhatsApp {d.phone}
+                            </a>
+                          )}
                         </div>
-                      </td>
-                      <td className="max-w-[320px] text-[13.5px]">{d.message ?? '—'}</td>
-                      <td>
-                        <Form action={`/admin/requests/${d.id}`} className="flex gap-1.5">
-                          <select name="status" defaultValue={d.status} className="select h-9 min-h-0 w-32 text-[13px]" aria-label="Status">
-                            <option value="new">new</option>
-                            <option value="contacted">contacted</option>
-                            <option value="closed">closed</option>
-                          </select>
-                          <Button size="sm" variant="secondary">
-                            Save
-                          </Button>
-                        </Form>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                      </div>
+                      {d.message ? <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">{d.message}</p> : <p className="mt-3 text-[14px] text-muted-ink">No message text (demo request).</p>}
+                      <div className="mt-4 flex flex-wrap gap-2 border-t border-beige pt-3">
+                        {d.status !== 'contacted' && (
+                          <Form action={`/admin/requests/${d.id}`}>
+                            <input type="hidden" name="status" value="contacted" />
+                            <Button size="sm">Mark as replied</Button>
+                          </Form>
+                        )}
+                        {d.status !== 'closed' && (
+                          <Form action={`/admin/requests/${d.id}`}>
+                            <input type="hidden" name="status" value="closed" />
+                            <Button size="sm" variant="secondary">
+                              Close
+                            </Button>
+                          </Form>
+                        )}
+                        {d.status !== 'new' && (
+                          <Form action={`/admin/requests/${d.id}`}>
+                            <input type="hidden" name="status" value="new" />
+                            <Button size="sm" variant="ghost">
+                              Mark as new
+                            </Button>
+                          </Form>
+                        )}
+                      </div>
+                    </Card>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </AdminLayout>,
-        { title: 'Requests', noindex: true },
+        { title: 'Messages', noindex: true },
       );
     }),
   );
@@ -365,8 +399,15 @@ export function adminRoutes(r: Router) {
     '/admin/requests/:id',
     guard(async (ctx) => {
       const status = field(await readBody(ctx), 'status');
-      if (['new', 'contacted', 'closed'].includes(status)) await db.query('update demo_requests set status = $2 where id = $1', [ctx.params.id, status]);
-      return redirect(ctx, '/admin/requests', { type: 'success', message: 'Saved.' });
+      if (['new', 'contacted', 'closed'].includes(status)) await db.query('update demo_requests set status = $2, read_at = coalesce(read_at, now()) where id = $1', [ctx.params.id, status]);
+      let back = '/admin/requests';
+      try {
+        const u = new URL(String(ctx.req.headers.referer ?? ''));
+        if (u.pathname === '/admin/requests' && /^(\?show=(all|done))?$/.test(u.search)) back = u.pathname + u.search;
+      } catch {
+        /* no referer */
+      }
+      return redirect(ctx, back, { type: 'success', message: status === 'contacted' ? 'Marked as replied.' : status === 'closed' ? 'Closed.' : 'Marked as new.' });
     }),
   );
 

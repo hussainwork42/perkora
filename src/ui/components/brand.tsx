@@ -34,7 +34,49 @@ function stampRotation(i: number) {
   return ((i * 47) % 25) - 12;
 }
 
-export function StampMark({ index, color = '#B86F52', animate, size = 44 }: { index: number; color?: string; animate?: boolean; size?: number }) {
+/** Five-pointed star centred at 24,24. */
+const STAR = Array.from({ length: 10 }, (_, i) => {
+  const r = i % 2 === 0 ? 10 : 4.4;
+  const a = (Math.PI / 5) * i - Math.PI / 2;
+  return `${(24 + r * Math.cos(a)).toFixed(2)},${(24 + r * Math.sin(a)).toFixed(2)}`;
+}).join(' ');
+
+function StampGlyph({ icon, color }: { icon: string; color: string }) {
+  const ink = contrastText(color) === '#292421' ? '#2A1D1A' : '#FFFDF9';
+  switch (icon) {
+    case 'cup':
+      return (
+        <g fill={ink} fillOpacity="0.94">
+          <path d="M15.5 19.5h14.5v6.2a7.25 7.25 0 0 1-14.5 0z" />
+          <path d="M30 21.2h1.6a3.3 3.3 0 0 1 0 6.6H30v-2.2h1.4a1.1 1.1 0 0 0 0-2.2H30z" />
+          <rect x="14" y="33.4" width="17.5" height="2" rx="1" />
+          <path d="M19.5 17.5c-1.4-1.6 1.4-2.6 0-4.4M23.5 17.5c-1.4-1.6 1.4-2.6 0-4.4" stroke={ink} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'star':
+      return <polygon points={STAR} fill={ink} fillOpacity="0.94" />;
+    case 'heart':
+      return <path d="M24 33.5s-9.5-5.6-9.5-12a5.2 5.2 0 0 1 9.5-2.9 5.2 5.2 0 0 1 9.5 2.9c0 6.4-9.5 12-9.5 12z" fill={ink} fillOpacity="0.94" />;
+    case 'leaf':
+      return (
+        <g>
+          <path d="M15 32c0-10 6.5-16.5 18-17-0.4 11.6-7 18-17 18z" fill={ink} fillOpacity="0.94" />
+          <path d="M16.5 31.5c4-5 8-8.5 12.5-11" stroke={color} strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'check':
+      return <path d="M16 24.5l5.2 5.2L32.5 18.4" stroke={ink} strokeOpacity="0.95" strokeWidth="3.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />;
+    default:
+      return (
+        <g>
+          <ellipse cx="24" cy="24" rx="6.6" ry="9.2" fill={ink} fillOpacity="0.92" transform="rotate(28 24 24)" />
+          <path d="M21.4 16.9 C 26 20.5, 22 27.5, 26.6 31.1" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" transform="rotate(28 24 24)" />
+        </g>
+      );
+  }
+}
+
+export function StampMark({ index, color = '#B86F52', animate, size = 44, icon = 'bean' }: { index: number; color?: string; animate?: boolean; size?: number; icon?: string }) {
   const rot = stampRotation(index);
   return (
     <svg
@@ -46,10 +88,8 @@ export function StampMark({ index, color = '#B86F52', animate, size = 44 }: { in
       aria-hidden="true"
     >
       <circle cx="24" cy="24" r="21" fill={color} opacity={0.94 - (index % 3) * 0.04} />
-      <circle cx="24" cy="24" r="16.5" fill="none" stroke="#FFFDF9" strokeOpacity="0.55" strokeWidth="1.4" strokeDasharray="2.2 2.6" />
-      {/* coffee bean */}
-      <ellipse cx="24" cy="24" rx="6.6" ry="9.2" fill="#FFFDF9" fillOpacity="0.92" transform="rotate(28 24 24)" />
-      <path d="M21.4 16.9 C 26 20.5, 22 27.5, 26.6 31.1" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" transform="rotate(28 24 24) translate(0 0)" />
+      <circle cx="24" cy="24" r="16.5" fill="none" stroke={contrastText(color) === '#292421' ? '#2A1D1A' : '#FFFDF9'} strokeOpacity="0.5" strokeWidth="1.4" strokeDasharray="2.2 2.6" />
+      <StampGlyph icon={icon} color={color} />
     </svg>
   );
 }
@@ -71,10 +111,11 @@ export function EmptySlot({ size = 44, label }: { size?: number; label?: string 
  * The stamp grid: N stamp slots followed by the reward slot.
  * `fresh` marks the most recent stamps for the press-in animation.
  */
-export function StampGrid({ required, filled, color, fresh = 0, size = 44, className, ariaLabel }: {
+export function StampGrid({ required, filled, color, icon, fresh = 0, size = 44, className, ariaLabel }: {
   required: number;
   filled: number;
   color?: string;
+  icon?: string;
   fresh?: number;
   size?: number;
   className?: string;
@@ -86,7 +127,7 @@ export function StampGrid({ required, filled, color, fresh = 0, size = 44, class
     <div role="img" aria-label={ariaLabel} className={cn('grid justify-items-center gap-x-2 gap-y-2.5', className)} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
       {Array.from({ length: required }, (_, i) =>
         i < filled ? (
-          <StampMark key={i} index={i} color={color} animate={i >= filled - fresh} size={size} />
+          <StampMark key={i} index={i} color={color} icon={icon} animate={i >= filled - fresh} size={size} />
         ) : (
           <span key={i} className="text-espresso">
             <EmptySlot size={size} label={String(i + 1)} />

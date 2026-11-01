@@ -36,7 +36,18 @@ import type { WalletCafe } from '../../ui/layouts/WalletLayout';
 import { randomCode } from '../auth/crypto';
 
 function walletCafe(c: PublicCafe): WalletCafe {
-  return { name: c.name, slug: c.slug, logoUrl: c.logoUrl, primaryColour: c.primaryColour, isDemo: c.isDemo };
+  return {
+    name: c.name,
+    slug: c.slug,
+    logoUrl: c.logoUrl,
+    bannerUrl: c.bannerUrl,
+    primaryColour: c.primaryColour,
+    secondaryColour: c.secondaryColour,
+    layout: c.settings.pageLayout,
+    tagline: c.settings.tagline,
+    stampIcon: c.settings.stampIcon,
+    isDemo: c.isDemo,
+  };
 }
 
 async function referralSetup(cafe: PublicCafe) {
@@ -56,6 +67,7 @@ async function referralSetup(cafe: PublicCafe) {
 }
 
 async function describeGrant(businessId: string, g: { kind: string; rewardId?: string; programmeId?: string; amount?: number }, locale: 'en' | 'tr') {
+  if (g.kind === 'none') return '';
   if (g.kind === 'voucher') {
     const r = await maybeOne<{ name: string }>(db, 'select name from rewards where id = $1 and business_id = $2', [g.rewardId, businessId]);
     return r?.name ?? '';
@@ -83,11 +95,12 @@ async function cafePage(ctx: Ctx, cafe: PublicCafe, extra: { errors?: Record<str
   let state: 'guest' | 'signed-in' | 'member' | 'unavailable' = 'guest';
   if (cafe.status !== 'active' || programmes.length === 0) state = 'unavailable';
   else if (ctx.user) state = (await membershipFor(ctx, cafe)) ? 'member' : 'signed-in';
-  let referral: { code: string; valid: boolean } | null = null;
+  let referral: { code: string; valid: boolean; on: 'join' | 'first_visit'; friendReward: string } | null = null;
   const ref = (ctx.query.get('ref') ?? extra.values?.ref ?? '').trim().toUpperCase();
   if (ref && /^[A-Z2-9]{6,10}$/.test(ref)) {
     const ok = await maybeOne(db, `select 1 from loyalty_memberships where business_id = $1 and referral_code = $2 and status = 'active'`, [cafe.id, ref]);
-    referral = { code: ref, valid: Boolean(ok) };
+    const cfg = ok ? await referralSetup(cafe) : null;
+    referral = { code: ref, valid: Boolean(ok), on: cfg?.qualifyOn ?? 'first_visit', friendReward: cfg ? await describeGrant(cafe.id, cfg.referredGrant, ctx.locale) : '' };
   }
   return render(
     ctx,
@@ -233,7 +246,9 @@ export function customerRoutes(r: Router) {
     await tx((q) => maybeIssueBirthdayReward(q, { businessId: w.cafe.id, membershipId: w.membershipId })).catch(() => undefined);
     const view = (await loadMemberView(db, w.cafe, w.membershipId))!;
     const offers = await offersForMember(w.cafe, w.membershipId);
-    return render(ctx, <WalletCardPage cafe={walletCafe(w.cafe)} view={view} offers={offers} welcome={ctx.query.get('welcome') === '1'} referralsOn={w.referralsOn} tz={w.cafe.timezone} />, {
+    const refCfg = w.referralsOn ? await referralSetup(w.cafe) : null;
+    const referralPitch = refCfg ? await describeGrant(w.cafe.id, refCfg.referrerGrant, ctx.locale) : null;
+    return render(ctx, <WalletCardPage cafe={walletCafe(w.cafe)} view={view} offers={offers} welcome={ctx.query.get('welcome') === '1'} referralsOn={w.referralsOn} referralPitch={referralPitch} tz={w.cafe.timezone} />, {
       title: w.cafe.name,
       noindex: true,
       themeColor: w.cafe.primaryColour,
@@ -283,11 +298,14 @@ export function customerRoutes(r: Router) {
     if (isReplyLike(w)) return w;
     const view = (await loadMemberView(db, w.cafe, w.membershipId, { activityLimit: 1 }))!;
     const cfg = await referralSetup(w.cafe);
-    let rewards: { mine: string; friend: string } | null = null;
-    if (cfg) rewards = { mine: await describeGrant(w.cafe.id, cfg.referrerGrant, ctx.locale), friend: await describeGrant(w.cafe.id, cfg.referredGrant, ctx.locale) };
-    const joined = await one<{ n: number }>(db, 'select count(*)::int as n from referrals where referrer_membership_id = $1', [w.membershipId]);
+    let rewards: { mine: string; friend: string; on: 'join' | 'first_visit'; name: string } | null = null;
+    if (cfg) {
+      const name = (await maybeOne<{ name: string }>(db, `select name from campaigns where business_id = $1 and campaign_type = 'referral' and status = 'published' order by created_at limit 1`, [w.cafe.id]))?.name ?? '';
+      rewards = { mine: await describeGrant(w.cafe.id, cfg.referrerGrant, ctx.locale), friend: await describeGrant(w.cafe.id, cfg.referredGrant, ctx.locale), on: cfg.qualifyOn, name };
+    }
+    const joined = await one<{ n: number; q: number }>(db, `select count(*)::int as n, count(*) filter (where status = 'qualified')::int as q from referrals where referrer_membership_id = $1`, [w.membershipId]);
     const link = cfg ? `${config().APP_URL.replace(/\/$/, '')}/c/${w.cafe.slug}?ref=${view.membership.referralCode}` : null;
-    return render(ctx, <WalletReferPage cafe={walletCafe(w.cafe)} view={view} link={link} rewards={rewards} joined={joined.n} />, { title: ctx.t.wallet.referTitle, noindex: true });
+    return render(ctx, <WalletReferPage cafe={walletCafe(w.cafe)} view={view} link={link} rewards={rewards} joined={joined.n} rewarded={joined.q} />, { title: ctx.t.wallet.referTitle, noindex: true });
   });
 
   r.get('/api/wallet/:slug/state', async (ctx) => {
@@ -302,7 +320,7 @@ export function customerRoutes(r: Router) {
     if (isReplyLike(w)) return json({ error: { code: 'unauthorised', message: 'Sign in again.' } }, 401);
     const m = await one<{ member_code: string }>(db, 'select member_code from loyalty_memberships where id = $1', [w.membershipId]);
     const { token, expiresAt } = issueMemberToken(w.membershipId);
-    const svg = qrSvg(memberScanUrl(token), { ecc: 'M', margin: 2, title: 'Member code' });
+    const svg = qrSvg(memberScanUrl(token), { ecc: 'M', margin: 4, title: 'Member code' });
     return json({ svg, expiresAt: expiresAt.toISOString(), memberCode: formatMemberCode(m.member_code) });
   });
 

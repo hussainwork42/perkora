@@ -15,6 +15,7 @@ export interface PublicCafe {
   address: string | null;
   website: string | null;
   logoUrl: string | null;
+  bannerUrl: string | null;
   primaryColour: string;
   secondaryColour: string;
   timezone: string;
@@ -48,6 +49,7 @@ function toPublicCafe(b: any): PublicCafe {
     address: b.address,
     website: b.website,
     logoUrl: logoUrl(b.logo_upload_id),
+    bannerUrl: logoUrl(b.banner_upload_id ?? null),
     primaryColour: b.primary_colour,
     secondaryColour: b.secondary_colour,
     timezone: b.timezone,

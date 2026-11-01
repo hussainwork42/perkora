@@ -70,7 +70,9 @@ The demo password is the `DEMO_PASSWORD` you configured. The sign-in page also s
 - **Team.** Under **Team**, owners invite staff by link and choose what each person may do (for example, whether they can correct balances).
 - **Customer privacy.** In the customer's **Account** page, customers can download their data or delete their account.
 - **Turkish.** Switch the customer wallet and the terminal to TR.
-- **Subscription.** Plans are introductory proposals. No card is taken in the app; activation is arranged directly.
+- **Referrals.** Under **Referrals**, show how a café turns on bring-a-friend rewards; Maya's card shows an **Invite friends** card with a WhatsApp button.
+- **Make it yours.** Under **Café Settings → Branding**, switch to the photo-banner layout or change the stamp design and watch the live preview.
+- **Subscription.** Two plans: Basic €9 and Premium €19, as introductory proposals. No card is taken in the app; activation is arranged directly.
 
 ## Things not to promise (see KNOWN_LIMITATIONS.md)
 
@@ -81,4 +83,4 @@ Do not promise any of the following, because none of them exist yet:
 - POS integration;
 - online payment.
 
-Also test camera scanning on the café's own tablet before promising it. Typing the code always works.
+Camera scanning works in all modern browsers over https, but test it on the café's own tablet before promising it. Typing the code always works.

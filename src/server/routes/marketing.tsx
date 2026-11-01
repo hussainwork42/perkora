@@ -3,12 +3,14 @@ import type { Router } from '../http/router';
 import type { Ctx } from '../http/core';
 import { field, formObject, readBody, redirect, safeNext, setCookie, reply } from '../http/core';
 import { render } from '../http/render';
-import { db } from '../db';
+import { db, many } from '../db';
+import { config } from '../config';
 import { loadPlans } from '../domain/plans';
 import { rateLimit } from '../auth/ratelimit';
 import { isLocale } from '../../shared/i18n';
 import { HomePage } from '../../ui/pages/marketing/Home';
 import { DemoRequestPage, FeaturesPage, LegalPage, PricingPage } from '../../ui/pages/marketing/Pages';
+import { CafesPage, StartPage } from '../../ui/pages/marketing/Start';
 import { DomainError } from '../domain/errors';
 
 const demoSchema = z.object({
@@ -70,6 +72,23 @@ export function marketingRoutes(r: Router) {
   r.get('/pricing', async (ctx) => {
     const plans = await loadPlans(db);
     return render(ctx, <PricingPage plans={plans} />, { title: ctx.t.pricing.metaTitle });
+  });
+  r.get('/start', (ctx) => render(ctx, <StartPage />, { title: ctx.t.start.metaTitle, description: ctx.t.start.intro }));
+  r.get('/cafes', async (ctx) => {
+    const q = (ctx.query.get('q') ?? '').trim().slice(0, 80);
+    const like = '%' + q.replace(/[\\%_]/g, (c) => '\\' + c) + '%';
+    const rows = await many<any>(
+      db,
+      `select b.slug, b.name, b.city, b.description, b.logo_upload_id, b.primary_colour, b.is_demo
+         from businesses b
+        where b.status = 'active' and b.list_in_directory and (not b.is_demo or $1)
+          and exists (select 1 from loyalty_programmes p where p.business_id = b.id and p.status = 'active')
+          and ($2 = '' or b.name ilike $3 or b.city ilike $3)
+        order by b.is_demo, b.name limit 200`,
+      [config().DEMO_MODE, q, like],
+    );
+    const cafes = rows.map((r) => ({ slug: r.slug, name: r.name, city: r.city, description: r.description, logoUrl: r.logo_upload_id ? `/media/${r.logo_upload_id}` : null, primaryColour: r.primary_colour, isDemo: r.is_demo }));
+    return render(ctx, <CafesPage cafes={cafes} q={q} />, { title: ctx.t.cafes.metaTitle, description: ctx.t.cafes.intro });
   });
   r.get('/demo', (ctx) => render(ctx, <DemoRequestPage kind="demo" />, { title: ctx.t.demo.metaTitle }));
   r.post('/demo', (ctx) => demoPost(ctx, 'demo'));

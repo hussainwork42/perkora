@@ -1,4 +1,5 @@
 import type { Router } from '../http/router';
+import { loadReferralProgramme, saveReferralProgramme } from '../domain/referrals';
 import type { Ctx } from '../http/core';
 import { field, formObject, readBody, redirect } from '../http/core';
 import { render } from '../http/render';
@@ -10,7 +11,8 @@ import { DomainError } from '../domain/errors';
 import { emailSchema } from '../domain/accounts';
 import { isValidTimezone } from '../../shared/time';
 import { qrSvg } from '../../shared/qr/qrcode';
-import { detectImage } from './dashboard-settings';
+import { detectImage, parseLook, storeImage } from './dashboard-settings';
+import { businessSettingsSchema } from '../../shared/schemas';
 import { OnboardingDone, OnboardingStep1, OnboardingStep2, OnboardingStep3, OnboardingStep4, OnboardingStep5 } from '../../ui/pages/Onboarding';
 import crypto from 'node:crypto';
 
@@ -68,6 +70,24 @@ async function programmeSummaries(bizId: string, currency: string) {
   return out;
 }
 
+function step4(ctx: Ctx, biz: { slug: string; settings: any }, b: any, maxStep: number, values?: Record<string, string>, errors: Record<string, string> = {}, status = 200) {
+  const url = `${appUrl()}/c/${biz.slug}`;
+  const s = biz.settings;
+  return render(
+    ctx,
+    <OnboardingStep4
+      svg={qrSvg(url, { ecc: 'Q' })}
+      url={url}
+      slug={biz.slug}
+      maxStep={maxStep}
+      cafe={{ name: b.name, logoUrl: b.logo_upload_id ? `/media/${b.logo_upload_id}` : null, bannerUrl: b.banner_upload_id ? `/media/${b.banner_upload_id}` : null, primaryColour: b.primary_colour, secondaryColour: b.secondary_colour }}
+      values={values ?? { page_layout: s.pageLayout, stamp_icon: s.stampIcon, tagline: s.tagline }}
+      errors={errors}
+    />,
+    { title: 'Make it yours', noindex: true, status },
+  );
+}
+
 export function onboardingRoutes(r: Router) {
   r.get('/onboarding', async (ctx) => {
     if (!ctx.user) return redirect(ctx, '/get-started');
@@ -111,12 +131,15 @@ export function onboardingRoutes(r: Router) {
         const pr = await maybeOne<any>(db, `select * from rewards where programme_id = $1 and points_cost is not null order by created_at limit 1`, [points.id]);
         Object.assign(values, { pointsPerUnit: String(points.config.pointsPerUnit ?? 1), pointsRewardName: pr?.name ?? '', pointsRewardCost: pr ? String(pr.points_cost) : '', terms: values.terms ?? points.terms ?? '' });
       }
+      const ref = await loadReferralProgramme(db, biz.id);
+      if (ref) {
+        values.referral_on = ref.enabled ? '1' : '0';
+        if (ref.config.referrerGrant.kind === 'bonus') values.referral_referrer = String(ref.config.referrerGrant.amount);
+        values.referral_referred = ref.config.referredGrant.kind === 'bonus' ? String(ref.config.referredGrant.amount) : '';
+      }
       return render(ctx, <OnboardingStep3 values={values} hasStamps={Boolean(stamps)} hasPoints={Boolean(points)} currency={biz.currency} maxStep={maxStep} />, { title: 'First reward', noindex: true });
     }
-    if (step === 4) {
-      const url = `${appUrl()}/c/${biz.slug}`;
-      return render(ctx, <OnboardingStep4 svg={qrSvg(url, { ecc: 'Q' })} url={url} slug={biz.slug} maxStep={maxStep} />, { title: 'QR code', noindex: true });
-    }
+    if (step === 4) return step4(ctx, biz, b, maxStep);
     const card = await maybeOne<any>(db, `select p.config from loyalty_programmes p where p.business_id = $1 and p.programme_type = 'stamps' limit 1`, [biz.id]);
     return render(ctx, <OnboardingStep5 cafe={{ ...b, stamps_required: card?.config?.stampsRequired ?? 9 }} programmes={await programmeSummaries(biz.id, biz.currency)} plan={biz.plan.name} maxStep={maxStep} />, {
       title: 'Review',
@@ -151,7 +174,7 @@ export function onboardingRoutes(r: Router) {
     if (Object.keys(errors).length) return render(ctx, <OnboardingStep1 values={v} errors={errors} maxStep={biz?.onboardingStep ?? 1} />, { title: 'Set up your café', status: 422, noindex: true });
     const tz = isValidTimezone(v.timezone) ? v.timezone : 'Asia/Famagusta';
     const currency = v.default_currency === 'TRY' ? 'TRY' : 'EUR';
-    const planId = ['starter', 'growth', 'premium'].includes(v.plan) ? v.plan : 'growth';
+    const planId = ['basic', 'premium'].includes(v.plan) ? v.plan : 'premium';
     const bizId = await tx(async (q) => {
       let id: string;
       const cols = [v.name.trim(), v.owner_name.trim(), v.business_email.trim().toLowerCase(), v.phone?.trim() || null, v.city.trim(), v.address?.trim() || null, v.website?.trim() || null, primary, secondary, tz, currency];
@@ -263,6 +286,27 @@ export function onboardingRoutes(r: Router) {
         const pr = await maybeOne<{ id: string }>(q, `select id from rewards where programme_id = $1 and points_cost is not null order by created_at limit 1`, [points.id]);
         if (pr) await q.query(`update rewards set name = $2, points_cost = $3, updated_at = now() where id = $1`, [pr.id, v.pointsRewardName.trim(), n(v.pointsRewardCost)]);
       }
+      // bring-a-friend rewards on the main programme (stamps if there is a card, otherwise points)
+      if (v.referral_seen === '1') {
+        const target = stamps ?? points;
+        const existing = await loadReferralProgramme(q, biz.id);
+        const on = v.referral_on === '1' && Boolean(target);
+        if (target && (on || existing)) {
+          const a = Math.min(1000, Math.max(1, n(v.referral_referrer) || 1));
+          const b = Math.min(1000, Math.max(0, n(v.referral_referred) || 0));
+          await saveReferralProgramme(q, biz, {
+            enabled: on,
+            name: existing?.name ?? 'Bring a friend',
+            description: null,
+            config: {
+              referrerGrant: { kind: 'bonus', programmeId: target.id, amount: a },
+              referredGrant: b > 0 ? { kind: 'bonus', programmeId: target.id, amount: b } : { kind: 'none' },
+              maxPerReferrer: existing?.config.maxPerReferrer ?? 10,
+              qualifyOn: existing?.config.qualifyOn ?? 'first_visit',
+            },
+          });
+        }
+      }
       await q.query(`update businesses set onboarding_step = greatest(onboarding_step, 4), updated_at = now() where id = $1`, [biz.id]);
     });
     return redirect(ctx, '/onboarding?step=4');
@@ -271,7 +315,29 @@ export function onboardingRoutes(r: Router) {
   r.post('/onboarding/4', async (ctx) => {
     const biz = await ownerBusiness(ctx);
     if (!biz) return redirect(ctx, '/onboarding');
-    await db.query(`update businesses set onboarding_step = greatest(onboarding_step, 5), updated_at = now() where id = $1`, [biz.id]);
+    const body = await readBody(ctx, 5 * 1024 * 1024);
+    const errors: Record<string, string> = {};
+    const look = parseLook(body, errors);
+    let banner: string | null | undefined;
+    const file = body.files.find((f) => f.field === 'banner' && f.data.length > 0);
+    if (file) {
+      try {
+        banner = await storeImage(biz, ctx.user!.id, file, 'banner');
+      } catch (e) {
+        if (e instanceof DomainError) errors.banner = e.message;
+        else throw e;
+      }
+    } else if (field(body, 'remove_banner') === '1') banner = null;
+    if (Object.keys(errors).length) {
+      const b = await one<any>(db, 'select * from businesses where id = $1', [biz.id]);
+      return step4(ctx, biz, b, biz.onboardingStep, { page_layout: look.pageLayout, stamp_icon: look.stampIcon, tagline: field(body, 'tagline') }, errors, 422);
+    }
+    const settings = businessSettingsSchema.parse({ ...biz.settings, ...look });
+    await db.query(
+      `update businesses set settings = $2, banner_upload_id = case when $3 then $4::uuid else banner_upload_id end,
+          onboarding_step = greatest(onboarding_step, 5), updated_at = now() where id = $1`,
+      [biz.id, settings, banner !== undefined, banner ?? null],
+    );
     return redirect(ctx, '/onboarding?step=5');
   });
 

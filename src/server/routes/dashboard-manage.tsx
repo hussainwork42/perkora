@@ -25,6 +25,9 @@ import {
   RewardsPage,
 } from '../../ui/pages/dashboard/Manage';
 import { OfferCard } from '../../ui/pages/customer/parts';
+import { ReferralsPage } from '../../ui/pages/dashboard/Referrals';
+import { loadReferralProgramme, referralStats, saveReferralProgramme } from '../domain/referrals';
+import type { Reply } from '../http/core';
 
 const UUID = /^[0-9a-f-]{36}$/;
 const int = (s: string | undefined) => (s && /^-?\d+$/.test(s.trim()) ? Number(s) : null);
@@ -68,7 +71,116 @@ async function benefitLabel(biz: BusinessContext, c: any): Promise<string> {
   return 'Information only';
 }
 
+
+/** Plain-English description of a referral reward, for the dashboard. */
+async function grantText(biz: BusinessContext, g: { kind: string; rewardId?: string; programmeId?: string; amount?: number }): Promise<string> {
+  if (g.kind === 'none') return 'nothing';
+  if (g.kind === 'voucher') {
+    const r = await maybeOne<{ name: string }>(db, 'select name from rewards where id = $1 and business_id = $2', [g.rewardId, biz.id]);
+    return r ? `a ${r.name}` : 'a reward';
+  }
+  const p = await maybeOne<{ programme_type: string }>(db, 'select programme_type from loyalty_programmes where id = $1 and business_id = $2', [g.programmeId, biz.id]);
+  const n = g.amount ?? 0;
+  return p?.programme_type === 'points' ? `${n} points` : `${n} ${n === 1 ? 'stamp' : 'stamps'}`;
+}
+
+async function referralsPage(ctx: Ctx, biz: BusinessContext, values?: Record<string, string>, errors: Record<string, string> = {}, status = 200): Promise<Reply> {
+  const locked = !hasFeature(biz, 'referrals');
+  const programmes = await many<{ id: string; name: string; programme_type: string }>(
+    db,
+    `select id, name, programme_type from loyalty_programmes where business_id = $1 and status = 'active' order by created_at`,
+    [biz.id],
+  );
+  const rewards = await grantRewardsFor(biz);
+  const current = await loadReferralProgramme(db, biz.id);
+  const stats = await referralStats(db, biz.id);
+  if (!values) {
+    const c = current?.config;
+    const fromGrant = (prefix: string, g: any): Record<string, string> =>
+      !g
+        ? {}
+        : g.kind === 'voucher'
+          ? { [`${prefix}_kind`]: 'voucher', [`${prefix}_reward`]: g.rewardId }
+          : g.kind === 'bonus'
+            ? { [`${prefix}_kind`]: 'bonus', [`${prefix}_amount`]: String(g.amount), [`${prefix}_programme`]: g.programmeId }
+            : { [`${prefix}_kind`]: 'none' };
+    values = current
+      ? {
+          enabled: current.enabled ? '1' : '',
+          name: current.name,
+          qualify_on: c!.qualifyOn,
+          max_per_referrer: String(c!.maxPerReferrer),
+          ...fromGrant('referrer', c!.referrerGrant),
+          ...fromGrant('referred', c!.referredGrant),
+        }
+      : { enabled: '', name: 'Bring a friend', qualify_on: 'first_visit', max_per_referrer: '10', referrer_kind: 'bonus', referrer_amount: '1', referred_kind: 'bonus', referred_amount: '1' };
+  }
+  let summary: string | null = null;
+  if (current?.enabled) {
+    const mine = await grantText(biz, current.config.referrerGrant);
+    const friend = await grantText(biz, current.config.referredGrant);
+    summary = `“${current.name}”: invite a friend and get ${mine} ${current.config.qualifyOn === 'join' ? 'as soon as they join' : 'after their first purchase'}.${friend !== 'nothing' ? ` Your friend gets ${friend}.` : ''}`;
+  }
+  return render(ctx, <ReferralsPage biz={biz} values={values} errors={errors} programmes={programmes} rewards={rewards} stats={stats} summary={summary} locked={locked} />, {
+    title: 'Referrals',
+    noindex: true,
+    status,
+  });
+}
+
 export function dashboardManageRoutes(r: Router) {
+  r.get('/dashboard/referrals', withBiz({ owner: true }, (ctx, biz) => referralsPage(ctx, biz)));
+  r.post(
+    '/dashboard/referrals',
+    withBiz({ owner: true }, async (ctx, biz) => {
+      assertFeature(biz, 'referrals', 'Referral rewards');
+      const v = formObject(await readBody(ctx));
+      const errors: Record<string, string> = {};
+      const programmes = await many<{ id: string }>(db, `select id from loyalty_programmes where business_id = $1 and status = 'active'`, [biz.id]);
+      const rewards = await grantRewardsFor(biz);
+      const grant = (who: 'referrer' | 'referred'): any => {
+        const kind = v[`${who}_kind`];
+        if (kind === 'none' && who === 'referred') return { kind: 'none' };
+        if (kind === 'voucher') {
+          if (!rewards.some((r) => r.id === v[`${who}_reward`])) {
+            errors[`${who}_reward`] = 'Choose a reward.';
+            return null;
+          }
+          return { kind: 'voucher', rewardId: v[`${who}_reward`] };
+        }
+        const amount = int(v[`${who}_amount`]) ?? 0;
+        if (amount < 1 || amount > 1000) {
+          errors[`${who}_amount`] = 'Enter a number from 1 to 1,000.';
+          return null;
+        }
+        if (!programmes.some((p) => p.id === v[`${who}_programme`])) {
+          errors.form = 'Choose which stamp card or points programme the reward goes on.';
+          return null;
+        }
+        return { kind: 'bonus', programmeId: v[`${who}_programme`], amount };
+      };
+      const name = (v.name ?? '').trim() || 'Bring a friend';
+      if (name.length > 80) errors.name = 'Use up to 80 characters.';
+      const max = int(v.max_per_referrer) ?? 10;
+      if (max < 1 || max > 100) errors.max_per_referrer = 'Enter a number from 1 to 100.';
+      const enabled = v.enabled === '1';
+      let config: any = null;
+      if (!programmes.length) {
+        if (enabled) errors.form = 'Set up a stamp card or points programme first.';
+      } else {
+        const rg = grant('referrer');
+        const dg = grant('referred');
+        const parsed = referralConfigSchema.safeParse({ referrerGrant: rg, referredGrant: dg, maxPerReferrer: max, qualifyOn: v.qualify_on === 'join' ? 'join' : 'first_visit' });
+        if (parsed.success) config = parsed.data;
+        else if (!Object.keys(errors).length) errors.form = 'Check the referral rewards.';
+      }
+      if (Object.keys(errors).length || !config) return referralsPage(ctx, biz, v, Object.keys(errors).length ? errors : { form: 'Check the referral rewards.' }, 422);
+      const id = await tx((q) => saveReferralProgramme(q, biz, { enabled, name, description: null, config }));
+      await audit(biz, ctx.user!.id, 'referrals.updated', 'campaign', id, { enabled, qualifyOn: config.qualifyOn });
+      return redirect(ctx, '/dashboard/referrals', { type: 'success', message: enabled ? 'Referral rewards are on. Customers can now invite friends from their card.' : 'Referral settings saved. Rewards are off.' });
+    }),
+  );
+
   /* ================================================ programmes */
   r.get(
     '/dashboard/programmes',
@@ -697,7 +809,7 @@ export function dashboardManageRoutes(r: Router) {
       if (c.status !== 'published') {
         const running = await one<{ n: number }>(
           db,
-          `select count(*)::int as n from campaigns where business_id = $1 and status = 'published' and (end_date is null or end_date >= $2) and id <> $3`,
+          `select count(*)::int as n from campaigns where business_id = $1 and status = 'published' and campaign_type <> 'referral' and (end_date is null or end_date >= $2) and id <> $3`,
           [biz.id, today, c.id],
         );
         if (running.n >= biz.plan.features.limits.activeCampaigns)
@@ -734,7 +846,7 @@ export function dashboardManageRoutes(r: Router) {
         if (c.end_date && c.end_date < today) return redirect(ctx, `/dashboard/campaigns/${c.id}`, { type: 'error', message: 'The end date has passed. Edit the dates first.' });
         const running = await one<{ n: number }>(
           db,
-          `select count(*)::int as n from campaigns where business_id = $1 and status = 'published' and (end_date is null or end_date >= $2) and id <> $3`,
+          `select count(*)::int as n from campaigns where business_id = $1 and status = 'published' and campaign_type <> 'referral' and (end_date is null or end_date >= $2) and id <> $3`,
           [biz.id, today, c.id],
         );
         if (running.n >= biz.plan.features.limits.activeCampaigns) return redirect(ctx, `/dashboard/campaigns/${c.id}`, { type: 'error', message: 'Your plan’s running-campaign limit has been reached.' });

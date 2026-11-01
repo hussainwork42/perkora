@@ -12,6 +12,7 @@ export function MarketingLayout({ children, active }: { children: ReactNode; act
     { href: '/features', label: t.nav.features, key: 'features' },
     { href: '/#how-it-works', label: t.nav.howItWorks, key: 'how' },
     { href: '/pricing', label: t.nav.pricing, key: 'pricing' },
+    { href: '/cafes', label: t.nav.findCafe, key: 'cafes' },
   ];
   return (
     <div className="flex min-h-screen flex-col">
@@ -47,7 +48,7 @@ export function MarketingLayout({ children, active }: { children: ReactNode; act
             <a href="/demo" className="btn btn-secondary btn-sm">
               {t.common.bookDemo}
             </a>
-            <a href="/get-started" className="btn btn-primary btn-sm">
+            <a href="/start" className="btn btn-primary btn-sm">
               {t.common.getStarted}
             </a>
           </div>
@@ -58,7 +59,7 @@ export function MarketingLayout({ children, active }: { children: ReactNode; act
                 links,
                 signIn: user ? { href: '/home', label: t.nav.dashboard } : { href: '/sign-in', label: t.common.signIn },
                 demo: { href: '/demo', label: t.common.bookDemo },
-                start: { href: '/get-started', label: t.common.getStarted },
+                start: { href: '/start', label: t.common.getStarted },
                 menuLabel: t.nav.menu,
                 closeLabel: t.common.close,
               }}
@@ -92,7 +93,7 @@ export function Footer() {
             { href: '/#product', label: t.nav.product },
             { href: '/features', label: t.nav.features },
             { href: '/pricing', label: t.nav.pricing },
-            { href: '/c/perkora-demo-cafe', label: 'Demo café' },
+            { href: '/cafes', label: t.nav.findCafe },
           ]}
         />
         <FooterCol
@@ -101,6 +102,7 @@ export function Footer() {
             { href: '/contact', label: t.nav.contact },
             { href: '/demo', label: t.common.bookDemo },
             { href: '/sign-in', label: t.common.signIn },
+            { href: '/start', label: t.common.getStarted },
           ]}
         />
         <FooterCol

@@ -23,6 +23,8 @@ export interface BusinessContext {
   primaryColour: string;
   secondaryColour: string;
   logoUploadId: string | null;
+  bannerUploadId: string | null;
+  listInDirectory: boolean;
   isDemo: boolean;
   settings: BusinessSettings;
   role: 'owner' | 'staff';
@@ -86,6 +88,8 @@ export async function loadBusinessContext(ctx: Ctx): Promise<BusinessContext | n
     primaryColour: b.primary_colour,
     secondaryColour: b.secondary_colour,
     logoUploadId: b.logo_upload_id,
+    bannerUploadId: b.banner_upload_id ?? null,
+    listInDirectory: b.list_in_directory !== false,
     isDemo: b.is_demo,
     settings: parseSettings(b.settings),
     role: b.role,

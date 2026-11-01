@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useQrScanner } from './useQrScanner';
 import { LuCamera, LuCheck, LuChevronLeft, LuCircleAlert, LuGift, LuLoaderCircle, LuMinus, LuPlus, LuSearch, LuStamp, LuStar, LuX } from 'react-icons/lu';
 import { parseMoneyToMinor } from '../../shared/format';
 
@@ -643,67 +644,21 @@ function SuccessPanel({ s, success, countdown, onNext }: { s: S; success: { titl
 }
 
 function Scanner({ s, onCode, onClose }: { s: S; onCode: (raw: string) => void; onClose: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [problem, setProblem] = useState<string | null>(null);
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-    let stopped = false;
-    let found = false;
-    const start = async () => {
-      const BD = (window as any).BarcodeDetector;
-      if (!navigator.mediaDevices?.getUserMedia || !BD) {
-        setProblem(s.cameraUnsupported);
-        return;
-      }
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-      } catch {
-        setProblem(s.cameraDenied);
-        return;
-      }
-      if (stopped) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
-      const video = videoRef.current!;
-      video.srcObject = stream;
-      await video.play().catch(() => undefined);
-      const detector = new BD({ formats: ['qr_code'] });
-      const loop = async () => {
-        if (stopped || found) return;
-        try {
-          const codes = await detector.detect(video);
-          const raw = codes?.[0]?.rawValue as string | undefined;
-          if (raw) {
-            found = true;
-            onCode(raw);
-            return;
-          }
-        } catch {
-          /* frame not ready */
-        }
-        setTimeout(loop, 180);
-      };
-      loop();
-    };
-    start();
-    return () => {
-      stopped = true;
-      stream?.getTracks().forEach((t) => t.stop());
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { videoRef, problem, ready } = useQrScanner(onCode);
+  const message = problem === 'denied' ? s.cameraDenied : problem === 'insecure' ? s.cameraInsecure : problem === 'nocamera' ? s.cameraMissing : problem ? s.cameraUnsupported : null;
   return (
     <div>
-      {problem ? (
+      {message ? (
         <div role="alert" className="rounded-[12px] bg-warning-tint px-4 py-3 text-[14.5px] text-warning-ink">
-          {problem}
+          {message}
         </div>
       ) : (
         <div className="relative overflow-hidden rounded-[14px] bg-coffee">
-          <video ref={videoRef} className="aspect-[4/3] w-full object-cover" muted playsInline aria-label={s.scanning} />
+          <video ref={videoRef} className="aspect-[4/3] w-full object-cover" muted playsInline autoPlay aria-label={s.scanning} />
           <div className="pointer-events-none absolute inset-8 rounded-[18px] border-2 border-cream/80" aria-hidden="true" />
-          <p className="absolute inset-x-0 bottom-3 text-center text-[13.5px] text-cream">{s.scanning}</p>
+          <p className="absolute inset-x-0 bottom-3 text-center text-[13.5px] text-cream" aria-live="polite">
+            {ready ? s.scanning : s.cameraStarting}
+          </p>
         </div>
       )}
       <button type="button" className="btn btn-secondary mt-3 w-full" onClick={onClose}>

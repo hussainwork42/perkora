@@ -39,114 +39,99 @@ export async function loadPlans(q: Queryable, includeHidden = false): Promise<Pl
   });
 }
 
-/** Default plan catalogue (inserted by the seed; editable by the platform admin). */
+/** Default plan catalogue (inserted by migration 002 and the seed; editable by the platform admin). */
 export const DEFAULT_PLANS = [
   {
-    id: 'starter',
-    name: 'Starter',
-    description: 'A digital stamp card for one café.',
-    monthly_price_minor: 900,
-    is_recommended: false,
-    sort_order: 1,
-    feature_configuration: {
-      features: { stamps: true, csvExport: true },
-      limits: { locations: 1, programmes: 1, staffSeats: 2, activeCampaigns: 0 },
-      inheritsFrom: null,
-      highlights: [
-        'One café location',
-        'One digital loyalty programme',
-        'Digital stamp card',
-        'Basic rewards',
-        'QR-code enrolment',
-        'Basic customer list',
-        'Basic visit and redemption reporting',
-      ],
-      highlightsTr: [
-        'Bir kafe şubesi',
-        'Bir dijital sadakat programı',
-        'Dijital damga kartı',
-        'Temel ödüller',
-        'QR kod ile katılım',
-        'Temel müşteri listesi',
-        'Temel ziyaret ve ödül kullanım raporları',
-      ],
-    },
-  },
-  {
-    id: 'growth',
-    name: 'Growth',
-    description: 'Points, streaks and offers to bring regulars back.',
-    monthly_price_minor: 1900,
-    is_recommended: true,
-    sort_order: 2,
-    feature_configuration: {
-      features: { stamps: true, points: true, challenges: true, offers: true, campaigns: true, referrals: true, segments: true, inactiveReport: true, csvExport: true },
-      limits: { locations: 1, programmes: 2, staffSeats: 5, activeCampaigns: 5 },
-      inheritsFrom: 'Starter',
-      highlights: [
-        'Points-based loyalty',
-        'Configurable visit streaks',
-        'Promotional offers',
-        'Referral functionality',
-        'Customer segmentation',
-        'Inactive-customer reporting',
-        'Campaign management',
-        'Improved analytics',
-      ],
-      highlightsTr: [
-        'Puan tabanlı sadakat',
-        'Ayarlanabilir ziyaret serileri',
-        'Promosyon teklifleri',
-        'Arkadaş getirme özelliği',
-        'Müşteri segmentasyonu',
-        'Gelmeyen müşteri raporları',
-        'Kampanya yönetimi',
-        'Gelişmiş analizler',
-      ],
-    },
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    description: 'Deeper insights and more flexible campaigns.',
-    monthly_price_minor: 3500,
-    is_recommended: false,
-    sort_order: 3,
-    feature_configuration: {
-      features: {
-        stamps: true,
-        points: true,
-        challenges: true,
-        offers: true,
-        campaigns: true,
-        referrals: true,
-        segments: true,
-        inactiveReport: true,
-        advancedInsights: true,
-        flexibleCampaignRules: true,
-        automatedWinback: true,
-        advancedReports: true,
-        csvExport: true,
-        prioritySupport: true,
+    "id": "basic",
+    "name": "Basic",
+    "description": "A digital stamp card with rewards and referrals.",
+    "monthly_price_minor": 900,
+    "is_recommended": false,
+    "sort_order": 1,
+    "feature_configuration": {
+      "features": {
+        "stamps": true,
+        "referrals": true,
+        "csvExport": true
       },
-      limits: { locations: 1, programmes: 4, staffSeats: 15, activeCampaigns: 20 },
-      inheritsFrom: 'Growth',
-      highlights: [
-        'Advanced customer insights',
-        'More flexible campaign rules',
-        'Automated win-back campaigns, when the required messaging service is configured',
-        'Advanced reports',
-        'Additional staff management capabilities',
-        'Priority support',
+      "limits": {
+        "locations": 1,
+        "programmes": 1,
+        "staffSeats": 3,
+        "activeCampaigns": 0
+      },
+      "inheritsFrom": null,
+      "highlights": [
+        "Digital stamp card",
+        "Rewards customers collect on their phone",
+        "QR code to join, no app needed",
+        "Bring-a-friend referral rewards",
+        "Your own logo, colours and banner",
+        "Customer list and visit reports",
+        "Up to 3 staff accounts"
       ],
-      highlightsTr: [
-        'Gelişmiş müşteri içgörüleri',
-        'Daha esnek kampanya kuralları',
-        'Gerekli mesajlaşma hizmeti yapılandırıldığında otomatik geri kazanma kampanyaları',
-        'Gelişmiş raporlar',
-        'Ek personel yönetimi olanakları',
-        'Öncelikli destek',
-      ],
-    },
+      "highlightsTr": [
+        "Dijital damga kartı",
+        "Müşterilerin telefonda topladığı ödüller",
+        "Katılım için QR kod, uygulama gerekmez",
+        "Arkadaşını getir ödülleri",
+        "Kendi logonuz, renkleriniz ve kapak görseliniz",
+        "Müşteri listesi ve ziyaret raporları",
+        "3 personel hesabına kadar"
+      ]
+    }
   },
+  {
+    "id": "premium",
+    "name": "Premium",
+    "description": "Points, campaigns and insights to bring regulars back more often.",
+    "monthly_price_minor": 1900,
+    "is_recommended": true,
+    "sort_order": 2,
+    "feature_configuration": {
+      "features": {
+        "stamps": true,
+        "points": true,
+        "challenges": true,
+        "offers": true,
+        "campaigns": true,
+        "referrals": true,
+        "segments": true,
+        "inactiveReport": true,
+        "advancedInsights": true,
+        "flexibleCampaignRules": true,
+        "automatedWinback": true,
+        "advancedReports": true,
+        "csvExport": true,
+        "prioritySupport": true
+      },
+      "limits": {
+        "locations": 1,
+        "programmes": 4,
+        "staffSeats": 15,
+        "activeCampaigns": 20
+      },
+      "inheritsFrom": "Basic",
+      "highlights": [
+        "Points programme as well as stamps",
+        "Campaigns and offers with your own names",
+        "Happy-hour and day-of-week offers",
+        "Visit challenges",
+        "Customer groups and win-back offers",
+        "Full analytics",
+        "Up to 15 staff accounts",
+        "Priority support"
+      ],
+      "highlightsTr": [
+        "Damganın yanında puan programı",
+        "Kendi adlarınızla kampanyalar ve teklifler",
+        "Saat ve gün bazlı teklifler",
+        "Ziyaret görevleri",
+        "Müşteri grupları ve geri kazanma teklifleri",
+        "Tam analizler",
+        "15 personel hesabına kadar",
+        "Öncelikli destek"
+      ]
+    }
+  }
 ];
