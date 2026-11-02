@@ -5,16 +5,76 @@ import { ProgressBar } from '../../components/ui';
 import { fmt, plural } from '../../../shared/i18n';
 import { dateShort, num, relative } from '../../../shared/format';
 import type { ActivityItem, ChallengeView, MemberView, OfferView, ProgrammeView, VoucherView } from '../../../server/domain/views';
-import { cn } from '../../cn';
+import { alpha, cn, contrastText, mix } from '../../cn';
+import type { ReactNode } from 'react';
 
 type Prog = MemberView['programmes'][number];
 
-export function StampCardPanel({ p, color, icon, fresh = 0 }: { p: Prog; color: string; icon?: string; fresh?: number }) {
+/** The café's colours for a wallet "pass". */
+export interface PassColours {
+  primary: string;
+  secondary: string;
+}
+
+/** A card in the café's colours, like a pass in a phone wallet. */
+export function Pass({ colours, labelledBy, children }: { colours: PassColours; labelledBy: string; children: ReactNode }) {
+  const fg = contrastText(colours.primary);
+  return (
+    <section
+      aria-labelledby={labelledBy}
+      className="rise relative overflow-hidden rounded-[26px] p-5"
+      style={{
+        color: fg,
+        background: `radial-gradient(120% 80% at 100% 0%, ${alpha(mix(colours.primary, '#ffffff', 0.35), 0.55)} 0%, transparent 60%), linear-gradient(165deg, ${mix(colours.primary, '#ffffff', 0.08)} 0%, ${colours.primary} 45%, ${mix(colours.primary, '#000000', 0.22)} 100%)`,
+        boxShadow: `0 1px 0 rgba(255,255,255,0.12) inset, 0 22px 40px -20px ${alpha(mix(colours.primary, '#000000', 0.4), 0.75)}, 0 2px 6px rgba(36,25,22,0.12)`,
+      }}
+    >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(currentColor 1px, transparent 1.2px)', backgroundSize: '12px 12px' }} />
+      <div className="relative">{children}</div>
+    </section>
+  );
+}
+
+/** The big button at the bottom of a pass. */
+export function PassButton({ href, colours, children }: { href: string; colours: PassColours; children: ReactNode }) {
+  const fg = contrastText(colours.primary);
+  return (
+    <a href={href} className="mt-5 flex min-h-[54px] items-center justify-center gap-2.5 rounded-[16px] text-[16px] font-semibold transition-transform active:scale-[0.98]" style={{ background: fg, color: mix(colours.primary, '#000000', 0.1) }}>
+      {children}
+    </a>
+  );
+}
+
+export function StampCardPanel({ p, color, icon, fresh = 0, pass, footer }: { p: Prog; color: string; icon?: string; fresh?: number; pass?: PassColours; footer?: ReactNode }) {
   const { t } = usePage();
   const need = Number(p.config?.stampsRequired ?? 9);
   const have = Math.min(p.balance, need);
   const reward = p.cardReward?.name ?? '';
   const progress = fmt(t.wallet.stampsProgress, { have, need });
+  if (pass) {
+    const fg = contrastText(pass.primary);
+    return (
+      <Pass colours={pass} labelledBy={`prog-${p.id}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[13px] font-medium opacity-75">{p.name}</p>
+            <h2 id={`prog-${p.id}`} className="mt-0.5 truncate text-[21px] font-semibold" style={{ color: fg }}>
+              {reward}
+            </h2>
+          </div>
+          <span className="shrink-0 rounded-full px-3 py-1 text-[13.5px] font-semibold tnum" style={{ background: alpha(fg === '#292421' ? '#000000' : '#ffffff', 0.14) }}>
+            {have}/{need}
+          </span>
+        </div>
+        <div className="mt-5">
+          <StampGrid required={need} filled={have} color={pass.secondary === pass.primary ? mix(pass.primary, '#ffffff', 0.3) : pass.secondary} icon={icon} tone={fg} fresh={fresh} size={46} ariaLabel={progress} />
+        </div>
+        <p className="mt-5 text-[16px] font-semibold">{progress}</p>
+        <p className="text-[14px] opacity-80">{have >= need ? t.wallet.cardFull : plural(t.wallet.stampsToGo, need - have, { reward })}</p>
+        {footer}
+      </Pass>
+    );
+  }
   return (
     <section className="card p-5" aria-labelledby={`prog-${p.id}`}>
       <div className="flex items-baseline justify-between gap-3">
@@ -34,10 +94,40 @@ export function StampCardPanel({ p, color, icon, fresh = 0 }: { p: Prog; color: 
   );
 }
 
-export function PointsPanel({ p }: { p: Prog }) {
+export function PointsPanel({ p, pass, footer }: { p: Prog; pass?: PassColours; footer?: ReactNode }) {
   const { t, locale } = usePage();
   const next = p.catalogue.filter((r) => r.cost > p.balance).sort((a, b) => a.cost - b.cost)[0];
   const affordable = p.catalogue.filter((r) => r.cost <= p.balance);
+  if (pass) {
+    const fg = contrastText(pass.primary);
+    const track = alpha(fg === '#292421' ? '#000000' : '#ffffff', 0.18);
+    return (
+      <Pass colours={pass} labelledBy={`prog-${p.id}`}>
+        <p className="text-[13px] font-medium opacity-75">{p.name}</p>
+        <h2 id={`prog-${p.id}`} className="sr-only">
+          {p.name}
+        </h2>
+        <p className="mt-1 font-display text-[52px] font-semibold leading-none tracking-[-0.035em] tnum" style={{ color: fg }}>
+          {num(p.balance, locale)}
+          <span className="ml-1.5 text-[16px] font-medium tracking-normal opacity-75">{t.wallet.pointsUnit}</span>
+        </p>
+        {next && (
+          <div className="mt-5">
+            <div className="h-2 overflow-hidden rounded-full" style={{ background: track }}>
+              <div className="h-full rounded-full" style={{ width: `${Math.max(4, Math.min(100, (p.balance / next.cost) * 100))}%`, background: fg }} />
+            </div>
+            <p className="mt-2 text-[14px] opacity-85">{fmt(t.wallet.nextReward, { n: num(next.cost - p.balance, locale), reward: next.name })}</p>
+          </div>
+        )}
+        {affordable.length > 0 && (
+          <p className="mt-3 rounded-[12px] px-3.5 py-2.5 text-[14px]" style={{ background: track }}>
+            {t.wallet.canAfford}: {affordable.map((r) => r.name).join(', ')}
+          </p>
+        )}
+        {footer}
+      </Pass>
+    );
+  }
   return (
     <section className="card p-5" aria-labelledby={`prog-${p.id}`}>
       <h2 id={`prog-${p.id}`} className="text-[17px] font-semibold">
@@ -45,16 +135,6 @@ export function PointsPanel({ p }: { p: Prog }) {
       </h2>
       <p className="mt-3 text-[13px] text-muted-ink">{t.wallet.pointsBalance}</p>
       <p className="font-display text-[44px] font-semibold leading-none tracking-[-0.03em] tnum">{num(p.balance, locale)}</p>
-      <dl className="mt-3 flex gap-6 text-[13px] text-muted-ink">
-        <div>
-          <dt className="inline">{t.wallet.pointsEarned}: </dt>
-          <dd className="inline font-medium text-ink tnum">{num(p.lifetimeEarned, locale)}</dd>
-        </div>
-        <div>
-          <dt className="inline">{t.wallet.pointsRedeemed}: </dt>
-          <dd className="inline font-medium text-ink tnum">{num(p.lifetimeSpent, locale)}</dd>
-        </div>
-      </dl>
       {next && (
         <div className="mt-4">
           <ProgressBar value={p.balance} max={next.cost} tone="sage" label={fmt(t.wallet.nextReward, { n: next.cost - p.balance, reward: next.name })} />
@@ -129,7 +209,7 @@ export function ChallengeCard({ c, tz }: { c: ChallengeView; tz: string }) {
         {unit} {period} → {c.rewardLabel}
       </p>
       <p className="mt-1 text-[12.5px] text-muted-ink">
-        {c.completedThisPeriod ? t.wallet.challengeDone : fmt(t.wallet.challengeEnds, { date: dateShort(c.endDate, tz, locale) })} · {t.wallet.challengeRule}
+        {c.completedThisPeriod ? t.wallet.challengeDone : fmt(t.wallet.challengeEnds, { date: dateShort(c.endDate, tz, locale) })}
       </p>
     </section>
   );

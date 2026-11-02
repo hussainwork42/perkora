@@ -46,8 +46,8 @@ export default function ImagePicker({ name, label, current, maxSide = 1600, shap
       >
         {preview ? <img src={preview} alt="" className="h-full w-full object-cover" /> : <LuImagePlus className="h-6 w-6 text-muted" />}
       </span>
-      <span className="min-w-0">
-        <input ref={input} id={name} name={name} type="file" accept="image/png,image/jpeg,image/webp" className="block max-w-full text-[14px]" onChange={onChange} aria-label={label} />
+      <span className="min-w-0 flex-1">
+        <input ref={input} id={name} name={name} type="file" accept="image/png,image/jpeg,image/webp" className="block max-w-full text-[13.5px] text-muted-ink file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-sand file:px-4 file:py-2 file:text-[13.5px] file:font-medium file:text-ink hover:file:bg-beige" onChange={onChange} aria-label={label} />
         <span className="mt-1 block text-[12.5px] text-muted-ink" aria-live="polite">
           {busy ? '…' : hint}
         </span>

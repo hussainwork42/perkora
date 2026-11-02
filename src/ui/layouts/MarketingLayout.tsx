@@ -52,7 +52,8 @@ export function MarketingLayout({ children, active }: { children: ReactNode; act
               {t.common.getStarted}
             </a>
           </div>
-          <div className="ml-auto lg:hidden">
+          <div className="ml-auto flex items-center gap-1.5 lg:hidden">
+            <LanguageSwitcher />
             <Island
               name="MobileNav"
               props={{
@@ -79,7 +80,7 @@ export function Footer() {
   const { t } = usePage();
   return (
     <footer className="mt-24 bg-coffee text-cream/80">
-      <div className="mx-auto grid max-w-[1180px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid grid-cols-1 max-w-[1180px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <Logo tone="light" />
           <p className="mt-4 max-w-xs text-[15px] text-cream/70">{t.footer.tagline}</p>

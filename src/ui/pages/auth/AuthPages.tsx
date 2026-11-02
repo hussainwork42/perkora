@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { usePage } from '../../page-context';
 import { Logo } from '../../components/brand';
-import { Alert, Button, Field, FlashMessage, Form, Input, LanguageSwitcher } from '../../components/ui';
+import { Alert, Button, Field, FlashMessage, Form, Input, LanguageSwitcher, PasswordField } from '../../components/ui';
 import { fmt } from '../../../shared/i18n';
 
 export function AuthLayout({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
@@ -11,7 +11,7 @@ export function AuthLayout({ children, aside }: { children: ReactNode; aside?: R
         <Logo />
         <LanguageSwitcher />
       </header>
-      <main className="mx-auto grid w-full max-w-[1000px] flex-1 items-start gap-10 px-4 pb-16 pt-8 sm:px-6 md:grid-cols-[1fr_0.9fr] md:pt-14">
+      <main className="mx-auto grid grid-cols-1 w-full max-w-[1000px] flex-1 items-start gap-10 px-4 pb-16 pt-8 sm:px-6 md:grid-cols-[1fr_0.9fr] md:pt-14">
         <div className="panel p-6 sm:p-8">{children}</div>
         {aside && <aside>{aside}</aside>}
       </main>
@@ -39,14 +39,12 @@ export function SignInPage({ next, email, error, demo }: { next: string; email?:
         <Field label={t.common.email} name="email">
           <Input name="email" type="email" autoComplete="email" required defaultValue={email} autoFocus={!email} />
         </Field>
-        <Field label={t.common.password} name="password">
-          <Input name="password" type="password" autoComplete="current-password" required autoFocus={Boolean(email)} />
-        </Field>
+        <PasswordField label={t.common.password} autoComplete="current-password" autoFocus={Boolean(email)} />
         <Button size="lg">{t.common.signIn}</Button>
       </Form>
       <div className="mt-6 border-t border-beige pt-5">
         <p className="text-[14.5px] font-medium">{t.auth.noAccount}</p>
-        <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <a className="btn btn-secondary w-full" href={`/sign-up${next ? `?next=${encodeURIComponent(next)}` : ''}`}>
             {t.auth.createOne}
           </a>
@@ -134,15 +132,10 @@ export function SignUpPage({ next, values = {}, errors = {}, business, plan }: {
         {errors.form && <Alert tone="error">{errors.form}</Alert>}
         <input type="hidden" name="next" value={next} />
         {plan && <input type="hidden" name="plan" value={plan} />}
-        <Field label={t.common.name} name="name" error={errors.name}>
-          <Input name="name" autoComplete="name" required maxLength={120} defaultValue={values.name} error={errors.name} />
-        </Field>
         <Field label={t.common.email} name="email" error={errors.email}>
-          <Input name="email" type="email" autoComplete="email" required maxLength={254} defaultValue={values.email} error={errors.email} />
+          <Input name="email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" required maxLength={254} defaultValue={values.email} error={errors.email} autoFocus />
         </Field>
-        <Field label={t.common.password} name="password" hint={t.auth.passwordHint} error={errors.password}>
-          <Input name="password" type="password" autoComplete="new-password" required minLength={10} error={errors.password} />
-        </Field>
+        <PasswordField label={t.common.password} hint={t.auth.passwordHint} error={errors.password} autoComplete="new-password" />
         <p className="text-[13px] text-muted-ink">
           {t.auth.terms.split(/(\{terms\}|\{privacy\})/).map((part, i) =>
             part === '{terms}' ? (

@@ -12,6 +12,9 @@ import CafeScanner from './CafeScanner';
 import FillInput from './FillInput';
 import ImagePicker from './ImagePicker';
 import BrandPreview from './BrandPreview';
+import PasswordInput from './PasswordInput';
+import ReplyBox from './ReplyBox';
+import InstallPrompt from './InstallPrompt';
 
 export const islandComponents: Record<string, (props: any) => any> = {
   MobileNav,
@@ -27,4 +30,7 @@ export const islandComponents: Record<string, (props: any) => any> = {
   FillInput,
   ImagePicker,
   BrandPreview,
+  PasswordInput,
+  ReplyBox,
+  InstallPrompt,
 };

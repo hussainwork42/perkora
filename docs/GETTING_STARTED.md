@@ -147,6 +147,13 @@ Perkora does not take card payments yet. When a café wants a paid plan:
 
 The 30-day trial end date is recorded, but nothing locks a café automatically when it passes. Follow up from the admin list.
 
+### Replying to website messages
+
+Messages from the contact and demo forms appear in **Admin → Messages**. Press **Reply**, write your answer and send it.
+
+- **Without email set up**, the reply opens already written in your own email app, or in WhatsApp if the visitor left a phone number.
+- **To send from Perkora itself** and get new messages by email, add the email settings on Render (service → **Environment**): `SMTP_HOST`, `SMTP_PORT` (465), `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` and `NOTIFY_EMAIL`. Details are in [DEPLOYMENT.md](DEPLOYMENT.md#email).
+
 ### Before real cafés use it
 
 Read [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md). In short:

@@ -73,7 +73,7 @@ export function TransactionsPage({ biz, rows, total, page, pageSize, filters, me
         }
       />
       <Card>
-        <form method="get" className="grid gap-3 border-b border-beige p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+        <form method="get" className="grid grid-cols-1 gap-3 border-b border-beige p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
           {filters.member && <input type="hidden" name="member" value={filters.member} />}
           <select name="type" defaultValue={filters.type} className="select" aria-label="Type">
             <option value="">All types</option>
@@ -93,17 +93,17 @@ export function TransactionsPage({ biz, rows, total, page, pageSize, filters, me
         {rows.length === 0 ? (
           <EmptyState icon={<LuReceiptText className="h-6 w-6" />} title="No transactions" body="Stamps, points and redemptions recorded at the counter appear here." />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="table">
               <thead>
                 <tr>
-                  <th>When</th>
+                  <th className="col-wide">When</th>
                   <th>Member</th>
-                  <th>Type</th>
+                  <th className="col-wide">Type</th>
                   <th>Details</th>
                   <th className="text-right">Change</th>
-                  <th className="text-right">Balance</th>
-                  <th>By</th>
+                  <th className="col-wide text-right">Balance</th>
+                  <th className="col-wide">By</th>
                   {canFix && <th className="sr-only">Actions</th>}
                 </tr>
               </thead>
@@ -112,20 +112,21 @@ export function TransactionsPage({ biz, rows, total, page, pageSize, filters, me
                   const delta = r.stamps_delta || r.points_delta;
                   return (
                     <tr key={r.id} className={cn(r.reversed && 'opacity-60')}>
-                      <td className="whitespace-nowrap text-muted-ink">{dateTime(r.created_at, tz)}</td>
+                      <td className="col-wide whitespace-nowrap text-muted-ink">{dateTime(r.created_at, tz)}</td>
                       <td>
                         <a href={`/dashboard/customers/${r.membership_id}`} className="font-medium hover:underline">
                           {r.customer_name}
                         </a>
+                        <div className="text-[12px] text-muted-ink md:hidden">{dateTime(r.created_at, tz)}</div>
                       </td>
-                      <td>
+                      <td className="col-wide">
                         <Badge tone={r.transaction_type === 'reversal' || r.transaction_type === 'voucher_void' ? 'error' : r.transaction_type === 'redeem' ? 'accent' : r.transaction_type === 'earn' ? 'neutral' : 'sage'}>
                           {TYPE_LABEL[r.transaction_type] ?? r.transaction_type}
                         </Badge>
                         {r.reversed && <span className="ml-1.5 text-[12px] text-error">reversed</span>}
                         {r.redemption_status === 'reversed' && r.transaction_type === 'redeem' && <span className="ml-1.5 text-[12px] text-error">reversed</span>}
                       </td>
-                      <td className="min-w-[220px]">
+                      <td className="min-w-[150px] md:min-w-[220px]">
                         <div className="text-[13.5px]">{r.description}</div>
                         <div className="text-[12px] text-muted-ink">
                           {[r.programme_name, r.reference_id && `Receipt ${r.reference_id}`, r.purchase_amount_minor !== null && r.currency && money(r.purchase_amount_minor, r.currency), r.source === 'seed' && 'demo data']
@@ -134,8 +135,8 @@ export function TransactionsPage({ biz, rows, total, page, pageSize, filters, me
                         </div>
                       </td>
                       <td className={cn('text-right font-semibold tnum', delta > 0 ? 'text-success' : delta < 0 ? 'text-terracotta-ink' : 'text-muted')}>{delta === 0 ? '—' : delta > 0 ? `+${delta}` : delta}</td>
-                      <td className="text-right tnum text-muted-ink">{r.balance_after ?? '—'}</td>
-                      <td className="whitespace-nowrap text-[13px] text-muted-ink">{r.actor_name ?? (r.source === 'campaign' || r.source === 'system' ? 'Automatic' : '—')}</td>
+                      <td className="col-wide text-right tnum text-muted-ink">{r.balance_after ?? '—'}</td>
+                      <td className="col-wide whitespace-nowrap text-[13px] text-muted-ink">{r.actor_name ?? (r.source === 'campaign' || r.source === 'system' ? 'Automatic' : '—')}</td>
                       {canFix && (
                         <td className="whitespace-nowrap">
                           {REVERSIBLE.includes(r.transaction_type) && !r.reversed && (

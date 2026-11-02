@@ -55,7 +55,7 @@ export function LookFields({ values, errors = {}, primary, secondary, bannerUrl,
     <>
       <fieldset>
         <legend className="label">Page layout</legend>
-        <div className="grid gap-2.5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
           {LAYOUTS.map((l) => (
             <label key={l.key} className="cursor-pointer">
               <input type="radio" name="page_layout" value={l.key} defaultChecked={layout === l.key} className="peer sr-only" />

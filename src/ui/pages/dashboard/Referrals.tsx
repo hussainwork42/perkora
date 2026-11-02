@@ -25,7 +25,7 @@ export function ReferralsPage({ biz, values, errors = {}, programmes, rewards, s
   const grant = (prefix: 'referrer' | 'referred', label: string, allowNone: boolean) => (
     <fieldset className="rounded-[14px] border border-beige p-4">
       <legend className="px-1 text-[14.5px] font-semibold">{label}</legend>
-      <div className="grid gap-3 sm:grid-cols-[170px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[170px_minmax(0,1fr)]">
         <Select name={`${prefix}_kind`} defaultValue={values[`${prefix}_kind`] ?? 'bonus'} aria-label={`${label}: type`}>
           <option value="bonus">Stamps or points</option>
           <option value="voucher">A reward</option>
@@ -71,7 +71,7 @@ export function ReferralsPage({ biz, values, errors = {}, programmes, rewards, s
           </a>
         </Card>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           <Card className="p-6">
             <Form action="/dashboard/referrals" className="grid gap-5" noValidate>
               {errors.form && <Alert tone="error">{errors.form}</Alert>}

@@ -4190,7 +4190,16 @@ var init_config = __esm({
       TRUST_PROXY: external_exports.enum(["true", "false"]).default("false").transform((v) => v === "true"),
       DEMO_MODE: external_exports.enum(["true", "false"]).default("true").transform((v) => v === "true"),
       DEMO_PASSWORD: external_exports.string().min(8).optional(),
-      LOG_LEVEL: external_exports.enum(["debug", "info", "warn", "error"]).default("info")
+      LOG_LEVEL: external_exports.enum(["debug", "info", "warn", "error"]).default("info"),
+      // Optional: sending email (replies to website messages, new-message alerts)
+      SMTP_HOST: external_exports.string().optional(),
+      SMTP_PORT: external_exports.coerce.number().int().positive().optional(),
+      SMTP_SECURE: external_exports.enum(["ssl", "starttls", "none"]).optional(),
+      SMTP_USER: external_exports.string().optional(),
+      SMTP_PASS: external_exports.string().optional(),
+      MAIL_FROM: external_exports.string().optional(),
+      /** Where new website messages are announced by email (defaults to the SMTP account). */
+      NOTIFY_EMAIL: external_exports.string().optional()
     });
     cached = null;
   }
@@ -5238,6 +5247,11 @@ var init_errors2 = __esm({
 });
 
 // src/server/domain/accounts.ts
+function nameFromEmail(email) {
+  const local = email.split("@")[0].split("+")[0];
+  const words = local.split(/[._\-\s]+/).map((w) => w.replace(/[0-9]+/g, "")).filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  return (words.join(" ") || "Guest").slice(0, 120);
+}
 async function createUser(q, input) {
   try {
     const u = await one(
@@ -5261,9 +5275,9 @@ var init_accounts = __esm({
     init_crypto();
     init_errors2();
     emailSchema = external_exports.string().trim().toLowerCase().email("Enter a valid email address.").max(254);
-    passwordSchema = external_exports.string().min(10, "Use at least 10 characters.").max(200, "That password is too long.");
+    passwordSchema = external_exports.string().min(8, "Use at least 8 characters.").max(200, "That password is too long.");
     nameSchema = external_exports.string().trim().min(1, "Enter your name.").max(120, "That name is too long.");
-    signUpSchema = external_exports.object({ name: nameSchema, email: emailSchema, password: passwordSchema });
+    signUpSchema = external_exports.object({ name: external_exports.string().trim().max(120, "That name is too long.").optional(), email: emailSchema, password: passwordSchema }).transform((v) => ({ ...v, name: v.name || nameFromEmail(v.email) }));
   }
 });
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Router } from '../http/router';
 import type { Ctx } from '../http/core';
-import { field, fieldAll, formObject, readBody, redirect } from '../http/core';
+import { field, fieldAll, formObject, json, readBody, redirect } from '../http/core';
 import { render } from '../http/render';
 import { db, many, maybeOne, one } from '../db';
 import { requireAdmin } from '../auth/guards';
@@ -12,6 +12,8 @@ import { Logo } from '../../ui/components/brand';
 import { Alert, Badge, Button, Card, CardHeader, Checkbox, Field, FlashMessage, Form, Input, PageHeader, Select, Stat, Tabs } from '../../ui/components/ui';
 import { dateShort, dateTime, moneyWhole, num, relative } from '../../shared/format';
 import { config } from '../config';
+import { mailSettings, sendMail, MailError } from '../mail/smtp';
+import { Island } from '../../ui/islands/Island';
 import { usePage } from '../../ui/page-context';
 
 function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
@@ -308,11 +310,19 @@ export function adminRoutes(r: Router) {
       const filter = ctx.query.get('show') === 'all' ? 'all' : ctx.query.get('show') === 'done' ? 'done' : 'open';
       const where = filter === 'all' ? 'true' : filter === 'done' ? `status <> 'new'` : `status = 'new'`;
       const rows = await many<any>(db, `select * from demo_requests where ${where} order by created_at desc limit 300`);
+      const replies = await many<any>(
+        db,
+        `select r.request_id, r.body, r.channel, r.status, r.error, r.created_at, u.name as author
+           from message_replies r left join users u on u.id = r.author_user_id
+          where r.request_id = any($1::uuid[]) order by r.created_at`,
+        [rows.map((d) => d.id)],
+      );
+      const mailReady = Boolean(mailSettings());
       const counts = await one<{ open: number; done: number }>(db, `select count(*) filter (where status = 'new')::int as open, count(*) filter (where status <> 'new')::int as done from demo_requests`);
       return render(
         ctx,
         <AdminLayout tab="requests">
-          <PageHeader title="Messages" description="Contact-form messages and demo requests from the website. Reply by email or phone, then mark them as replied." />
+          <PageHeader title="Messages" description="Messages and demo requests from the website. Reply right here." />
           <div className="mb-4 flex flex-wrap gap-2">
             {[
               ['open', `New (${counts.open})`],
@@ -348,23 +358,52 @@ export function adminRoutes(r: Router) {
                             {d.city ? `, ${d.city}` : ''}
                           </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <a className="btn btn-secondary btn-sm" href={`mailto:${d.email}?subject=${encodeURIComponent('Re: your message to Perkora')}`}>
-                            Email {d.email}
+                        <div className="text-[13.5px] sm:text-right">
+                          <a className="link" href={`mailto:${d.email}`}>
+                            {d.email}
                           </a>
-                          {wa && (
-                            <a className="btn btn-secondary btn-sm" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
-                              WhatsApp {d.phone}
+                          {d.phone && (
+                            <a className="block text-muted-ink hover:text-ink" href={`tel:${d.phone.replace(/[^+0-9]/g, '')}`}>
+                              {d.phone}
                             </a>
                           )}
                         </div>
                       </div>
                       {d.message ? <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">{d.message}</p> : <p className="mt-3 text-[14px] text-muted-ink">No message text (demo request).</p>}
-                      <div className="mt-4 flex flex-wrap gap-2 border-t border-beige pt-3">
+                      {replies.filter((r) => r.request_id === d.id).length > 0 && (
+                        <ul className="mt-4 space-y-2">
+                          {replies
+                            .filter((r) => r.request_id === d.id)
+                            .map((r, i) => (
+                              <li key={i} className="rounded-[12px] border border-beige bg-cream px-4 py-3">
+                                <p className="text-[12.5px] text-muted-ink">
+                                  {r.author ?? 'Admin'} · {dateTime(r.created_at, 'Asia/Famagusta')} ·{' '}
+                                  {r.status === 'sent' ? 'emailed' : r.status === 'failed' ? <span className="text-error">not sent: {r.error}</span> : r.channel === 'whatsapp' ? 'opened in WhatsApp' : 'opened in email app'}
+                                </p>
+                                <p className="mt-1 whitespace-pre-wrap text-[14.5px]">{r.body}</p>
+                              </li>
+                            ))}
+                        </ul>
+                      )}
+                      <div className="mt-4 flex flex-wrap items-start gap-2 border-t border-beige pt-3">
+                        <Island
+                          name="ReplyBox"
+                          props={{
+                            sendUrl: `/admin/requests/${d.id}/reply`,
+                            logUrl: `/admin/requests/${d.id}/reply-log`,
+                            csrf: ctx.csrfToken,
+                            email: d.email,
+                            phone: d.phone ? String(d.phone).replace(/[^0-9]/g, '') : '',
+                            firstName: String(d.name).split(' ')[0],
+                            mailReady,
+                          }}
+                        />
                         {d.status !== 'contacted' && (
                           <Form action={`/admin/requests/${d.id}`}>
                             <input type="hidden" name="status" value="contacted" />
-                            <Button size="sm">Mark as replied</Button>
+                            <Button size="sm" variant="secondary">
+                              Mark as replied
+                            </Button>
                           </Form>
                         )}
                         {d.status !== 'closed' && (
@@ -393,6 +432,42 @@ export function adminRoutes(r: Router) {
         </AdminLayout>,
         { title: 'Messages', noindex: true },
       );
+    }),
+  );
+  r.post(
+    '/admin/requests/:id/reply',
+    guard(async (ctx) => {
+      const d = await maybeOne<any>(db, 'select * from demo_requests where id = $1', [ctx.params.id]);
+      if (!d) throw notFound();
+      const body = field(await readBody(ctx), 'body').trim().slice(0, 5000);
+      if (!body) return redirect(ctx, '/admin/requests', { type: 'error', message: 'Write a reply first.' });
+      const settings = mailSettings();
+      if (!settings) return redirect(ctx, '/admin/requests', { type: 'error', message: 'Email sending isn’t set up. Use “Open in my email app” instead.' });
+      try {
+        await sendMail({ to: d.email, subject: 'Re: your message to Perkora', text: body, replyTo: config().NOTIFY_EMAIL || undefined }, settings);
+        await db.query(`insert into message_replies (request_id, author_user_id, body, channel, status) values ($1, $2, $3, 'email', 'sent')`, [d.id, ctx.user!.id, body]);
+        await db.query(`update demo_requests set status = 'contacted', read_at = coalesce(read_at, now()) where id = $1`, [d.id]);
+        return redirect(ctx, '/admin/requests', { type: 'success', message: `Reply sent to ${d.email}.` });
+      } catch (e) {
+        const msg = e instanceof MailError ? e.message : 'Sending failed.';
+        await db.query(`insert into message_replies (request_id, author_user_id, body, channel, status, error) values ($1, $2, $3, 'email', 'failed', $4)`, [d.id, ctx.user!.id, body, msg.slice(0, 300)]);
+        return redirect(ctx, '/admin/requests', { type: 'error', message: `Your reply was not sent: ${msg}` });
+      }
+    }),
+  );
+  r.post(
+    '/admin/requests/:id/reply-log',
+    guard(async (ctx) => {
+      const d = await maybeOne<{ id: string }>(db, 'select id from demo_requests where id = $1', [ctx.params.id]);
+      if (!d) throw notFound();
+      const b = (await readBody(ctx)) as any;
+      const body = String(b.json?.body ?? field(b, 'body') ?? '').trim().slice(0, 5000);
+      const channel = String(b.json?.channel ?? field(b, 'channel')) === 'whatsapp' ? 'whatsapp' : 'email_app';
+      if (body) {
+        await db.query(`insert into message_replies (request_id, author_user_id, body, channel, status) values ($1, $2, $3, $4, 'opened')`, [d.id, ctx.user!.id, body, channel]);
+        await db.query(`update demo_requests set status = 'contacted', read_at = coalesce(read_at, now()) where id = $1`, [d.id]);
+      }
+      return json({ ok: true });
     }),
   );
   r.post(

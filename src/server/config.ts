@@ -21,6 +21,15 @@ const schema = z.object({
     .transform((v) => v === 'true'),
   DEMO_PASSWORD: z.string().min(8).optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  // Optional: sending email (replies to website messages, new-message alerts)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().optional(),
+  SMTP_SECURE: z.enum(['ssl', 'starttls', 'none']).optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM: z.string().optional(),
+  /** Where new website messages are announced by email (defaults to the SMTP account). */
+  NOTIFY_EMAIL: z.string().optional(),
 });
 
 export type Config = z.infer<typeof schema>;

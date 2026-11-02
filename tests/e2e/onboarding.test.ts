@@ -30,7 +30,8 @@ test('a café owner can onboard, resume, activate and serve a first customer', a
 
   await p.goto(`${BASE}/pricing`);
   await p.getByRole('link', { name: 'Start with Premium' }).click();
-  await p.fill('input[name=name]', 'Selin Test');
+  // sign-up asks only for an email and a password
+  assert.equal(await p.locator('main input[name=name]').count(), 0);
   await p.fill('input[name=email]', email);
   await p.fill('input[name=password]', 'a-good-long-password');
   await p.getByRole('button', { name: 'Continue' }).click();
@@ -106,8 +107,9 @@ test('a café owner can onboard, resume, activate and serve a first customer', a
   const bannerStyle = await pre.locator('header div[style*="background-image"]').first().getAttribute('style');
   assert.match(bannerStyle ?? '', /\/media\//, 'the uploaded banner is shown');
   await pre.getByRole('button', { name: 'Create account and join' }).waitFor();
-  await pre.fill('input[name=name]', 'First Customer');
-  await pre.fill('input[name=email]', `first-${stamp}@example.com`);
+  // joining needs only an email and a password; the name comes from the email until they add one
+  assert.equal(await pre.locator('main input[name=name]').count(), 0);
+  await pre.fill('input[name=email]', `first.customer+${stamp}@example.com`);
   await pre.fill('input[name=password]', 'another-long-password');
   await pre.getByRole('button', { name: 'Create account and join' }).click();
   await pre.waitForURL(new RegExp(`/wallet/${slug}`));
@@ -125,9 +127,8 @@ test('a café owner can onboard, resume, activate and serve a first customer', a
   assert.match(link, new RegExp(`/c/${slug}\\?ref=[A-Z2-9]+$`));
   const friend = await (await browser.newContext()).newPage();
   await friend.goto(link.replace(/^https?:\/\/[^/]+/, BASE));
-  await friend.getByText(/You were invited by a friend/).waitFor();
-  await friend.fill('input[name=name]', 'Friend Customer');
-  await friend.fill('input[name=email]', `friend-${stamp}@example.com`);
+  await friend.getByText(/A friend invited you/).waitFor();
+  await friend.fill('input[name=email]', `friend.customer+${stamp}@example.com`);
   await friend.fill('input[name=password]', 'friend-long-password');
   await friend.getByRole('button', { name: 'Create account and join' }).click();
   await friend.waitForURL(new RegExp(`/wallet/${slug}`));

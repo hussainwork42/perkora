@@ -23,7 +23,7 @@ export function StartPage() {
             </a>
           </p>
         )}
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
+        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
           <div className="panel flex flex-col p-6 sm:p-7">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-espresso text-cream">
               <LuStore className="h-6 w-6" aria-hidden="true" />
@@ -100,7 +100,7 @@ export function CafesPage({ cafes, q }: { cafes: DirectoryCafe[]; q: string }) {
         {cafes.length === 0 ? (
           <p className="card mt-6 p-8 text-center text-muted-ink">{q ? fmt(s.none, { q }) : s.empty}</p>
         ) : (
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {cafes.map((c) => (
               <li key={c.slug}>
                 <a href={`/c/${c.slug}`} className="card flex h-full items-start gap-4 p-4 hover:border-beige-strong">

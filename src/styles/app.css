@@ -37,11 +37,11 @@
   --color-error: #B64D45;
   --color-error-tint: #F6E1DE;
 
-  --radius-control: 10px;
-  --radius-card: 14px;
-  --radius-panel: 20px;
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-panel: 22px;
 
-  --shadow-card: 0 1px 2px rgb(36 25 22 / 0.05), 0 1px 1px rgb(36 25 22 / 0.03);
+  --shadow-card: 0 1px 2px rgb(36 25 22 / 0.04), 0 4px 14px -6px rgb(36 25 22 / 0.08);
   --shadow-raised: 0 12px 32px -12px rgb(36 25 22 / 0.22), 0 2px 6px rgb(36 25 22 / 0.06);
   --shadow-float: 0 30px 60px -24px rgb(36 25 22 / 0.35);
 
@@ -58,8 +58,19 @@
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 
+/* smooth page-to-page transitions in browsers that support them (Chrome, Edge, Safari 18+) */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation: 140ms ease-out both vt-out; }
+  ::view-transition-new(root) { animation: 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-in; }
+}
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
 @layer base {
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
   body {
     @apply bg-cream text-ink font-sans antialiased;
     font-size: 16px;
@@ -72,6 +83,12 @@
   ::selection { background: var(--color-terracotta-tint); }
   .tnum { font-variant-numeric: tabular-nums; }
   [hidden] { display: none !important; }
+  /* Grid children may shrink below their content (a file input, a long email), so nothing
+     pushes the page sideways on a phone. Utilities still win where a minimum is wanted. */
+  .grid > * { min-width: 0; }
+  /* Secondary table columns step aside on phones; the key ones stay readable without sideways scrolling. */
+  @media (max-width: 767px) { .table .col-wide { display: none; } }
+  input[type="file"] { max-width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -80,13 +97,24 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-[10px] px-4 font-medium transition-colors select-none whitespace-nowrap;
+    @apply relative inline-flex items-center justify-center gap-2 rounded-[12px] px-4 font-medium select-none whitespace-nowrap;
     min-height: 44px;
     font-size: 15px;
+    transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 120ms ease;
   }
-  .btn-sm { min-height: 36px; @apply px-3 text-sm; }
-  .btn-lg { min-height: 52px; @apply px-6 text-base; }
-  .btn-primary { @apply bg-espresso text-cream hover:bg-coffee; }
+  .btn:active { transform: scale(0.98); }
+  .btn-sm { min-height: 36px; @apply px-3 text-sm rounded-[10px]; }
+  .btn-lg { min-height: 54px; @apply px-6 text-base rounded-[14px]; }
+  .btn-primary { @apply bg-espresso text-cream hover:bg-coffee; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(36 25 22 / 0.2), 0 6px 16px -8px rgb(36 25 22 / 0.45); }
+  /* pressed submit buttons show a spinner until the next page loads */
+  .btn[data-loading] { color: transparent !important; pointer-events: none; }
+  .btn[data-loading] > * { visibility: hidden; }
+  .btn[data-loading]::after {
+    content: ""; position: absolute; inset: 0; margin: auto; width: 18px; height: 18px; border-radius: 9999px;
+    border: 2px solid currentColor; border-color: var(--btn-spin, #FAF6EF) transparent var(--btn-spin, #FAF6EF) var(--btn-spin, #FAF6EF);
+    animation: spin 700ms linear infinite;
+  }
+  .btn-secondary[data-loading], .btn-ghost[data-loading] { --btn-spin: #3B2925; }
   .btn-accent { @apply bg-terracotta text-white hover:bg-terracotta-ink; }
   .btn-secondary { @apply bg-paper text-ink border border-beige-strong hover:bg-sand; }
   .btn-ghost { @apply text-ink hover:bg-sand; }
@@ -95,8 +123,8 @@
   .btn[disabled], .btn[aria-disabled="true"] { @apply opacity-50 pointer-events-none; }
 
   .input, .select, .textarea {
-    @apply block w-full rounded-[10px] border border-beige-strong bg-paper px-3 text-ink placeholder:text-muted transition-colors;
-    min-height: 44px;
+    @apply block w-full rounded-[12px] border border-beige-strong bg-paper px-3.5 text-ink placeholder:text-muted transition-colors;
+    min-height: 48px;
     font-size: 16px;
   }
   .textarea { @apply py-2.5; min-height: 96px; }
@@ -108,8 +136,9 @@
   .hint { @apply text-[13px] text-muted-ink mt-1.5; }
   .error-text { @apply text-[13px] text-error mt-1.5; }
 
-  .card { @apply rounded-[14px] border border-beige bg-paper; box-shadow: var(--shadow-card); }
-  .panel { @apply rounded-[20px] border border-beige bg-paper; }
+  .card { @apply rounded-[16px] border border-beige/80 bg-paper; box-shadow: var(--shadow-card); }
+  .panel { @apply rounded-[22px] border border-beige/80 bg-paper; box-shadow: var(--shadow-card); }
+  .rise { animation: rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
   .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12.5px] font-medium whitespace-nowrap; }
   .badge-neutral { @apply bg-sand text-muted-ink; }

@@ -37,17 +37,26 @@ export function CustomerCardMock({ filled = 7, required = 9, cafe = 'Perkora Dem
           <p className="text-[11.5px] text-muted-ink">Coffee Club</p>
         </div>
       </div>
-      <div className="mt-4 rounded-[18px] border border-beige bg-paper p-4" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <StampGrid required={required} filled={filled} size={compact ? 30 : 34} ariaLabel={progressText} />
-        <p className="mt-4 text-[14px] font-semibold text-ink">{progressText}</p>
-        <p className="text-[12.5px] text-muted-ink">{toGoText.replace('{reward}', reward)}</p>
-      </div>
-      {!compact && (
-        <div className="mt-3 flex items-center gap-3 rounded-[14px] bg-espresso px-3.5 py-3 text-cream">
-          <LuQrCode className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className="text-[13px] font-medium">{cta}</span>
+      <div
+        className="relative mt-4 overflow-hidden rounded-[20px] p-4 text-cream"
+        style={{
+          background: 'radial-gradient(120% 80% at 100% 0%, rgba(140,110,100,0.55) 0%, transparent 60%), linear-gradient(165deg, #4a3632 0%, #3B2925 45%, #2e201d 100%)',
+          boxShadow: '0 18px 32px -18px rgba(36,25,22,0.7)',
+        }}
+      >
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(currentColor 1px, transparent 1.2px)', backgroundSize: '12px 12px' }} />
+        <div className="relative">
+          <StampGrid required={required} filled={filled} size={compact ? 30 : 34} tone="#FAF6EF" ariaLabel={progressText} />
+          <p className="mt-4 text-[14px] font-semibold">{progressText}</p>
+          <p className="text-[12.5px] opacity-80">{toGoText.replace('{reward}', reward)}</p>
+          {!compact && (
+            <div className="mt-3.5 flex items-center justify-center gap-2 rounded-[12px] bg-cream py-2.5 text-espresso">
+              <LuQrCode className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="text-[13px] font-semibold">{cta}</span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

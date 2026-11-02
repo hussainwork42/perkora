@@ -146,7 +146,7 @@ export function OverviewPage({ biz, range, m, series, activity, insights, hasMem
             />
           </div>
 
-          <div className="mt-5 grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_1fr]">
             <Card>
               <CardHeader title="Customer activity" description="Verified visits per day" />
               <div className="px-4 pb-4">
@@ -172,7 +172,7 @@ export function OverviewPage({ biz, range, m, series, activity, insights, hasMem
             </Card>
           </div>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader title="New members" description="Loyalty enrolments per day" />
               <div className="px-4 pb-4">
@@ -257,7 +257,7 @@ export function AnalyticsPage({ biz, range, m, d, series, segments, top, campaig
             <MetricTile label="Returning members" k="returningRate" value={m.returningRate === null ? '—' : pct(m.returningRate)} hint={m.returningRate === null ? 'needs 5+ visiting members' : `of ${m.returningDenominator} who visited`} />
             <MetricTile label="Visits per visiting member" k="visits" value={d.avgVisitsPerVisitor === null ? '—' : d.avgVisitsPerVisitor.toFixed(1)} hint={label} />
           </div>
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader title="Verified visits" />
               <div className="px-4 pb-4">
@@ -272,7 +272,7 @@ export function AnalyticsPage({ biz, range, m, d, series, segments, top, campaig
               </div>
             </Card>
           </div>
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader title="Most redeemed rewards" description={label} />
               {top.length === 0 ? (

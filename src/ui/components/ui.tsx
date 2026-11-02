@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '../cn';
+import { Island } from '../islands/Island';
 import { usePage } from '../page-context';
 import { LuCircleAlert, LuCircleCheck, LuInfo, LuX } from 'react-icons/lu';
 
@@ -83,6 +84,16 @@ export function Field({ label, name, hint, error, children, className, optional 
         </p>
       ) : null}
     </div>
+  );
+}
+
+/** Password field with a show/hide button. */
+export function PasswordField({ name = 'password', label, hint, error, autoComplete, autoFocus }: { name?: string; label: ReactNode; hint?: ReactNode; error?: string | null; autoComplete: 'new-password' | 'current-password'; autoFocus?: boolean }) {
+  const { t } = usePage();
+  return (
+    <Field label={label} name={name} hint={hint} error={error}>
+      <Island name="PasswordInput" props={{ name, autoComplete, invalid: Boolean(error), showLabel: t.common.showPassword, hideLabel: t.common.hidePassword, autoFocus, minLength: autoComplete === 'new-password' ? 8 : undefined }} />
+    </Field>
   );
 }
 

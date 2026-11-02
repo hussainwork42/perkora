@@ -175,7 +175,7 @@ export default function StaffTerminal({ s, csrf, currency, currencySymbol, initi
   };
 
   return (
-    <div className="mx-auto grid max-w-[1100px] gap-5 lg:grid-cols-[1fr_340px]">
+    <div className="mx-auto grid grid-cols-1 max-w-[1100px] gap-5 lg:grid-cols-[1fr_340px]">
       <div className="min-w-0">
         {success ? (
           <SuccessPanel s={s} success={success} countdown={countdown} onNext={reset} />

@@ -56,14 +56,14 @@ function Shell({ step, children, maxStep }: { step: number; children: React.Reac
 export function OnboardingStep1({ values, errors = {}, maxStep }: { values: V; errors?: V; maxStep: number }) {
   return (
     <Shell step={1} maxStep={maxStep}>
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
         <div className="panel p-6 sm:p-8">
           <h1 className="text-[26px] font-semibold">Tell us about your café</h1>
           <p className="mt-1 text-muted-ink">Customers see your name, logo and colours on their loyalty card.</p>
           <Form action="/onboarding/1" multipart className="mt-6 grid gap-5" noValidate>
             {errors.form && <Alert tone="error">{errors.form}</Alert>}
             <input type="hidden" name="plan" value={values.plan ?? ''} />
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Café name" name="name" error={errors.name}>
                 <Input name="name" required maxLength={120} defaultValue={values.name} error={errors.name} autoFocus />
               </Field>
@@ -86,7 +86,7 @@ export function OnboardingStep1({ values, errors = {}, maxStep }: { values: V; e
             <Field label="Address" name="address" optional>
               <Input name="address" maxLength={200} defaultValue={values.address} />
             </Field>
-            <div className="grid gap-5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
               <Field label="Logo" name="logo" optional hint="PNG, JPEG or WebP, max 1 MB." error={errors.logo} className="sm:col-span-1">
                 <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="text-[13.5px]" />
               </Field>
@@ -97,7 +97,7 @@ export function OnboardingStep1({ values, errors = {}, maxStep }: { values: V; e
                 <input id="secondary_colour" type="color" name="secondary_colour" defaultValue={values.secondary_colour ?? '#B86F52'} className="h-11 w-full cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" />
               </Field>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Currency" name="default_currency" hint="Points are calculated in this currency.">
                 <Select name="default_currency" defaultValue={values.default_currency ?? 'EUR'}>
                   <option value="EUR">Euro (EUR)</option>
@@ -178,7 +178,7 @@ export function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, cur
               <Field label="Qualifying purchase" name="eligiblePurchase" error={errors.eligiblePurchase}>
                 <Input name="eligiblePurchase" maxLength={120} defaultValue={values.eligiblePurchase ?? 'Any handcrafted coffee drink'} error={errors.eligiblePurchase} />
               </Field>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Field label="Stamps required" name="stampsRequired" error={errors.stampsRequired}>
                   <Input name="stampsRequired" type="number" min={2} max={30} defaultValue={values.stampsRequired ?? '9'} error={errors.stampsRequired} />
                 </Field>
@@ -186,7 +186,7 @@ export function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, cur
                   <Input name="rewardName" maxLength={80} defaultValue={values.rewardName ?? 'Free Regular Coffee'} error={errors.rewardName} />
                 </Field>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Reward valid for (days)" name="validityDays" optional hint="After the card is completed. Empty means no expiry." error={errors.validityDays}>
                   <Input name="validityDays" type="number" min={1} max={730} defaultValue={values.validityDays ?? '30'} error={errors.validityDays} />
                 </Field>
@@ -200,7 +200,7 @@ export function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, cur
           {hasPoints && (
             <fieldset className="grid gap-4 rounded-[14px] border border-beige p-4">
               <legend className="px-1 text-[14px] font-semibold">Points</legend>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Field label={`Points per ${currency === 'EUR' ? '€1' : '₺1'}`} name="pointsPerUnit" error={errors.pointsPerUnit}>
                   <Input name="pointsPerUnit" type="number" min={1} max={100} defaultValue={values.pointsPerUnit ?? '1'} />
                 </Field>
@@ -223,7 +223,7 @@ export function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, cur
               hint="Each customer gets an invite link. When their friend makes a first purchase, both of them get a reward. You can change this later under Referrals."
             />
             <input type="hidden" name="referral_seen" value="1" />
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label={`The inviter gets (${hasStamps ? 'stamps' : 'points'})`} name="referral_referrer">
                 <Input name="referral_referrer" type="number" min={1} max={1000} defaultValue={values.referral_referrer ?? (hasStamps ? '1' : '20')} />
               </Field>
@@ -258,7 +258,7 @@ export function OnboardingStep4({ svg, url, slug, maxStep, cafe, values, errors 
 }) {
   return (
     <Shell step={4} maxStep={maxStep}>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="panel p-6 sm:p-8">
           <h1 className="text-[26px] font-semibold">Make it yours</h1>
           <p className="mt-1 text-muted-ink">Pick how your page and stamp card look to customers. Everything here is optional and can be changed later in Café Settings.</p>
@@ -305,7 +305,7 @@ export function OnboardingStep4({ svg, url, slug, maxStep, cafe, values, errors 
 export function OnboardingStep5({ cafe, programmes, plan, maxStep }: { cafe: any; programmes: { name: string; type: string; summary: string }[]; plan: string; maxStep: number }) {
   return (
     <Shell step={5} maxStep={maxStep}>
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="panel p-6 sm:p-8">
           <h1 className="text-[26px] font-semibold">Review and activate</h1>
           <dl className="mt-6 divide-y divide-beige">
@@ -329,7 +329,7 @@ export function OnboardingStep5({ cafe, programmes, plan, maxStep }: { cafe: any
               </div>
             ))}
           </dl>
-          <Form action="/onboarding/5" className="mt-6 flex gap-3">
+          <Form action="/onboarding/5" className="mt-6 flex flex-wrap items-center gap-3">
             <Button size="lg">Activate loyalty programme</Button>
             <a href="/onboarding?step=4" className="btn btn-ghost btn-lg">
               Back
@@ -368,7 +368,7 @@ export function OnboardingDone({ cafe, url, svg, programmes }: { cafe: any; url:
           <h1 className="mt-5 text-[32px] font-semibold">{cafe.name} is live on Perkora</h1>
           <p className="mt-2 text-muted-ink">Customers can join now by scanning your QR code.</p>
         </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-[280px_1fr]">
+        <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-[280px_1fr]">
           <div className="panel p-4">
             <div className="aspect-square w-full [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
             <a href={`/c/${cafe.slug}/qr.svg?download=1`} className="btn btn-secondary btn-sm mt-3 w-full">

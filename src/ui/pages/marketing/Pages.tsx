@@ -48,7 +48,7 @@ export function FeaturesPage() {
         {f.sections.map((s) => {
           const v = visual(s.key);
           return (
-            <section key={s.key} id={s.key} className="grid scroll-mt-20 gap-8 py-14 md:grid-cols-[1.2fr_1fr] md:items-center">
+            <section key={s.key} id={s.key} className="grid grid-cols-1 scroll-mt-20 gap-8 py-14 md:grid-cols-[1.2fr_1fr] md:items-center">
               <div>
                 <h2 className="text-[26px] font-semibold sm:text-[30px]">{s.title}</h2>
                 <p className="mt-3 max-w-[62ch] text-[16px] leading-relaxed text-muted-ink">{s.body}</p>
@@ -126,7 +126,7 @@ export function DemoRequestPage({ kind, values = {}, errors = {}, done }: { kind
   const d = t.demo;
   return (
     <MarketingLayout>
-      <section className="mx-auto grid max-w-[1180px] gap-12 px-4 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr]">
+      <section className="mx-auto grid grid-cols-1 max-w-[1180px] gap-12 px-4 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr]">
         <div>
           <h1 className="max-w-[18ch] text-[38px] font-semibold tracking-[-0.03em] sm:text-[46px]">{kind === 'demo' ? d.title : d.contactTitle}</h1>
           <p className="mt-4 max-w-[48ch] text-[16.5px] text-muted-ink">{kind === 'demo' ? d.intro : d.contactIntro}</p>
@@ -149,7 +149,7 @@ export function DemoRequestPage({ kind, values = {}, errors = {}, done }: { kind
           ) : (
             <Form action={kind === 'demo' ? '/demo' : '/contact'} className="grid gap-5" noValidate>
               <FlashMessage />
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <Field label={t.common.name} name="name" error={errors.name}>
                   <Input name="name" autoComplete="name" required maxLength={120} defaultValue={values.name} error={errors.name} />
                 </Field>
@@ -158,7 +158,7 @@ export function DemoRequestPage({ kind, values = {}, errors = {}, done }: { kind
                 </Field>
               </div>
               {kind === 'demo' && (
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <Field label={d.cafeName} name="cafe_name" error={errors.cafe_name}>
                     <Input name="cafe_name" maxLength={120} defaultValue={values.cafe_name} error={errors.cafe_name} />
                   </Field>

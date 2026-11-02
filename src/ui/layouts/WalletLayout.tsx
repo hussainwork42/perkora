@@ -37,16 +37,18 @@ export function WalletLayout({ cafe, tab, children, showTabs = true, referralsOn
       />
       <main className="mx-auto max-w-[520px] px-4 pt-5">{children}</main>
       {showTabs && (
-        <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-beige bg-paper/95 backdrop-blur" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} aria-label="Card sections">
-          <div className="mx-auto flex max-w-[520px]">
+        <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-beige/70 bg-paper/85 backdrop-blur-xl backdrop-saturate-150" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} aria-label="Card sections">
+          <div className="mx-auto flex max-w-[520px] px-1">
             {tabs.map(({ key, href, label, Icon }) => (
               <a
                 key={key}
                 href={href}
                 aria-current={tab === key ? 'page' : undefined}
-                className={cn('flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11.5px] font-medium', tab === key ? 'text-espresso' : 'text-muted')}
+                className={cn('flex flex-1 flex-col items-center gap-1 pb-2 pt-2 text-[11.5px] font-medium transition-colors', tab === key ? 'text-ink' : 'text-muted hover:text-ink')}
               >
-                <Icon className={cn('h-[22px] w-[22px]', tab === key && 'text-terracotta')} aria-hidden="true" />
+                <span className={cn('flex h-8 w-14 items-center justify-center rounded-full transition-colors', tab === key && 'bg-sand')}>
+                  <Icon className={cn('h-[21px] w-[21px]', tab === key && 'text-espresso')} aria-hidden="true" />
+                </span>
                 {label}
               </a>
             ))}

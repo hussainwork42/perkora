@@ -111,11 +111,13 @@ export function EmptySlot({ size = 44, label }: { size?: number; label?: string 
  * The stamp grid: N stamp slots followed by the reward slot.
  * `fresh` marks the most recent stamps for the press-in animation.
  */
-export function StampGrid({ required, filled, color, icon, fresh = 0, size = 44, className, ariaLabel }: {
+export function StampGrid({ required, filled, color, icon, tone, fresh = 0, size = 44, className, ariaLabel }: {
   required: number;
   filled: number;
   color?: string;
   icon?: string;
+  /** Text colour for empty slots and the reward slot, for use on coloured cards. */
+  tone?: string;
   fresh?: number;
   size?: number;
   className?: string;
@@ -129,17 +131,26 @@ export function StampGrid({ required, filled, color, icon, fresh = 0, size = 44,
         i < filled ? (
           <StampMark key={i} index={i} color={color} icon={icon} animate={i >= filled - fresh} size={size} />
         ) : (
-          <span key={i} className="text-espresso">
+          <span key={i} className={tone ? undefined : 'text-espresso'} style={tone ? { color: tone } : undefined}>
             <EmptySlot size={size} label={String(i + 1)} />
           </span>
         ),
       )}
-      <span
-        className={cn('flex items-center justify-center rounded-full border-[1.6px] border-dashed', filled >= required ? 'border-terracotta bg-terracotta-tint' : 'border-terracotta/50')}
-        style={{ width: size, height: size }}
-      >
-        <LuGift className="h-[45%] w-[45%] text-terracotta-ink" aria-hidden="true" />
-      </span>
+      {tone ? (
+        <span
+          className="flex items-center justify-center rounded-full border-[1.6px] border-dashed"
+          style={{ width: size, height: size, color: tone, borderColor: tone, background: filled >= required ? 'rgba(255,255,255,0.18)' : 'transparent', opacity: filled >= required ? 1 : 0.75 }}
+        >
+          <LuGift className="h-[45%] w-[45%]" aria-hidden="true" />
+        </span>
+      ) : (
+        <span
+          className={cn('flex items-center justify-center rounded-full border-[1.6px] border-dashed', filled >= required ? 'border-terracotta bg-terracotta-tint' : 'border-terracotta/50')}
+          style={{ width: size, height: size }}
+        >
+          <LuGift className="h-[45%] w-[45%] text-terracotta-ink" aria-hidden="true" />
+        </span>
+      )}
     </div>
   );
 }

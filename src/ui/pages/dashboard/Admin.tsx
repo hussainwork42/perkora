@@ -53,7 +53,7 @@ export function TeamPage({ biz, members, invitations, seatsUsed, inviteLink, err
           <Island name="CopyField" props={{ value: inviteLink, copyLabel: 'Copy link', copiedLabel: 'Copied' }} />
         </Alert>
       )}
-      <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_380px]">
         <Card>
           <div className="overflow-x-auto">
             <table className="table">
@@ -62,7 +62,7 @@ export function TeamPage({ biz, members, invitations, seatsUsed, inviteLink, err
                   <th>Person</th>
                   <th>Role</th>
                   <th>Permissions</th>
-                  <th>Last sign-in</th>
+                  <th className="col-wide">Last sign-in</th>
                   <th />
                 </tr>
               </thead>
@@ -77,7 +77,7 @@ export function TeamPage({ biz, members, invitations, seatsUsed, inviteLink, err
                       <Badge tone={m.role === 'owner' ? 'accent' : 'neutral'}>{m.role}</Badge>
                       {m.status !== 'active' && <Badge tone="error" className="ml-1">deactivated</Badge>}
                     </td>
-                    <td className="min-w-[230px]">
+                    <td className="min-w-[200px]">
                       {m.role === 'owner' ? (
                         <span className="text-[13px] text-muted-ink">Everything</span>
                       ) : (
@@ -97,7 +97,7 @@ export function TeamPage({ biz, members, invitations, seatsUsed, inviteLink, err
                         </Form>
                       )}
                     </td>
-                    <td className="whitespace-nowrap text-[13px] text-muted-ink">{m.last_sign_in_at ? relative(m.last_sign_in_at) : 'Never'}</td>
+                    <td className="col-wide whitespace-nowrap text-[13px] text-muted-ink">{m.last_sign_in_at ? relative(m.last_sign_in_at) : 'Never'}</td>
                     <td>
                       {m.role !== 'owner' && (
                         <Form action={`/dashboard/team/${m.id}/status`}>
@@ -200,7 +200,7 @@ export function SettingsProfilePage({ biz, values, errors = {}, publicUrl }: { b
           <Field label="Short description" name="description" optional hint="Shown on your public loyalty page.">
             <Textarea name="description" rows={2} maxLength={300} defaultValue={values.description} />
           </Field>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="City" name="city" optional>
               <Input name="city" maxLength={80} defaultValue={values.city} />
             </Field>
@@ -257,7 +257,7 @@ export function SettingsBrandingPage({ biz, errors = {} }: { biz: BusinessContex
     <DashboardLayout biz={biz} active="settings">
       <PageHeader title="Café Settings" description="Choose how your café looks to customers on its join page and loyalty card." />
       <SettingsTabs current="branding" />
-      <div className="grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid max-w-6xl grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Card className="p-6">
           <Form action="/dashboard/settings/branding" multipart className="grid gap-6" id="branding-form">
             {errors.form && <Alert tone="error">{errors.form}</Alert>}
@@ -265,7 +265,7 @@ export function SettingsBrandingPage({ biz, errors = {} }: { biz: BusinessContex
               <Island name="ImagePicker" props={{ name: 'logo', label: 'Logo', current: logo, maxSide: 600, shape: 'square', hint: 'PNG, JPEG or WebP. Large images are resized automatically.' }} />
             </Field>
             {logo && <Checkbox name="remove_logo" value="1" label="Remove the current logo" />}
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Main colour" name="primary_colour" hint="Header and buttons." error={errors.primary_colour}>
                 <div className="flex items-center gap-3">
                   <input type="color" id="primary_colour" name="primary_colour" defaultValue={biz.primaryColour} className="h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" />
@@ -341,7 +341,7 @@ export function SettingsLoyaltyPage({ biz, errors = {} }: { biz: BusinessContext
         </Alert>
         <Card className="p-6">
           <Form action="/dashboard/settings/loyalty" className="grid gap-5" noValidate>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Inactive after (days)" name="inactivityDays" hint={SEGMENT_LABELS.inactive.describe(s)} error={errors.inactivityDays}>
                 <Input name="inactivityDays" type="number" min={7} max={365} defaultValue={String(s.inactivityDays)} error={errors.inactivityDays} />
               </Field>
@@ -418,7 +418,7 @@ export function SettingsQrPage({ biz, svg, url }: { biz: BusinessContext; svg: s
     <DashboardLayout biz={biz} active="settings">
       <PageHeader title="Café Settings" />
       <SettingsTabs current="qr" />
-      <div className="grid max-w-4xl gap-5 md:grid-cols-[300px_1fr]">
+      <div className="grid grid-cols-1 max-w-4xl gap-5 md:grid-cols-[300px_1fr]">
         <Card className="p-5">
           <div className="aspect-square w-full rounded-[12px] border border-beige bg-white p-2 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
           <p className="mt-3 break-all text-center text-[12.5px] text-muted-ink">{url}</p>
@@ -494,7 +494,7 @@ export function SubscriptionPage({ biz, plans, sub, usage }: {
   return (
     <DashboardLayout biz={biz} active="subscription">
       <PageHeader title="Subscription" />
-      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
         <Card className="p-6">
           <p className="text-[13px] text-muted-ink">Current plan</p>
           <p className="mt-1 font-display text-[30px] font-semibold">{biz.plan.name}</p>
@@ -554,7 +554,7 @@ export function SubscriptionPage({ biz, plans, sub, usage }: {
             ))}
           </dl>
           <h3 className="mt-6 text-[14px] font-semibold">Included features</h3>
-          <ul className="mt-2 grid gap-1.5 text-[13.5px] sm:grid-cols-2">
+          <ul className="mt-2 grid grid-cols-1 gap-1.5 text-[13.5px] sm:grid-cols-2">
             {featureRows.map(([k, l]) => (
               <li key={k} className="flex items-center gap-2">
                 {f.features[k] ? <LuCheck className="h-4 w-4 text-success" aria-label="Included" /> : <LuX className="h-4 w-4 text-muted" aria-label="Not included" />}
@@ -565,7 +565,7 @@ export function SubscriptionPage({ biz, plans, sub, usage }: {
         </Card>
       </div>
       <h2 className="mb-3 mt-8 text-[18px] font-semibold">Change plan</h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {plans.map((p) => (
           <Card key={p.id} className={`p-5 ${p.id === biz.plan.id ? 'border-espresso' : ''}`}>
             <div className="flex items-center justify-between">
@@ -610,7 +610,7 @@ export function HelpPage({ biz }: { biz: BusinessContext }) {
   return (
     <DashboardLayout biz={biz} active="help">
       <PageHeader title="Help" description="How to run your programme day to day." />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-6">
           <h2 className="text-[17px] font-semibold">At the counter</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-[14.5px]">

@@ -86,7 +86,7 @@ export function ProgrammesPage({ biz, programmes, challenges, canAddProgramme, p
           ) : undefined
         }
       />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {programmes.map((p) => (
           <Card key={p.id} className="p-5">
             <div className="flex items-start justify-between gap-3">
@@ -161,10 +161,10 @@ export function ProgrammesPage({ biz, programmes, challenges, canAddProgramme, p
                 <thead>
                   <tr>
                     <th>Challenge</th>
-                    <th>Rule</th>
+                    <th className="col-wide">Rule</th>
                     <th>Reward</th>
-                    <th>Dates</th>
-                    <th className="text-right">Completed</th>
+                    <th className="col-wide">Dates</th>
+                    <th className="col-wide text-right">Completed</th>
                     <th>Status</th>
                     <th />
                   </tr>
@@ -173,14 +173,14 @@ export function ProgrammesPage({ biz, programmes, challenges, canAddProgramme, p
                   {challenges.map((c) => (
                     <tr key={c.id}>
                       <td className="font-medium">{c.name}</td>
-                      <td className="text-[13.5px]">
+                      <td className="col-wide text-[13.5px]">
                         {c.required_count} {c.rule_type === 'distinct_days' ? 'different days' : 'visits'} per {c.period === 'campaign' ? 'challenge' : c.period}
                       </td>
                       <td className="text-[13.5px]">{c.reward_label}</td>
-                      <td className="whitespace-nowrap text-[13.5px] text-muted-ink">
+                      <td className="col-wide whitespace-nowrap text-[13.5px] text-muted-ink">
                         {dateShort(c.start_date, biz.timezone)} – {dateShort(c.end_date, biz.timezone)}
                       </td>
-                      <td className="text-right tnum">{c.completions}</td>
+                      <td className="col-wide text-right tnum">{c.completions}</td>
                       <td>
                         <StatusBadge s={c.status} />
                       </td>
@@ -234,7 +234,7 @@ export function ProgrammeFormPage({ biz, mode, type, values, errors = {}, points
           </Field>
           {type === 'stamps' ? (
             <>
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <Field label="Stamps for a reward" name="stampsRequired" error={errors.stampsRequired}>
                   <Input name="stampsRequired" type="number" min={2} max={30} required defaultValue={values.stampsRequired ?? '9'} error={errors.stampsRequired} />
                 </Field>
@@ -251,7 +251,7 @@ export function ProgrammeFormPage({ biz, mode, type, values, errors = {}, points
                   <Field label="Description" name="rewardDescription" optional>
                     <Input name="rewardDescription" maxLength={200} defaultValue={values.rewardDescription} />
                   </Field>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Valid for (days after unlocking)" name="validityDays" optional error={errors.validityDays} hint="Leave empty for no expiry.">
                       <Input name="validityDays" type="number" min={1} max={730} defaultValue={values.validityDays} error={errors.validityDays} />
                     </Field>
@@ -276,7 +276,7 @@ export function ProgrammeFormPage({ biz, mode, type, values, errors = {}, points
                   <option value="per_purchase">Fixed points per qualifying purchase</option>
                 </Select>
               </Field>
-              <div className="grid gap-5 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <Field label={`Points per ${biz.currency === 'EUR' ? '€1' : '₺1'}`} name="pointsPerUnit" error={errors.pointsPerUnit}>
                   <Input name="pointsPerUnit" type="number" min={1} max={100} defaultValue={values.pointsPerUnit ?? '1'} error={errors.pointsPerUnit} />
                 </Field>
@@ -297,7 +297,7 @@ export function ProgrammeFormPage({ biz, mode, type, values, errors = {}, points
           <Field label="Programme terms" name="terms" optional hint="Shown on your public loyalty page.">
             <Textarea name="terms" rows={3} maxLength={2000} defaultValue={values.terms} />
           </Field>
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <Field label="Status" name="status">
               <Select name="status" defaultValue={values.status ?? 'active'}>
                 <option value="active">Active</option>
@@ -345,7 +345,7 @@ export function ChallengeFormPage({ biz, mode, values, errors = {}, rewards, pro
           <Field label="Description" name="description" optional hint="Explain the rule in one sentence for customers.">
             <Input name="description" maxLength={200} defaultValue={values.description} placeholder="Visit on three different days this week and get a free pastry." />
           </Field>
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <Field label="Count" name="rule_type">
               <Select name="rule_type" defaultValue={values.rule_type ?? 'distinct_days'}>
                 <option value="distinct_days">Different visit days</option>
@@ -363,7 +363,7 @@ export function ChallengeFormPage({ biz, mode, values, errors = {}, rewards, pro
               </Select>
             </Field>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Starts" name="start_date" error={errors.start_date}>
               <Input name="start_date" type="date" required defaultValue={values.start_date} error={errors.start_date} />
             </Field>
@@ -373,7 +373,7 @@ export function ChallengeFormPage({ biz, mode, values, errors = {}, rewards, pro
           </div>
           <fieldset className="rounded-[14px] border border-beige p-4">
             <legend className="px-1 text-[14px] font-semibold">Reward</legend>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Type" name="reward_kind">
                 <Select name="reward_kind" defaultValue={values.reward_kind ?? 'voucher'}>
                   <option value="voucher">A reward</option>
@@ -410,7 +410,7 @@ export function ChallengeFormPage({ biz, mode, values, errors = {}, rewards, pro
             <Island name="ShowWhen" props={{}} />
             {rewards.length === 0 && <p className="mt-3 text-[13px] text-muted-ink">Create a campaign reward under Rewards to use it here.</p>}
           </fieldset>
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <Field label="Times a customer can complete it" name="max_completions_per_customer" error={errors.max_completions_per_customer}>
               <Input name="max_completions_per_customer" type="number" min={1} max={520} defaultValue={values.max_completions_per_customer ?? '4'} />
             </Field>
@@ -506,9 +506,9 @@ export function RewardsPage({ biz, rewards }: { biz: BusinessContext; rewards: R
                     <tr>
                       <th>Reward</th>
                       <th>Cost</th>
-                      <th>Validity</th>
-                      <th className="text-right">Issued</th>
-                      <th className="text-right">Redeemed</th>
+                      <th className="col-wide">Validity</th>
+                      <th className="col-wide text-right">Issued</th>
+                      <th className="col-wide text-right">Redeemed</th>
                       <th>Status</th>
                       <th />
                     </tr>
@@ -526,12 +526,12 @@ export function RewardsPage({ biz, rewards }: { biz: BusinessContext; rewards: R
                           </div>
                         </td>
                         <td className="whitespace-nowrap">{r.points_cost ? `${r.points_cost} points` : r.stamps_cost ? `${r.stamps_cost} stamps` : '—'}</td>
-                        <td className="whitespace-nowrap text-[13.5px] text-muted-ink">
+                        <td className="col-wide whitespace-nowrap text-[13.5px] text-muted-ink">
                           {r.validity_days ? `${r.validity_days} days after unlock` : 'No expiry'}
                           {r.end_date && <div>until {dateShort(r.end_date, biz.timezone)}</div>}
                         </td>
-                        <td className="text-right tnum">{r.issued}</td>
-                        <td className="text-right tnum">{r.redeemed}</td>
+                        <td className="col-wide text-right tnum">{r.issued}</td>
+                        <td className="col-wide text-right tnum">{r.redeemed}</td>
                         <td>
                           <StatusBadge s={r.status} />
                         </td>
@@ -564,7 +564,7 @@ export function RewardFormPage({ biz, mode, values, errors = {}, pointsProgramme
   return (
     <DashboardLayout biz={biz} active="rewards">
       <PageHeader title={mode === 'new' ? 'Create reward' : `Edit ${values.name}`} back={{ href: '/dashboard/rewards', label: 'Rewards' }} />
-      <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
         <Card className="p-6">
           <Form action={mode === 'new' ? '/dashboard/rewards/new' : `/dashboard/rewards/${values.id}`} className="grid gap-5" id="reward-form" noValidate>
             {errors.form && <Alert tone="error">{errors.form}</Alert>}
@@ -581,7 +581,7 @@ export function RewardFormPage({ biz, mode, values, errors = {}, pointsProgramme
             <Field label="Description" name="description" optional>
               <Input name="description" maxLength={200} defaultValue={values.description} placeholder="Any pastry from the counter" />
             </Field>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Type" name="reward_type">
                 <Select name="reward_type" defaultValue={values.reward_type ?? 'free_item'}>
                   <option value="free_item">Free item</option>
@@ -601,7 +601,7 @@ export function RewardFormPage({ biz, mode, values, errors = {}, pointsProgramme
               </Field>
             </div>
             {pointsProgrammes.length > 0 && (
-              <div className="grid gap-5 sm:grid-cols-2" data-show-when="kind:points">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2" data-show-when="kind:points">
                 <Field label="Points programme" name="programme_id">
                   <Select name="programme_id" defaultValue={values.programme_id}>
                     {pointsProgrammes.map((p) => (
@@ -616,7 +616,7 @@ export function RewardFormPage({ biz, mode, values, errors = {}, pointsProgramme
                 </Field>
               </div>
             )}
-            <div className="grid gap-5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
               <Field label="Valid for (days)" name="validity_days" optional hint="After it is given.">
                 <Input name="validity_days" type="number" min={1} max={730} defaultValue={values.validity_days} />
               </Field>
@@ -627,7 +627,7 @@ export function RewardFormPage({ biz, mode, values, errors = {}, pointsProgramme
                 <Input name="end_date" type="date" defaultValue={values.end_date} error={errors.end_date} />
               </Field>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Limit per customer" name="per_customer_limit" optional>
                 <Input name="per_customer_limit" type="number" min={1} defaultValue={values.per_customer_limit} />
               </Field>
@@ -741,9 +741,9 @@ export function CampaignsPage({ biz, campaigns, allowed }: { biz: BusinessContex
                 <tr>
                   <th>Campaign</th>
                   <th>Benefit</th>
-                  <th>Dates</th>
-                  <th className="text-right">Issued</th>
-                  <th className="text-right">Redeemed</th>
+                  <th className="col-wide">Dates</th>
+                  <th className="col-wide text-right">Issued</th>
+                  <th className="col-wide text-right">Redeemed</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -755,13 +755,16 @@ export function CampaignsPage({ biz, campaigns, allowed }: { biz: BusinessContex
                         {c.name}
                       </a>
                       <div className="text-[12.5px] text-muted-ink">{CAMPAIGN_TYPE_LABEL[c.campaign_type]}</div>
+                      <div className="text-[12.5px] text-muted-ink md:hidden">
+                        {dateShort(c.start_date, biz.timezone)} – {c.end_date ? dateShort(c.end_date, biz.timezone) : 'no end'}
+                      </div>
                     </td>
                     <td className="text-[13.5px]">{c.benefit_label}</td>
-                    <td className="whitespace-nowrap text-[13.5px] text-muted-ink">
+                    <td className="col-wide whitespace-nowrap text-[13.5px] text-muted-ink">
                       {dateShort(c.start_date, biz.timezone)} – {c.end_date ? dateShort(c.end_date, biz.timezone) : 'no end'}
                     </td>
-                    <td className="text-right tnum">{c.vouchers_issued + c.bonuses}</td>
-                    <td className="text-right tnum">{c.redeemed}</td>
+                    <td className="col-wide text-right tnum">{c.vouchers_issued + c.bonuses}</td>
+                    <td className="col-wide text-right tnum">{c.redeemed}</td>
                     <td>
                       <StatusBadge s={c.display_status} />
                     </td>
@@ -792,7 +795,7 @@ export function CampaignFormPage({ biz, mode, values, errors = {}, rewards, prog
   const grantFields = (prefix: string, label: string) => (
     <fieldset className="rounded-[12px] border border-beige p-3">
       <legend className="px-1 text-[13px] font-semibold">{label}</legend>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Select name={`${prefix}_kind`} defaultValue={values[`${prefix}_kind`] ?? 'bonus'} aria-label={`${label} type`}>
           <option value="bonus">Bonus stamps/points</option>
           <option value="voucher">A reward</option>
@@ -850,7 +853,7 @@ export function CampaignFormPage({ biz, mode, values, errors = {}, rewards, prog
           <Field label="Description" name="description" optional>
             <Textarea name="description" rows={2} maxLength={400} defaultValue={values.description} placeholder="Double stamps on weekday afternoons." />
           </Field>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Starts" name="start_date" error={errors.start_date}>
               <Input name="start_date" type="date" required defaultValue={values.start_date} error={errors.start_date} />
             </Field>
@@ -861,7 +864,7 @@ export function CampaignFormPage({ biz, mode, values, errors = {}, rewards, prog
 
           <fieldset className="rounded-[14px] border border-beige p-4" data-show-when="campaign_type:welcome|bonus_points|limited_time|weekday|birthday|win_back|custom">
             <legend className="px-1 text-[14px] font-semibold">Benefit</legend>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="What members get" name="benefit_kind">
                 <Select name="benefit_kind" defaultValue={values.benefit_kind ?? 'bonus'}>
                   <option value="bonus">Bonus stamps or points on qualifying purchases</option>
@@ -936,7 +939,7 @@ export function CampaignFormPage({ biz, mode, values, errors = {}, rewards, prog
                 <p className="hint">Leave all unticked for every day.</p>
               </div>
               {flexible ? (
-                <div className="grid gap-4 sm:grid-cols-2" data-show-when="campaign_type:bonus_points|limited_time|weekday|win_back|custom">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" data-show-when="campaign_type:bonus_points|limited_time|weekday|win_back|custom">
                   <Field label="From time" name="start_time" optional>
                     <Input name="start_time" type="time" defaultValue={values.start_time} />
                   </Field>
@@ -947,7 +950,7 @@ export function CampaignFormPage({ biz, mode, values, errors = {}, rewards, prog
               ) : (
                 <LockedFeature title="Time-of-day windows (flexible campaign rules)" plan={biz.plan.name} />
               )}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Uses per customer" name="usage_limit_per_customer" optional>
                   <Input name="usage_limit_per_customer" type="number" min={1} defaultValue={values.usage_limit_per_customer} />
                 </Field>
@@ -1022,7 +1025,7 @@ export function CampaignDetailPage({ biz, c, offerPreview, perf, contacts, eligi
           </>
         }
       />
-      <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
         <div className="space-y-4">
           <Card className="p-5">
             <h2 className="text-[16px] font-semibold">Status</h2>

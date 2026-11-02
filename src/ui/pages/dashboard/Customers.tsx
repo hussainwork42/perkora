@@ -117,13 +117,13 @@ export function CustomersPage({ biz, rows, total, page, pageSize, q, segment, so
               <thead>
                 <tr>
                   <th>{sortLink('name', 'Customer')}</th>
-                  {showContacts && <th>Contact</th>}
-                  <th>{sortLink('joined', 'Joined')}</th>
+                  {showContacts && <th className="col-wide">Contact</th>}
+                  <th className="col-wide">{sortLink('joined', 'Joined')}</th>
                   <th>Balance</th>
-                  <th>{sortLink('recent', 'Last visit')}</th>
+                  <th className="col-wide">{sortLink('recent', 'Last visit')}</th>
                   <th className="text-right">{sortLink('visits', 'Visits')}</th>
-                  <th className="text-right">Rewards</th>
-                  <th>Status</th>
+                  <th className="col-wide text-right">Rewards</th>
+                  <th className="col-wide">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,20 +134,21 @@ export function CustomersPage({ biz, rows, total, page, pageSize, q, segment, so
                         {r.name}
                       </a>
                       <div className="text-[12px] text-muted-ink tnum">{formatMemberCode(r.member_code)}</div>
+                      <div className="text-[12px] text-muted-ink md:hidden">{r.last_visit_at ? relative(r.last_visit_at) : 'No visit yet'}</div>
                     </td>
                     {showContacts && (
-                      <td className="text-[13.5px] text-muted-ink">
+                      <td className="col-wide text-[13.5px] text-muted-ink">
                         {r.email && <div className="max-w-[220px] truncate">{r.email}</div>}
                         {r.phone && <div>{r.phone}</div>}
                         {!r.email && !r.phone && '—'}
                       </td>
                     )}
-                    <td className="whitespace-nowrap text-muted-ink">{dateShort(r.joined_at, tz)}</td>
+                    <td className="col-wide whitespace-nowrap text-muted-ink">{dateShort(r.joined_at, tz)}</td>
                     <td className="whitespace-nowrap tnum">{r.balances ?? '—'}</td>
-                    <td className="whitespace-nowrap text-muted-ink">{r.last_visit_at ? relative(r.last_visit_at) : 'No visit yet'}</td>
+                    <td className="col-wide whitespace-nowrap text-muted-ink">{r.last_visit_at ? relative(r.last_visit_at) : 'No visit yet'}</td>
                     <td className="text-right tnum">{r.visit_count}</td>
-                    <td className="text-right">{r.rewards > 0 ? <Badge tone="accent">{r.rewards}</Badge> : <span className="text-muted">0</span>}</td>
-                    <td>
+                    <td className="col-wide text-right">{r.rewards > 0 ? <Badge tone="accent">{r.rewards}</Badge> : <span className="text-muted">0</span>}</td>
+                    <td className="col-wide">
                       <Badge tone={r.status === 'active' ? 'success' : 'neutral'}>{r.status}</Badge>
                     </td>
                   </tr>
@@ -171,7 +172,7 @@ export function CustomerNewPage({ biz, values = {}, errors = {} }: { biz: Busine
           <Field label="Name" name="name" error={errors.name}>
             <Input name="name" required maxLength={120} defaultValue={values.name} error={errors.name} />
           </Field>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Email" name="email" optional error={errors.email}>
               <Input name="email" type="email" maxLength={254} defaultValue={values.email} error={errors.email} />
             </Field>
@@ -215,9 +216,9 @@ export function CustomerDetailPage({ biz, view, visits, referral, campaigns, cla
           </a>
         }
       />
-      <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]">
         <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {view.programmes.map((p) => (
               <Card key={p.id} className="p-5">
                 <p className="text-[13px] text-muted-ink">{p.name}</p>

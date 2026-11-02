@@ -1,4 +1,4 @@
-import { LuGift, LuQrCode, LuRepeat, LuStamp, LuTicket, LuUndo2 } from 'react-icons/lu';
+import { LuCheck } from 'react-icons/lu';
 import { usePage } from '../../page-context';
 import { MarketingLayout } from '../../layouts/MarketingLayout';
 import { CustomerCardMock, DashboardMock, PhoneFrame, StepVisual, TerminalMock } from '../../components/mockups';
@@ -17,25 +17,26 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
     <MarketingLayout>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-12 px-4 pb-16 pt-12 sm:px-6 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20">
+        <div className="mx-auto grid grid-cols-1 max-w-[1180px] items-center gap-12 px-4 pb-16 pt-12 sm:px-6 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20">
           <div>
             <h1 className="max-w-[15ch] text-[42px] font-semibold leading-[1.04] tracking-[-0.035em] sm:text-[56px] lg:text-[64px]">{h.heroTitle}</h1>
-            <p className="mt-6 max-w-[54ch] text-[17px] leading-relaxed text-muted-ink sm:text-[18px]">{h.heroBody}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <p className="mt-5 max-w-[44ch] text-[18px] leading-relaxed text-muted-ink">{h.heroBody}</p>
+            <div className="mt-8 grid gap-3 sm:flex">
               <a href="/get-started" className="btn btn-primary btn-lg">
                 {h.heroPrimary}
               </a>
-              <a href="#how-it-works" className="btn btn-secondary btn-lg">
+              <a href="/cafes" className="btn btn-secondary btn-lg">
                 {h.heroSecondary}
               </a>
             </div>
-            <p className="mt-6 text-[14.5px] text-muted-ink">{h.heroNote}</p>
-            <p className="mt-2 text-[14.5px] text-muted-ink">
-              {h.heroCustomer}{' '}
-              <a href="/start" className="link font-medium text-ink">
-                {h.heroCustomerLink}
-              </a>
-            </p>
+            <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px] text-muted-ink">
+              {h.heroPoints.map((p) => (
+                <li key={p} className="flex items-center gap-1.5">
+                  <LuCheck className="h-4 w-4 text-sage-ink" aria-hidden="true" />
+                  {p}
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="relative mx-auto w-full max-w-[560px] sm:min-h-[520px] lg:mx-0" aria-label="Product preview: a customer loyalty card and the café dashboard">
             <DashboardMock className="hidden w-[76%] sm:block" />
@@ -46,31 +47,11 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
         </div>
       </section>
 
-      {/* Problem */}
-      <section className="border-y border-beige bg-paper">
-        <div className="mx-auto max-w-[1180px] px-4 py-20 sm:px-6">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.35fr]">
-            <div>
-              <h2 className="max-w-[20ch] text-[32px] font-semibold sm:text-[38px]">{h.problemTitle}</h2>
-              <p className="mt-4 max-w-[42ch] text-[16.5px] text-muted-ink">{h.problemIntro}</p>
-            </div>
-            <div className="divide-y divide-beige">
-              {h.problems.map((p, i) => (
-                <div key={i} className="grid gap-2 py-6 first:pt-0 sm:grid-cols-[1fr_1.2fr] sm:gap-8">
-                  <p className="text-[17px] font-semibold text-ink">{p.problem}</p>
-                  <p className="text-[16px] text-muted-ink">{p.answer}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
-      <section id="features" className="mx-auto max-w-[1180px] px-4 py-24 sm:px-6">
+      <section id="features" className="mx-auto max-w-[1180px] px-4 py-20 sm:px-6 sm:py-24">
         <h2 className="max-w-[22ch] text-[32px] font-semibold sm:text-[38px]">{h.featuresTitle}</h2>
         <p className="mt-3 text-[16.5px] text-muted-ink">{h.featuresIntro}</p>
-        <div className="mt-10 grid gap-4 lg:grid-cols-2">
+        <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="panel flex flex-col justify-between gap-8 p-7">
             <div>
               <h3 className="text-[21px] font-semibold">{h.features.card.title}</h3>
@@ -95,28 +76,6 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
             </div>
           </div>
         </div>
-        <div className="mt-4 grid gap-x-8 gap-y-8 rounded-[20px] border border-beige bg-paper p-7 sm:grid-cols-2 lg:grid-cols-3">
-          {(
-            [
-              ['stamps', LuStamp],
-              ['streaks', LuRepeat],
-              ['rewards', LuGift],
-              ['qr', LuQrCode],
-              ['offers', LuTicket],
-              ['winback', LuUndo2],
-            ] as const
-          ).map(([k, Icon]) => (
-            <div key={k} className="flex gap-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-[16.5px] font-semibold">{h.features[k].title}</h3>
-                <p className="mt-1 text-[15px] text-muted-ink">{h.features[k].body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
         <div className="mt-6">
           <a href="/features" className="link text-[15px]">
             {t.nav.features}
@@ -128,7 +87,7 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
       <section id="how-it-works" className="scroll-mt-20 border-y border-beige bg-sand/60">
         <div className="mx-auto max-w-[1180px] px-4 py-24 sm:px-6">
           <h2 className="text-[32px] font-semibold sm:text-[38px]">{h.howTitle}</h2>
-          <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+          <ol className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
             {h.howSteps.map((s, i) => (
               <li key={i} className="relative">
                 <div className="flex items-center gap-4">
@@ -153,7 +112,7 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
         <div className="mx-auto max-w-[1180px] px-4 py-24 sm:px-6">
           <h2 className="text-[32px] font-semibold text-cream sm:text-[38px]">{h.previewTitle}</h2>
           <p className="mt-3 max-w-[56ch] text-[16.5px] text-cream/70">{h.previewBody}</p>
-          <div className="mt-12 grid items-start gap-8 lg:grid-cols-[0.8fr_1fr_1.2fr]">
+          <div className="mt-12 grid grid-cols-1 items-start gap-8 lg:grid-cols-[0.8fr_1fr_1.2fr]">
             <figure>
               <PhoneFrame className="mx-auto max-w-[270px] border-cream/10">
                 <CustomerCardMock filled={8} required={9} reward={reward} progressText={fmt(t.wallet.stampsProgress, { have: 8, need: 9 })} toGoText={plural(t.wallet.stampsToGo, 1, { reward: '{reward}' })} cta={t.wallet.showAtCounter} />
@@ -191,7 +150,7 @@ export function HomePage({ plans }: { plans: PlanCardData[] }) {
         <div className="mt-10">
           <PlanCards plans={plans} compact />
         </div>
-        <p className="mt-5 max-w-[80ch] text-[13.5px] text-muted-ink">{h.pricingNote}</p>
+        <p className="mt-5 text-center text-[13.5px] text-muted-ink">{h.pricingNote}</p>
       </section>
 
       {/* Final CTA */}

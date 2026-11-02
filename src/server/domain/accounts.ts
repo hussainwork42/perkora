@@ -6,10 +6,24 @@ import { DomainError } from './errors';
 import type { Locale } from '../../shared/i18n';
 
 export const emailSchema = z.string().trim().toLowerCase().email('Enter a valid email address.').max(254);
-export const passwordSchema = z.string().min(10, 'Use at least 10 characters.').max(200, 'That password is too long.');
+export const passwordSchema = z.string().min(8, 'Use at least 8 characters.').max(200, 'That password is too long.');
 export const nameSchema = z.string().trim().min(1, 'Enter your name.').max(120, 'That name is too long.');
 
-export const signUpSchema = z.object({ name: nameSchema, email: emailSchema, password: passwordSchema });
+/** A friendly display name from an email address ("maya.collins@…" → "Maya Collins"); people can change it later. */
+export function nameFromEmail(email: string): string {
+  const local = email.split('@')[0].split('+')[0];
+  const words = local
+    .split(/[._\-\s]+/)
+    .map((w) => w.replace(/[0-9]+/g, ''))
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  return (words.join(' ') || 'Guest').slice(0, 120);
+}
+
+/** Sign-up needs only an email and a password; a name is optional and can be added later. */
+export const signUpSchema = z
+  .object({ name: z.string().trim().max(120, 'That name is too long.').optional(), email: emailSchema, password: passwordSchema })
+  .transform((v) => ({ ...v, name: v.name || nameFromEmail(v.email) }));
 
 export async function createUser(
   q: Queryable,

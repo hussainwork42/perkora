@@ -81,6 +81,12 @@ ${opts.description ? `<meta name="description" content="${escapeHtml(opts.descri
 ${opts.noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta name="theme-color" content="${escapeHtml(opts.themeColor ?? '#FAF6EF')}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Perkora">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preload" href="/fonts/Inter-Regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="/fonts/InterDisplay-SemiBold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="${m.css}">

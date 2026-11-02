@@ -4197,7 +4197,16 @@ var init_config = __esm({
       TRUST_PROXY: external_exports.enum(["true", "false"]).default("false").transform((v) => v === "true"),
       DEMO_MODE: external_exports.enum(["true", "false"]).default("true").transform((v) => v === "true"),
       DEMO_PASSWORD: external_exports.string().min(8).optional(),
-      LOG_LEVEL: external_exports.enum(["debug", "info", "warn", "error"]).default("info")
+      LOG_LEVEL: external_exports.enum(["debug", "info", "warn", "error"]).default("info"),
+      // Optional: sending email (replies to website messages, new-message alerts)
+      SMTP_HOST: external_exports.string().optional(),
+      SMTP_PORT: external_exports.coerce.number().int().positive().optional(),
+      SMTP_SECURE: external_exports.enum(["ssl", "starttls", "none"]).optional(),
+      SMTP_USER: external_exports.string().optional(),
+      SMTP_PASS: external_exports.string().optional(),
+      MAIL_FROM: external_exports.string().optional(),
+      /** Where new website messages are announced by email (defaults to the SMTP account). */
+      NOTIFY_EMAIL: external_exports.string().optional()
     });
     cached = null;
   }
@@ -7111,6 +7120,8 @@ var init_en2 = __esm({
     "use strict";
     en = {
       common: {
+        showPassword: "Show password",
+        hidePassword: "Hide password",
         signIn: "Sign in",
         signOut: "Sign out",
         signUp: "Create account",
@@ -7161,9 +7172,10 @@ var init_en2 = __esm({
         metaTitle: "Perkora \u2014 digital loyalty for independent caf\xE9s",
         metaDescription: "Launch a branded digital stamp card or points programme for your caf\xE9. Customers join by scanning a QR code; no app download needed.",
         heroTitle: "Turn Every Coffee into a Reason to Return.",
-        heroBody: "Give your customers a better reason to come back. Perkora helps independent caf\xE9s launch digital loyalty cards, reward regulars, and build stronger customer relationships without the complexity of a traditional loyalty app.",
-        heroPrimary: "Start Your Loyalty Programme",
-        heroSecondary: "See How It Works",
+        heroBody: "Digital stamp cards for independent caf\xE9s. Customers join with a QR code. No app needed.",
+        heroPrimary: "Set up my caf\xE9",
+        heroSecondary: "Find a caf\xE9",
+        heroPoints: ["Free for 30 days", "Ready in 10 minutes", "Works on any phone"],
         heroCustomer: "Collecting stamps at a caf\xE9?",
         heroCustomerLink: "Find your caf\xE9 or sign in",
         heroNote: "Made for independent caf\xE9s. Designed for everyday simplicity.",
@@ -7183,8 +7195,8 @@ var init_en2 = __esm({
             answer: "Every verified visit and redemption is recorded, so you can see who is coming back and who has drifted away."
           }
         ],
-        featuresTitle: "Everything a loyalty programme needs. Nothing it doesn\u2019t.",
-        featuresIntro: "Set up in an afternoon, run from the counter in seconds.",
+        featuresTitle: "Everything you need. Nothing you don\u2019t.",
+        featuresIntro: "Set up in an afternoon. Serve in seconds.",
         features: {
           card: { title: "Digital loyalty cards", body: "A branded card in your colours, on the customer\u2019s phone. No app to install." },
           stamps: { title: "Points and stamps", body: "Classic \u201C9th coffee free\u201D stamp cards, points per euro spent, or both." },
@@ -7197,20 +7209,20 @@ var init_en2 = __esm({
         },
         howTitle: "Up and running in three steps",
         howSteps: [
-          { title: "Set up your caf\xE9", body: "Add your name, logo and colours, and choose a stamp card or points. The first reward takes a minute." },
-          { title: "Customers scan and join", body: "Print your QR code for the counter. Customers scan it, join with their email, and get their card instantly." },
-          { title: "Reward every visit", body: "Staff scan the customer\u2019s card, confirm the purchase, and the stamp appears on their phone." }
+          { title: "Set up your caf\xE9", body: "Add your logo and choose a reward." },
+          { title: "Customers scan and join", body: "They scan your QR code and sign up with email." },
+          { title: "Reward every visit", body: "Staff scan their card. The stamp appears instantly." }
         ],
         previewTitle: "One product, three views",
-        previewBody: "The customer sees their card. Your staff see a fast counter screen. You see what is working.",
+        previewBody: "Customers get a card. Staff get a fast counter screen. You see what works.",
         previewCustomer: "Customer card",
         previewStaff: "Counter terminal",
         previewOwner: "Owner dashboard",
         pricingTitle: "Simple monthly plans",
-        pricingNote: "Introductory pricing proposals \u2014 they may change before launch. Taxes, payment processing fees and messaging charges may be additional.",
+        pricingNote: "Introductory prices for our pilot. No card needed to start.",
         pricingCta: "See full pricing",
         finalTitle: "Give your regulars a reason to come back.",
-        finalBody: "Set up your caf\xE9\u2019s programme today, or let us walk you through it."
+        finalBody: "Set up in 10 minutes, or let us walk you through it."
       },
       featuresPage: {
         metaTitle: "Features",
@@ -7281,9 +7293,9 @@ var init_en2 = __esm({
         recommended: "Recommended",
         choose: "Start with {plan}",
         everythingIn: "Everything in {plan}, plus:",
-        proposalNote: "These are introductory pricing proposals for our pilot in Northern Cyprus. Plans, limits and prices may change before commercial launch and are not contractual commitments.",
-        extrasNote: "Applicable taxes, payment processing fees, messaging charges and third-party service costs may be additional.",
-        billingNote: "Choosing a plan starts a free trial. No card is taken: billing is arranged with our team before your trial ends.",
+        proposalNote: "Introductory prices for our pilot in Northern Cyprus. They may change before launch.",
+        extrasNote: "Taxes and payment fees may apply.",
+        billingNote: "Choosing a plan starts a free trial. No card needed.",
         faqTitle: "Questions",
         faq: [
           { q: "Do my customers pay anything?", a: "No. Customers join and use their card for free." },
@@ -7312,16 +7324,16 @@ var init_en2 = __esm({
       start: {
         metaTitle: "Get started",
         title: "How will you use Perkora?",
-        intro: "Choose what fits you. Caf\xE9 owners set up a loyalty card; customers collect stamps and rewards.",
+        intro: "Pick one to get going.",
         signedInAs: "You\u2019re signed in as {name}.",
         continue: "Continue to your account",
         cafeTitle: "I run a caf\xE9",
-        cafeBody: "Set up a digital loyalty card for your customers in about 10 minutes. Free 30-day trial.",
+        cafeBody: "A digital loyalty card for your caf\xE9, ready in about 10 minutes. Free for 30 days.",
         cafeCreate: "Set up my caf\xE9",
         cafeSignIn: "Sign in as a caf\xE9 owner or staff",
-        staffNote: "Caf\xE9 staff: sign in with the email your caf\xE9 invited you with.",
+        staffNote: "Staff: sign in with the email your caf\xE9 invited.",
         customerTitle: "I\u2019m a customer",
-        customerBody: "Collect stamps and rewards at your favourite caf\xE9s. Free, and no app to download.",
+        customerBody: "Collect stamps and rewards on your phone. Free, no app needed.",
         customerFind: "Find a caf\xE9",
         customerCreate: "Create account",
         customerSignIn: "Sign in"
@@ -7329,7 +7341,7 @@ var init_en2 = __esm({
       cafes: {
         metaTitle: "Find a caf\xE9",
         title: "Find a Perkora caf\xE9",
-        intro: "Open a caf\xE9 to join its loyalty card. You collect stamps and rewards on your phone.",
+        intro: "Tap a caf\xE9 to get its loyalty card.",
         search: "Search by caf\xE9 name or city",
         searchButton: "Search",
         none: "No caf\xE9s match \u201C{q}\u201D.",
@@ -7341,11 +7353,11 @@ var init_en2 = __esm({
       },
       auth: {
         signInTitle: "Sign in to Perkora",
-        signInIntro: "For customers, caf\xE9 owners and staff.",
+        signInIntro: "Welcome back.",
         signUpTitle: "Create your account",
-        signUpIntro: "Your loyalty cards from every Perkora caf\xE9, in one place.",
+        signUpIntro: "Collect stamps and rewards at every Perkora caf\xE9.",
         businessSignUpTitle: "Set up your caf\xE9 on Perkora",
-        businessSignUpIntro: "Create your owner account first. Next, you\u2019ll set up your caf\xE9 and loyalty programme.",
+        businessSignUpIntro: "Create your account. Then set up your caf\xE9 in about 10 minutes.",
         noAccount: "New here?",
         haveAccount: "Already have an account?",
         createOne: "Create a customer account",
@@ -7354,7 +7366,7 @@ var init_en2 = __esm({
         forBusiness: "Own a caf\xE9?",
         forBusinessLink: "Set up your caf\xE9",
         invalid: "That email and password don\u2019t match an account.",
-        passwordHint: "At least 10 characters.",
+        passwordHint: "At least 8 characters.",
         emailTaken: "An account with this email already exists. Sign in instead.",
         demoAccounts: "Demo accounts",
         demoAccountsBody: "Use these fictional accounts to explore. Password for all: {password}",
@@ -7372,31 +7384,36 @@ var init_en2 = __esm({
         pointsRulePerPurchase: "Earn {n} points per qualifying purchase.",
         pointsRewards: "Spend points on",
         offers: "Current offers",
-        join: "Join the programme",
+        join: "Get your card",
         joinSignedIn: "Join as {name}",
         alreadyMember: "You\u2019re a member",
         openCard: "Open my card",
         signInToJoin: "Already have an account? Sign in",
         marketing: "Send me offers and news from {cafe} (optional)",
-        marketingHelp: "You can change this at any time. Joining does not depend on it.",
+        marketingHelp: "Change it any time.",
         referralApplied: "You were invited by a friend. You\u2019ll both receive a reward after your first visit.",
-        referralAppliedJoin: "You were invited by a friend. When you join, they get a thank-you reward.",
-        referralAppliedVisit: "You were invited by a friend. After your first purchase here, they get a thank-you reward.",
+        referralAppliedJoin: "A friend invited you. Join and they get a thank-you reward.",
+        referralAppliedVisit: "A friend invited you. After your first purchase, they get a thank-you reward.",
         referralYouGet: "You get {reward} too.",
         referralInvalid: "That invitation code isn\u2019t valid here, but you can still join.",
         unavailable: "This caf\xE9\u2019s loyalty programme isn\u2019t available right now.",
         terms: "Programme terms",
         welcomeTitle: "Welcome to {cafe}!",
-        welcomeBody: "Show your card at the counter whenever you order to collect stamps and rewards.",
+        welcomeBody: "Show your card when you order to collect stamps.",
         demoShortcut: "Demo shortcut",
         demoShortcutBody: "Create a fictional customer instantly, without typing an email.",
         demoShortcutButton: "Join as a demo customer",
         joinCta: "Create account and join"
       },
       wallet: {
+        pointsUnit: "points",
+        installTitle: "Add Perkora to your home screen",
+        installBody: "Open your cards in one tap, like an app.",
+        installIos: "Tap {share} then \u201CAdd to Home Screen\u201D.",
+        install: "Install",
         title: "My loyalty cards",
         empty: "You haven\u2019t joined any caf\xE9 programmes yet.",
-        emptyBody: "Scan the Perkora QR code on a caf\xE9\u2019s counter, or find the caf\xE9 in our list, to get your card.",
+        emptyBody: "Scan a caf\xE9\u2019s Perkora QR code, or find it in the list.",
         hello: "Hello, {name}",
         tabs: { card: "Card", rewards: "Rewards", offers: "Offers", activity: "Activity", refer: "Invite" },
         showAtCounter: "Show at the counter",
@@ -7440,19 +7457,19 @@ var init_en2 = __esm({
         recentActivity: "Recent activity",
         seeAll: "See all",
         memberCode: "Member code",
-        qrHelp: "Staff scan this code to add stamps or redeem rewards. It refreshes automatically.",
+        qrHelp: "Staff scan this to add stamps. It refreshes automatically.",
         qrRefreshing: "Refreshing code\u2026",
-        qrError: "Couldn\u2019t refresh the code. Check your connection; staff can type your member code instead.",
+        qrError: "Couldn\u2019t refresh the code. Staff can type your member code.",
         inviteCardTitle: "Invite friends",
         inviteCardBody: "Get {reward} for every friend you bring.",
-        referYouGetVisit: "Invite a friend to {cafe}. When they make their first purchase, you get {reward}.",
-        referYouGetJoin: "Invite a friend to {cafe}. As soon as they join, you get {reward}.",
+        referYouGetVisit: "Invite a friend. When they make their first purchase, you get {reward}.",
+        referYouGetJoin: "Invite a friend. As soon as they join, you get {reward}.",
         referFriendGets: "Your friend gets: {reward}.",
         referShareText: "Join me at {cafe} and collect loyalty rewards on your phone: {link}",
         shareWhatsApp: "Share on WhatsApp",
         referJoined: "friends joined",
         referRewarded: "rewards earned",
-        referRules: "Each friend can be invited once, and you can\u2019t invite yourself. The caf\xE9 may limit how many rewards one person can earn.",
+        referRules: "Each friend counts once, and you can\u2019t invite yourself.",
         referTitle: "Invite a friend",
         referBody: "Share your link. After your friend\u2019s first verified visit, you receive {reward} and they receive {friendReward}.",
         referUnavailable: "Referral rewards aren\u2019t running at {cafe} right now.",
@@ -7465,13 +7482,13 @@ var init_en2 = __esm({
         addAnotherTitle: "Add another caf\xE9",
         scanCafe: "Scan a caf\xE9\u2019s QR code",
         scanCafeHint: "Point the camera at the Perkora QR code on the caf\xE9\u2019s counter",
-        scanNotCafe: "That isn\u2019t a Perkora caf\xE9 code. Ask the caf\xE9 for their Perkora QR code, or find the caf\xE9 in the list.",
-        scanMemberCode: "That\u2019s a customer\u2019s card code, which staff scan at the counter. To join a caf\xE9, scan the QR code on its counter.",
-        cameraDenied: "Camera access was blocked. Allow it in your browser settings, or find the caf\xE9 in the list.",
-        cameraUnsupported: "This browser can\u2019t open the camera. Use your phone\u2019s camera app, or find the caf\xE9 in the list.",
-        cameraInsecure: "The camera only works on a secure (https) address. Find the caf\xE9 in the list instead.",
-        cameraMissing: "No camera was found on this device. Find the caf\xE9 in the list instead.",
-        addAnother: "Scan its QR code, or find it in our list of Perkora caf\xE9s.",
+        scanNotCafe: "That isn\u2019t a Perkora caf\xE9 code.",
+        scanMemberCode: "That\u2019s a customer card code. Scan the code on the caf\xE9\u2019s counter instead.",
+        cameraDenied: "Camera blocked. Allow it in your browser settings.",
+        cameraUnsupported: "This browser can\u2019t open the camera. Use your phone\u2019s camera app instead.",
+        cameraInsecure: "The camera needs a secure (https) address.",
+        cameraMissing: "No camera found on this device.",
+        addAnother: "Scan its QR code or find it in the list.",
         activityEarn: "+{n} for a qualifying purchase",
         activityRedeemed: "Redeemed: {reward}",
         activityCardDone: "Card completed: {reward} unlocked",
@@ -7597,6 +7614,8 @@ var init_tr = __esm({
     "use strict";
     tr = {
       common: {
+        showPassword: "\u015Eifreyi g\xF6ster",
+        hidePassword: "\u015Eifreyi gizle",
         signIn: "Giri\u015F yap",
         signOut: "\xC7\u0131k\u0131\u015F yap",
         signUp: "Hesap olu\u015Ftur",
@@ -7647,9 +7666,10 @@ var init_tr = __esm({
         metaTitle: "Perkora \u2014 ba\u011F\u0131ms\u0131z kafeler i\xE7in dijital sadakat",
         metaDescription: "Kafeniz i\xE7in markal\u0131 bir dijital damga kart\u0131 veya puan program\u0131 ba\u015Flat\u0131n. M\xFC\u015Fteriler QR kodu okutarak kat\u0131l\u0131r; uygulama indirmek gerekmez.",
         heroTitle: "Her kahveyi geri d\xF6nmek i\xE7in bir nedene d\xF6n\xFC\u015Ft\xFCr\xFCn.",
-        heroBody: "M\xFC\u015Fterilerinize geri gelmeleri i\xE7in daha iyi bir neden verin. Perkora, ba\u011F\u0131ms\u0131z kafelerin dijital sadakat kartlar\u0131 ba\u015Flatmas\u0131na, m\xFCdavimlerini \xF6d\xFCllendirmesine ve geleneksel bir sadakat uygulamas\u0131n\u0131n karma\u015F\u0131kl\u0131\u011F\u0131 olmadan daha g\xFC\xE7l\xFC m\xFC\u015Fteri ili\u015Fkileri kurmas\u0131na yard\u0131mc\u0131 olur.",
-        heroPrimary: "Sadakat program\u0131n\u0131z\u0131 ba\u015Flat\u0131n",
-        heroSecondary: "Nas\u0131l \xE7al\u0131\u015Ft\u0131\u011F\u0131n\u0131 g\xF6r\xFCn",
+        heroBody: "Ba\u011F\u0131ms\u0131z kafeler i\xE7in dijital damga kartlar\u0131. M\xFC\u015Fteriler QR kodla kat\u0131l\u0131r. Uygulama gerekmez.",
+        heroPrimary: "Kafemi kur",
+        heroSecondary: "Kafe bul",
+        heroPoints: ["30 g\xFCn \xFCcretsiz", "10 dakikada haz\u0131r", "Her telefonda \xE7al\u0131\u015F\u0131r"],
         heroCustomer: "Bir kafede damga m\u0131 topluyorsunuz?",
         heroCustomerLink: "Kafenizi bulun ya da giri\u015F yap\u0131n",
         heroNote: "Ba\u011F\u0131ms\u0131z kafeler i\xE7in yap\u0131ld\u0131. G\xFCnl\xFCk kullan\u0131mda sadelik i\xE7in tasarland\u0131.",
@@ -7669,8 +7689,8 @@ var init_tr = __esm({
             answer: "Do\u011Frulanan her ziyaret ve \xF6d\xFCl kullan\u0131m\u0131 kaydedilir; kimin geri geldi\u011Fini, kimin uzakla\u015Ft\u0131\u011F\u0131n\u0131 g\xF6rebilirsiniz."
           }
         ],
-        featuresTitle: "Bir sadakat program\u0131n\u0131n ihtiyac\u0131 olan her \u015Fey. Fazlas\u0131 de\u011Fil.",
-        featuresIntro: "Bir \xF6\u011Fleden sonrada kurulur, tezg\xE2hta saniyeler i\xE7inde kullan\u0131l\u0131r.",
+        featuresTitle: "\u0130htiyac\u0131n\u0131z olan her \u015Fey. Fazlas\u0131 yok.",
+        featuresIntro: "Bir \xF6\u011Fleden sonra kurun. Saniyeler i\xE7inde hizmet verin.",
         features: {
           card: { title: "Dijital sadakat kartlar\u0131", body: "M\xFC\u015Fterinin telefonunda, sizin renklerinizde markal\u0131 bir kart. Uygulama kurulumu yok." },
           stamps: { title: "Puan ve damgalar", body: "Klasik \u201C10. kahve bizden\u201D damga kart\u0131, harcanan her euro i\xE7in puan ya da ikisi birden." },
@@ -7683,20 +7703,20 @@ var init_tr = __esm({
         },
         howTitle: "\xDC\xE7 ad\u0131mda haz\u0131r",
         howSteps: [
-          { title: "Kafenizi kurun", body: "Ad\u0131n\u0131z\u0131, logonuzu ve renklerinizi ekleyin; damga kart\u0131 veya puan se\xE7in. \u0130lk \xF6d\xFCl\xFC tan\u0131mlamak bir dakika s\xFCrer." },
-          { title: "M\xFC\u015Fteriler okutup kat\u0131l\u0131r", body: "QR kodunuzu tezg\xE2h i\xE7in yazd\u0131r\u0131n. M\xFC\u015Fteriler okutur, e-postalar\u0131yla kat\u0131l\u0131r ve kartlar\u0131n\u0131 hemen al\u0131r." },
-          { title: "Her ziyareti \xF6d\xFCllendirin", body: "Personel m\xFC\u015Fterinin kart\u0131n\u0131 okutur, al\u0131\u015Fveri\u015Fi onaylar ve damga m\xFC\u015Fterinin telefonunda belirir." }
+          { title: "Kafenizi kurun", body: "Logonuzu ekleyin ve bir \xF6d\xFCl se\xE7in." },
+          { title: "M\xFC\u015Fteriler okutup kat\u0131l\u0131r", body: "QR kodunuzu okutur ve e-postayla kaydolurlar." },
+          { title: "Her ziyareti \xF6d\xFCllendirin", body: "Personel kart\u0131 okutur. Damga an\u0131nda g\xF6r\xFCn\xFCr." }
         ],
         previewTitle: "Tek \xFCr\xFCn, \xFC\xE7 g\xF6r\xFCn\xFCm",
-        previewBody: "M\xFC\u015Fteri kart\u0131n\u0131 g\xF6r\xFCr. Personeliniz h\u0131zl\u0131 bir tezg\xE2h ekran\u0131 g\xF6r\xFCr. Siz de neyin i\u015Fe yarad\u0131\u011F\u0131n\u0131 g\xF6r\xFCrs\xFCn\xFCz.",
+        previewBody: "M\xFC\u015Fteriler kart\u0131n\u0131 g\xF6r\xFCr. Personel h\u0131zl\u0131 bir kasa ekran\u0131 kullan\u0131r. Siz neyin i\u015Fe yarad\u0131\u011F\u0131n\u0131 g\xF6r\xFCrs\xFCn\xFCz.",
         previewCustomer: "M\xFC\u015Fteri kart\u0131",
         previewStaff: "Tezg\xE2h terminali",
         previewOwner: "Y\xF6netim paneli",
         pricingTitle: "Basit ayl\u0131k planlar",
-        pricingNote: "Tan\u0131t\u0131m ama\xE7l\u0131 fiyat \xF6nerileridir \u2014 lansmandan \xF6nce de\u011Fi\u015Febilir. Vergiler, \xF6deme i\u015Flem \xFCcretleri ve mesaj \xFCcretleri ayr\u0131ca uygulanabilir.",
+        pricingNote: "Pilot d\xF6nemi i\xE7in tan\u0131t\u0131m fiyatlar\u0131. Ba\u015Flamak i\xE7in kart gerekmez.",
         pricingCta: "T\xFCm fiyatlar\u0131 g\xF6r",
         finalTitle: "M\xFCdavimlerinize geri gelmeleri i\xE7in bir neden verin.",
-        finalBody: "Kafenizin program\u0131n\u0131 bug\xFCn kurun ya da birlikte ad\u0131m ad\u0131m ge\xE7elim."
+        finalBody: "10 dakikada kurun ya da birlikte kural\u0131m."
       },
       featuresPage: {
         metaTitle: "\xD6zellikler",
@@ -7767,9 +7787,9 @@ var init_tr = __esm({
         recommended: "\xD6nerilen",
         choose: "{plan} ile ba\u015Fla",
         everythingIn: "{plan} plan\u0131ndaki her \u015Fey, ayr\u0131ca:",
-        proposalNote: "Bunlar Kuzey K\u0131br\u0131s\u2019taki pilot program\u0131m\u0131z i\xE7in tan\u0131t\u0131m ama\xE7l\u0131 fiyat \xF6nerileridir. Planlar, limitler ve fiyatlar ticari lansmandan \xF6nce de\u011Fi\u015Febilir ve s\xF6zle\u015Fmeye ba\u011Fl\u0131 taahh\xFCt de\u011Fildir.",
-        extrasNote: "Ge\xE7erli vergiler, \xF6deme i\u015Flem \xFCcretleri, mesaj \xFCcretleri ve \xFC\xE7\xFCnc\xFC taraf hizmet bedelleri ayr\u0131ca uygulanabilir.",
-        billingNote: "Bir plan se\xE7mek \xFCcretsiz deneme ba\u015Flat\u0131r. Kart bilgisi al\u0131nmaz: faturalama, deneme s\xFCreniz bitmeden ekibimizle ayarlan\u0131r.",
+        proposalNote: "Kuzey K\u0131br\u0131s pilotu i\xE7in tan\u0131t\u0131m fiyatlar\u0131. Lansmandan \xF6nce de\u011Fi\u015Febilir.",
+        extrasNote: "Vergi ve \xF6deme \xFCcretleri uygulanabilir.",
+        billingNote: "Plan se\xE7mek \xFCcretsiz denemeyi ba\u015Flat\u0131r. Kart gerekmez.",
         faqTitle: "Sorular",
         faq: [
           { q: "M\xFC\u015Fterilerim bir \xFCcret \xF6der mi?", a: "Hay\u0131r. M\xFC\u015Fteriler \xFCcretsiz kat\u0131l\u0131r ve kartlar\u0131n\u0131 \xFCcretsiz kullan\u0131r." },
@@ -7798,16 +7818,16 @@ var init_tr = __esm({
       start: {
         metaTitle: "Ba\u015Flay\u0131n",
         title: "Perkora\u2019y\u0131 nas\u0131l kullanacaks\u0131n\u0131z?",
-        intro: "Size uyan\u0131 se\xE7in. Kafe sahipleri sadakat kart\u0131 kurar; m\xFC\u015Fteriler damga ve \xF6d\xFCl toplar.",
+        intro: "Ba\u015Flamak i\xE7in birini se\xE7in.",
         signedInAs: "{name} olarak giri\u015F yapt\u0131n\u0131z.",
         continue: "Hesab\u0131n\u0131za devam edin",
         cafeTitle: "Bir kafem var",
-        cafeBody: "M\xFC\u015Fterileriniz i\xE7in yakla\u015F\u0131k 10 dakikada dijital sadakat kart\u0131 kurun. 30 g\xFCn \xFCcretsiz deneme.",
+        cafeBody: "Kafeniz i\xE7in yakla\u015F\u0131k 10 dakikada haz\u0131r dijital sadakat kart\u0131. 30 g\xFCn \xFCcretsiz.",
         cafeCreate: "Kafemi kur",
         cafeSignIn: "Kafe sahibi veya personel olarak giri\u015F yap",
-        staffNote: "Kafe personeli: kafenizin sizi davet etti\u011Fi e-posta ile giri\u015F yap\u0131n.",
+        staffNote: "Personel: kafenizin davet etti\u011Fi e-posta ile giri\u015F yap\u0131n.",
         customerTitle: "M\xFC\u015Fteriyim",
-        customerBody: "Sevdi\u011Finiz kafelerde damga ve \xF6d\xFCl toplay\u0131n. \xDCcretsiz, uygulama indirmeye gerek yok.",
+        customerBody: "Damga ve \xF6d\xFClleri telefonunuzda toplay\u0131n. \xDCcretsiz, uygulama gerekmez.",
         customerFind: "Kafe bul",
         customerCreate: "Hesap olu\u015Ftur",
         customerSignIn: "Giri\u015F yap"
@@ -7815,7 +7835,7 @@ var init_tr = __esm({
       cafes: {
         metaTitle: "Kafe bul",
         title: "Bir Perkora kafesi bulun",
-        intro: "Sadakat kart\u0131na kat\u0131lmak i\xE7in bir kafeyi a\xE7\u0131n. Damga ve \xF6d\xFClleri telefonunuzda toplars\u0131n\u0131z.",
+        intro: "Sadakat kart\u0131n\u0131 almak i\xE7in bir kafeye dokunun.",
         search: "Kafe ad\u0131 veya \u015Fehre g\xF6re aray\u0131n",
         searchButton: "Ara",
         none: "\u201C{q}\u201D ile e\u015Fle\u015Fen kafe yok.",
@@ -7827,11 +7847,11 @@ var init_tr = __esm({
       },
       auth: {
         signInTitle: "Perkora\u2019ya giri\u015F yap\u0131n",
-        signInIntro: "M\xFC\u015Fteriler, kafe sahipleri ve personel i\xE7in.",
+        signInIntro: "Tekrar ho\u015F geldiniz.",
         signUpTitle: "Hesab\u0131n\u0131z\u0131 olu\u015Fturun",
-        signUpIntro: "T\xFCm Perkora kafelerindeki sadakat kartlar\u0131n\u0131z tek bir yerde.",
+        signUpIntro: "T\xFCm Perkora kafelerinde damga ve \xF6d\xFCl toplay\u0131n.",
         businessSignUpTitle: "Kafenizi Perkora\u2019ya ekleyin",
-        businessSignUpIntro: "\xD6nce i\u015Fletme sahibi hesab\u0131n\u0131z\u0131 olu\u015Fturun. Ard\u0131ndan kafenizi ve sadakat program\u0131n\u0131z\u0131 kuracaks\u0131n\u0131z.",
+        businessSignUpIntro: "Hesab\u0131n\u0131z\u0131 olu\u015Fturun. Ard\u0131ndan kafenizi yakla\u015F\u0131k 10 dakikada kurun.",
         noAccount: "Yeni misiniz?",
         haveAccount: "Zaten hesab\u0131n\u0131z var m\u0131?",
         createOne: "M\xFC\u015Fteri hesab\u0131 olu\u015Ftur",
@@ -7840,7 +7860,7 @@ var init_tr = __esm({
         forBusiness: "Kafeniz mi var?",
         forBusinessLink: "Kafenizi kurun",
         invalid: "Bu e-posta ve \u015Fifre bir hesapla e\u015Fle\u015Fmiyor.",
-        passwordHint: "En az 10 karakter.",
+        passwordHint: "En az 8 karakter.",
         emailTaken: "Bu e-postayla bir hesap zaten var. Bunun yerine giri\u015F yap\u0131n.",
         demoAccounts: "Demo hesaplar\u0131",
         demoAccountsBody: "Ke\u015Ffetmek i\xE7in bu kurgusal hesaplar\u0131 kullan\u0131n. Hepsinin \u015Fifresi: {password}",
@@ -7858,31 +7878,36 @@ var init_tr = __esm({
         pointsRulePerPurchase: "Ge\xE7erli her al\u0131\u015Fveri\u015Fte {n} puan kazan\u0131n.",
         pointsRewards: "Puanlar\u0131n\u0131z\u0131 \u015Funlarda kullan\u0131n",
         offers: "G\xFCncel teklifler",
-        join: "Programa kat\u0131l",
+        join: "Kart\u0131n\u0131z\u0131 al\u0131n",
         joinSignedIn: "{name} olarak kat\u0131l",
         alreadyMember: "\xDCyesiniz",
         openCard: "Kart\u0131m\u0131 a\xE7",
         signInToJoin: "Hesab\u0131n\u0131z var m\u0131? Giri\u015F yap\u0131n",
         marketing: "{cafe} bana teklif ve haber g\xF6nderebilir (iste\u011Fe ba\u011Fl\u0131)",
-        marketingHelp: "Bunu istedi\u011Finiz zaman de\u011Fi\u015Ftirebilirsiniz. Kat\u0131l\u0131m buna ba\u011Fl\u0131 de\u011Fildir.",
+        marketingHelp: "\u0130stedi\u011Finiz zaman de\u011Fi\u015Ftirebilirsiniz.",
         referralApplied: "Bir arkada\u015F\u0131n\u0131z sizi davet etti. \u0130lk ziyaretinizden sonra ikiniz de \xF6d\xFCl alacaks\u0131n\u0131z.",
-        referralAppliedJoin: "Bir arkada\u015F\u0131n\u0131z sizi davet etti. Kat\u0131ld\u0131\u011F\u0131n\u0131zda arkada\u015F\u0131n\u0131z te\u015Fekk\xFCr \xF6d\xFCl\xFC al\u0131r.",
-        referralAppliedVisit: "Bir arkada\u015F\u0131n\u0131z sizi davet etti. Buradaki ilk al\u0131\u015Fveri\u015Finizden sonra arkada\u015F\u0131n\u0131z te\u015Fekk\xFCr \xF6d\xFCl\xFC al\u0131r.",
+        referralAppliedJoin: "Bir arkada\u015F\u0131n\u0131z sizi davet etti. Kat\u0131l\u0131rsan\u0131z arkada\u015F\u0131n\u0131z te\u015Fekk\xFCr \xF6d\xFCl\xFC al\u0131r.",
+        referralAppliedVisit: "Bir arkada\u015F\u0131n\u0131z sizi davet etti. \u0130lk al\u0131\u015Fveri\u015Finizden sonra arkada\u015F\u0131n\u0131z te\u015Fekk\xFCr \xF6d\xFCl\xFC al\u0131r.",
         referralYouGet: "Siz de {reward} kazan\u0131rs\u0131n\u0131z.",
         referralInvalid: "Bu davet kodu burada ge\xE7erli de\u011Fil, ama yine de kat\u0131labilirsiniz.",
         unavailable: "Bu kafenin sadakat program\u0131 \u015Fu anda kullan\u0131lam\u0131yor.",
         terms: "Program ko\u015Fullar\u0131",
         welcomeTitle: "{cafe} ailesine ho\u015F geldiniz!",
-        welcomeBody: "Damga ve \xF6d\xFCl kazanmak i\xE7in her sipari\u015Fte kart\u0131n\u0131z\u0131 tezg\xE2hta g\xF6sterin.",
+        welcomeBody: "Damga toplamak i\xE7in sipari\u015F verirken kart\u0131n\u0131z\u0131 g\xF6sterin.",
         demoShortcut: "Demo k\u0131sayolu",
         demoShortcutBody: "E-posta yazmadan an\u0131nda kurgusal bir m\xFC\u015Fteri olu\u015Fturun.",
         demoShortcutButton: "Demo m\xFC\u015Fteri olarak kat\u0131l",
         joinCta: "Hesap olu\u015Ftur ve kat\u0131l"
       },
       wallet: {
+        pointsUnit: "puan",
+        installTitle: "Perkora\u2019y\u0131 ana ekran\u0131n\u0131za ekleyin",
+        installBody: "Kartlar\u0131n\u0131z\u0131 bir uygulama gibi tek dokunu\u015Fla a\xE7\u0131n.",
+        installIos: "{share} simgesine, ard\u0131ndan \u201CAna Ekrana Ekle\u201Dye dokunun.",
+        install: "Y\xFCkle",
         title: "Sadakat kartlar\u0131m",
         empty: "Hen\xFCz hi\xE7bir kafenin program\u0131na kat\u0131lmad\u0131n\u0131z.",
-        emptyBody: "Kart\u0131n\u0131z\u0131 almak i\xE7in kafenin kasas\u0131ndaki Perkora QR kodunu okutun ya da kafeyi listemizden bulun.",
+        emptyBody: "Bir kafenin Perkora QR kodunu okutun ya da listeden bulun.",
         hello: "Merhaba, {name}",
         tabs: { card: "Kart", rewards: "\xD6d\xFCller", offers: "Teklifler", activity: "Hareketler", refer: "Davet et" },
         showAtCounter: "Tezg\xE2hta g\xF6sterin",
@@ -7926,19 +7951,19 @@ var init_tr = __esm({
         recentActivity: "Son hareketler",
         seeAll: "T\xFCm\xFCn\xFC g\xF6r",
         memberCode: "\xDCye kodu",
-        qrHelp: "Personel damga eklemek veya \xF6d\xFCl kulland\u0131rmak i\xE7in bu kodu okutur. Kod otomatik yenilenir.",
+        qrHelp: "Personel damga eklemek i\xE7in bunu okutur. Kendili\u011Finden yenilenir.",
         qrRefreshing: "Kod yenileniyor\u2026",
-        qrError: "Kod yenilenemedi. Ba\u011Flant\u0131n\u0131z\u0131 kontrol edin; personel \xFCye kodunuzu da yazabilir.",
+        qrError: "Kod yenilenemedi. Personel \xFCye kodunuzu yazabilir.",
         inviteCardTitle: "Arkada\u015Flar\u0131n\u0131 davet et",
         inviteCardBody: "Getirdi\u011Finiz her arkada\u015F i\xE7in {reward} kazan\u0131n.",
-        referYouGetVisit: "Bir arkada\u015F\u0131n\u0131z\u0131 {cafe} sadakat program\u0131na davet edin. \u0130lk al\u0131\u015Fveri\u015Fini yapt\u0131\u011F\u0131nda {reward} kazan\u0131rs\u0131n\u0131z.",
-        referYouGetJoin: "Bir arkada\u015F\u0131n\u0131z\u0131 {cafe} sadakat program\u0131na davet edin. Kat\u0131l\u0131r kat\u0131lmaz {reward} kazan\u0131rs\u0131n\u0131z.",
+        referYouGetVisit: "Bir arkada\u015F\u0131n\u0131z\u0131 davet edin. \u0130lk al\u0131\u015Fveri\u015Fini yapt\u0131\u011F\u0131nda {reward} kazan\u0131rs\u0131n\u0131z.",
+        referYouGetJoin: "Bir arkada\u015F\u0131n\u0131z\u0131 davet edin. Kat\u0131l\u0131r kat\u0131lmaz {reward} kazan\u0131rs\u0131n\u0131z.",
         referFriendGets: "Arkada\u015F\u0131n\u0131z\u0131n \xF6d\xFCl\xFC: {reward}.",
         referShareText: "Benimle birlikte {cafe} sadakat program\u0131na kat\u0131l, \xF6d\xFClleri telefonunda topla: {link}",
         shareWhatsApp: "WhatsApp\u2019ta payla\u015F",
         referJoined: "arkada\u015F kat\u0131ld\u0131",
         referRewarded: "\xF6d\xFCl kazan\u0131ld\u0131",
-        referRules: "Her arkada\u015F bir kez davet edilebilir ve kendinizi davet edemezsiniz. Kafe, bir ki\u015Finin kazanabilece\u011Fi \xF6d\xFCl say\u0131s\u0131n\u0131 s\u0131n\u0131rlayabilir.",
+        referRules: "Her arkada\u015F bir kez say\u0131l\u0131r ve kendinizi davet edemezsiniz.",
         referTitle: "Bir arkada\u015F\u0131n\u0131 davet et",
         referBody: "Ba\u011Flant\u0131n\u0131z\u0131 payla\u015F\u0131n. Arkada\u015F\u0131n\u0131z\u0131n ilk do\u011Frulanm\u0131\u015F ziyaretinden sonra siz {reward}, arkada\u015F\u0131n\u0131z {friendReward} kazan\u0131r.",
         referUnavailable: "{cafe} \u015Fu anda arkada\u015F getirme \xF6d\xFCl\xFC sunmuyor.",
@@ -7951,13 +7976,13 @@ var init_tr = __esm({
         addAnotherTitle: "Ba\u015Fka bir kafe ekle",
         scanCafe: "Kafenin QR kodunu okut",
         scanCafeHint: "Kameray\u0131 kafenin kasas\u0131ndaki Perkora QR koduna tutun",
-        scanNotCafe: "Bu bir Perkora kafe kodu de\u011Fil. Kafeden Perkora QR kodunu isteyin ya da kafeyi listeden bulun.",
-        scanMemberCode: "Bu bir m\xFC\u015Fteri kart kodu; personel kasada okutur. Bir kafeye kat\u0131lmak i\xE7in kasadaki QR kodu okutun.",
-        cameraDenied: "Kamera eri\u015Fimi engellendi. Taray\u0131c\u0131 ayarlar\u0131ndan izin verin ya da kafeyi listeden bulun.",
-        cameraUnsupported: "Bu taray\u0131c\u0131 kameray\u0131 a\xE7am\u0131yor. Telefonunuzun kamera uygulamas\u0131n\u0131 kullan\u0131n ya da kafeyi listeden bulun.",
-        cameraInsecure: "Kamera yaln\u0131zca g\xFCvenli (https) adreste \xE7al\u0131\u015F\u0131r. Bunun yerine kafeyi listeden bulun.",
-        cameraMissing: "Bu cihazda kamera bulunamad\u0131. Bunun yerine kafeyi listeden bulun.",
-        addAnother: "QR kodunu okutun ya da Perkora kafeleri listesinden bulun.",
+        scanNotCafe: "Bu bir Perkora kafe kodu de\u011Fil.",
+        scanMemberCode: "Bu bir m\xFC\u015Fteri kart kodu. Bunun yerine kafenin kasas\u0131ndaki kodu okutun.",
+        cameraDenied: "Kamera engellendi. Taray\u0131c\u0131 ayarlar\u0131ndan izin verin.",
+        cameraUnsupported: "Bu taray\u0131c\u0131 kameray\u0131 a\xE7am\u0131yor. Telefonunuzun kamera uygulamas\u0131n\u0131 kullan\u0131n.",
+        cameraInsecure: "Kamera g\xFCvenli (https) bir adres gerektirir.",
+        cameraMissing: "Bu cihazda kamera bulunamad\u0131.",
+        addAnother: "QR kodunu okutun ya da listeden bulun.",
         activityEarn: "Al\u0131\u015Fveri\u015F i\xE7in +{n}",
         activityRedeemed: "Kullan\u0131ld\u0131: {reward}",
         activityCardDone: "Kart tamamland\u0131: {reward} kazan\u0131ld\u0131",
@@ -13679,7 +13704,7 @@ var require_react_dom_server_node_production = __commonJS({
   "../../../opt/npm-tools/node_modules/react-dom/cjs/react-dom-server.node.production.js"(exports2) {
     "use strict";
     var util2 = require("util");
-    var crypto11 = require("crypto");
+    var crypto12 = require("crypto");
     var async_hooks = require("async_hooks");
     var React3 = require_react();
     var ReactDOM = require_react_dom();
@@ -16431,7 +16456,7 @@ var require_react_dom_server_node_production = __commonJS({
     function createPostbackActionStateKey(permalink, componentKeyPath, hookIndex) {
       if (void 0 !== permalink) return "p" + permalink;
       permalink = JSON.stringify([componentKeyPath, null, hookIndex]);
-      componentKeyPath = crypto11.createHash("md5");
+      componentKeyPath = crypto12.createHash("md5");
       componentKeyPath.update(permalink);
       return "k" + componentKeyPath.digest("hex");
     }
@@ -19717,11 +19742,20 @@ function LuStamp(props) {
 function LuSparkles(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" }, "child": [] }, { "tag": "path", "attr": { "d": "M20 3v4" }, "child": [] }, { "tag": "path", "attr": { "d": "M22 5h-4" }, "child": [] }, { "tag": "path", "attr": { "d": "M4 17v2" }, "child": [] }, { "tag": "path", "attr": { "d": "M5 18H3" }, "child": [] }] })(props);
 }
+function LuSmartphone(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "rect", "attr": { "width": "14", "height": "20", "x": "5", "y": "2", "rx": "2", "ry": "2" }, "child": [] }, { "tag": "path", "attr": { "d": "M12 18h.01" }, "child": [] }] })(props);
+}
+function LuShare(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" }, "child": [] }, { "tag": "polyline", "attr": { "points": "16 6 12 2 8 6" }, "child": [] }, { "tag": "line", "attr": { "x1": "12", "x2": "12", "y1": "2", "y2": "15" }, "child": [] }] })(props);
+}
 function LuShare2(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "circle", "attr": { "cx": "18", "cy": "5", "r": "3" }, "child": [] }, { "tag": "circle", "attr": { "cx": "6", "cy": "12", "r": "3" }, "child": [] }, { "tag": "circle", "attr": { "cx": "18", "cy": "19", "r": "3" }, "child": [] }, { "tag": "line", "attr": { "x1": "8.59", "x2": "15.42", "y1": "13.51", "y2": "17.49" }, "child": [] }, { "tag": "line", "attr": { "x1": "15.41", "x2": "8.59", "y1": "6.51", "y2": "10.49" }, "child": [] }] })(props);
 }
 function LuSettings(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" }, "child": [] }, { "tag": "circle", "attr": { "cx": "12", "cy": "12", "r": "3" }, "child": [] }] })(props);
+}
+function LuSend(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" }, "child": [] }, { "tag": "path", "attr": { "d": "m21.854 2.147-10.94 10.939" }, "child": [] }] })(props);
 }
 function LuSearch(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "circle", "attr": { "cx": "11", "cy": "11", "r": "8" }, "child": [] }, { "tag": "path", "attr": { "d": "m21 21-4.3-4.3" }, "child": [] }] })(props);
@@ -19729,8 +19763,8 @@ function LuSearch(props) {
 function LuScanLine(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M3 7V5a2 2 0 0 1 2-2h2" }, "child": [] }, { "tag": "path", "attr": { "d": "M17 3h2a2 2 0 0 1 2 2v2" }, "child": [] }, { "tag": "path", "attr": { "d": "M21 17v2a2 2 0 0 1-2 2h-2" }, "child": [] }, { "tag": "path", "attr": { "d": "M7 21H5a2 2 0 0 1-2-2v-2" }, "child": [] }, { "tag": "path", "attr": { "d": "M7 12h10" }, "child": [] }] })(props);
 }
-function LuRepeat(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "m17 2 4 4-4 4" }, "child": [] }, { "tag": "path", "attr": { "d": "M3 11v-1a4 4 0 0 1 4-4h14" }, "child": [] }, { "tag": "path", "attr": { "d": "m7 22-4-4 4-4" }, "child": [] }, { "tag": "path", "attr": { "d": "M21 13v1a4 4 0 0 1-4 4H3" }, "child": [] }] })(props);
+function LuReply(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "polyline", "attr": { "points": "9 17 4 12 9 7" }, "child": [] }, { "tag": "path", "attr": { "d": "M20 18v-2a4 4 0 0 0-4-4H4" }, "child": [] }] })(props);
 }
 function LuReceiptText(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" }, "child": [] }, { "tag": "path", "attr": { "d": "M14 8H8" }, "child": [] }, { "tag": "path", "attr": { "d": "M16 12H8" }, "child": [] }, { "tag": "path", "attr": { "d": "M13 16H8" }, "child": [] }] })(props);
@@ -19768,6 +19802,9 @@ function LuMegaphone(props) {
 function LuMapPin(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" }, "child": [] }, { "tag": "circle", "attr": { "cx": "12", "cy": "10", "r": "3" }, "child": [] }] })(props);
 }
+function LuMail(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "rect", "attr": { "width": "20", "height": "16", "x": "2", "y": "4", "rx": "2" }, "child": [] }, { "tag": "path", "attr": { "d": "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" }, "child": [] }] })(props);
+}
 function LuLogOut(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" }, "child": [] }, { "tag": "polyline", "attr": { "points": "16 17 21 12 16 7" }, "child": [] }, { "tag": "line", "attr": { "x1": "21", "x2": "9", "y1": "12", "y2": "12" }, "child": [] }] })(props);
 }
@@ -19797,6 +19834,12 @@ function LuHeart(props) {
 }
 function LuGift(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "rect", "attr": { "x": "3", "y": "8", "width": "18", "height": "4", "rx": "1" }, "child": [] }, { "tag": "path", "attr": { "d": "M12 8v13" }, "child": [] }, { "tag": "path", "attr": { "d": "M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" }, "child": [] }, { "tag": "path", "attr": { "d": "M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" }, "child": [] }] })(props);
+}
+function LuEye(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" }, "child": [] }, { "tag": "circle", "attr": { "cx": "12", "cy": "12", "r": "3" }, "child": [] }] })(props);
+}
+function LuEyeOff(props) {
+  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" }, "child": [] }, { "tag": "path", "attr": { "d": "M14.084 14.158a3 3 0 0 1-4.242-4.242" }, "child": [] }, { "tag": "path", "attr": { "d": "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" }, "child": [] }, { "tag": "path", "attr": { "d": "m2 2 20 20" }, "child": [] }] })(props);
 }
 function LuDownload(props) {
   return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }, "child": [] }, { "tag": "polyline", "attr": { "points": "7 10 12 15 17 10" }, "child": [] }, { "tag": "line", "attr": { "x1": "12", "x2": "12", "y1": "15", "y2": "3" }, "child": [] }] })(props);
@@ -19910,38 +19953,44 @@ function MobileNav({ links, signIn, demo, start, menuLabel, closeLabel }) {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && setOpen(false);
     document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      document.body.style.overflow = prev;
     };
   }, [open]);
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "btn btn-ghost btn-sm", "aria-expanded": open, "aria-controls": "mobile-menu", onClick: () => setOpen(true), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LuMenu, { className: "h-5 w-5", "aria-hidden": "true" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sr-only", children: menuLabel })
-    ] }),
-    open && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: "mobile-menu", role: "dialog", "aria-modal": "true", "aria-label": menuLabel, className: "fixed inset-0 z-50 bg-cream animate-fade-in", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex h-16 items-center justify-end px-4", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "btn btn-ghost btn-sm", onClick: () => setOpen(false), autoFocus: true, children: [
+  const sheet = /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: "mobile-menu", role: "dialog", "aria-modal": "true", "aria-label": menuLabel, className: "fixed inset-0 z-[60] flex flex-col bg-cream animate-fade-in", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex h-16 shrink-0 items-center justify-between border-b border-beige/80 px-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-display text-[17px] font-semibold text-ink", children: menuLabel }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "flex h-11 w-11 items-center justify-center rounded-full bg-sand text-ink", onClick: () => setOpen(false), autoFocus: true, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LuX, { className: "h-5 w-5", "aria-hidden": "true" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sr-only", children: closeLabel })
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "flex flex-col px-6", "aria-label": menuLabel, children: [
-        links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: l.href, onClick: () => setOpen(false), className: "border-b border-beige py-4 font-display text-[22px] font-semibold text-ink", children: l.label }, l.key)),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: signIn.href, className: "border-b border-beige py-4 font-display text-[22px] font-semibold text-ink", children: signIn.label }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mt-8 grid gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: start.href, className: "btn btn-primary btn-lg", children: start.label }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: demo.href, className: "btn btn-secondary btn-lg", children: demo.label })
-        ] })
       ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { className: "flex-1 overflow-y-auto px-4 pt-2", "aria-label": menuLabel, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { children: [...links, { ...signIn, key: "signin" }].map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", { href: l.href, onClick: () => setOpen(false), className: "flex items-center justify-between border-b border-beige/80 py-[18px] text-[19px] font-medium text-ink", children: [
+      l.label,
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LuChevronRight, { className: "h-5 w-5 text-muted", "aria-hidden": "true" })
+    ] }) }, l.key)) }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid shrink-0 gap-2.5 border-t border-beige/80 bg-paper px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: start.href, className: "btn btn-primary btn-lg w-full", children: start.label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: demo.href, className: "btn btn-secondary btn-lg w-full", children: demo.label })
     ] })
   ] });
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-sand", "aria-expanded": open, "aria-controls": "mobile-menu", onClick: () => setOpen(true), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LuMenu, { className: "h-[22px] w-[22px]", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sr-only", children: menuLabel })
+    ] }),
+    open && typeof document !== "undefined" ? (0, import_react_dom.createPortal)(sheet, document.body) : null
+  ] });
 }
-var import_react3, import_jsx_runtime;
+var import_react3, import_react_dom, import_jsx_runtime;
 var init_MobileNav = __esm({
   "src/ui/islands/MobileNav.tsx"() {
     "use strict";
     import_react3 = __toESM(require_react(), 1);
+    import_react_dom = __toESM(require_react_dom(), 1);
     init_lu();
     import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
   }
@@ -20547,13 +20596,13 @@ function maskBit(mask, x2, y2) {
 }
 function rsCorrect(block, ecLen) {
   const syn = new Array(ecLen).fill(0);
-  let clean = true;
+  let clean2 = true;
   for (let i = 0; i < ecLen; i++) {
     const v = evalAt(block, EXP[i]);
     syn[ecLen - 1 - i] = v;
-    if (v) clean = false;
+    if (v) clean2 = false;
   }
-  if (clean) return true;
+  if (clean2) return true;
   let rLast = monomial(ecLen, 1);
   let r2 = norm(syn);
   let tLast = [0];
@@ -21439,7 +21488,7 @@ function StaffTerminal({ s, csrf, currency, currencySymbol, initialMemberId, ins
     e.preventDefault();
     if (contact.trim()) lookup({ contact: contact.trim() });
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "mx-auto grid max-w-[1100px] gap-5 lg:grid-cols-[1fr_340px]", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "mx-auto grid grid-cols-1 max-w-[1100px] gap-5 lg:grid-cols-[1fr_340px]", children: [
     /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "min-w-0", children: [
       success ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(SuccessPanel, { s, success, countdown, onNext: reset }) : member ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
         MemberPanel,
@@ -22070,8 +22119,8 @@ function ImagePicker({ name, label, current: current2, maxSide = 1600, shape = "
         children: preview ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("img", { src: preview, alt: "", className: "h-full w-full object-cover" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(LuImagePlus, { className: "h-6 w-6 text-muted" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("span", { className: "min-w-0", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { ref: input, id: name, name, type: "file", accept: "image/png,image/jpeg,image/webp", className: "block max-w-full text-[14px]", onChange, "aria-label": label }),
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("span", { className: "min-w-0 flex-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { ref: input, id: name, name, type: "file", accept: "image/png,image/jpeg,image/webp", className: "block max-w-full text-[13.5px] text-muted-ink file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-sand file:px-4 file:py-2 file:text-[13.5px] file:font-medium file:text-ink hover:file:bg-beige", onChange, "aria-label": label }),
       /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "mt-1 block text-[12.5px] text-muted-ink", "aria-live": "polite", children: busy ? "\u2026" : hint })
     ] })
   ] });
@@ -22536,15 +22585,15 @@ var init_bundle_mjs = __esm({
       }
       return string;
     };
-    toValue = (mix) => {
-      if (typeof mix === "string") {
-        return mix;
+    toValue = (mix2) => {
+      if (typeof mix2 === "string") {
+        return mix2;
       }
       let resolvedValue;
       let string = "";
-      for (let k = 0; k < mix.length; k++) {
-        if (mix[k]) {
-          if (resolvedValue = toValue(mix[k])) {
+      for (let k = 0; k < mix2.length; k++) {
+        if (mix2[k]) {
+          if (resolvedValue = toValue(mix2[k])) {
             string && (string += " ");
             string += resolvedValue;
           }
@@ -25408,6 +25457,21 @@ function contrastText(hex2) {
   const L = 0.2126 * r2 + 0.7152 * g + 0.0722 * b;
   return L > 0.42 ? "#292421" : "#FAF6EF";
 }
+function mix(hex2, other, ratio) {
+  const p = (h) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(h);
+    const n = m ? parseInt(m[1], 16) : 0;
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  };
+  const a = p(hex2);
+  const b = p(other);
+  return "#" + a.map((c, i) => Math.round(c + (b[i] - c) * ratio).toString(16).padStart(2, "0")).join("");
+}
+function alpha(hex2, a) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex2);
+  const n = m ? parseInt(m[1], 16) : 0;
+  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
+}
 var init_cn = __esm({
   "src/ui/cn.ts"() {
     "use strict";
@@ -25488,15 +25552,22 @@ function EmptySlot({ size = 44, label }) {
     label && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("text", { x: "24", y: "28.5", textAnchor: "middle", fontSize: "13", fontWeight: "600", fill: "currentColor", fillOpacity: "0.38", fontFamily: "Inter, sans-serif", children: label })
   ] });
 }
-function StampGrid({ required, filled, color: color2, icon, fresh = 0, size = 44, className, ariaLabel }) {
+function StampGrid({ required, filled, color: color2, icon, tone, fresh = 0, size = 44, className, ariaLabel }) {
   const slots = required + 1;
   const cols = slots <= 10 ? 5 : slots <= 12 ? 6 : 7;
   return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { role: "img", "aria-label": ariaLabel, className: cn("grid justify-items-center gap-x-2 gap-y-2.5", className), style: { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }, children: [
     Array.from(
       { length: required },
-      (_, i) => i < filled ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(StampMark, { index: i, color: color2, icon, animate: i >= filled - fresh, size }, i) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "text-espresso", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(EmptySlot, { size, label: String(i + 1) }) }, i)
+      (_, i) => i < filled ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(StampMark, { index: i, color: color2, icon, animate: i >= filled - fresh, size }, i) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: tone ? void 0 : "text-espresso", style: tone ? { color: tone } : void 0, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(EmptySlot, { size, label: String(i + 1) }) }, i)
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+    tone ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+      "span",
+      {
+        className: "flex items-center justify-center rounded-full border-[1.6px] border-dashed",
+        style: { width: size, height: size, color: tone, borderColor: tone, background: filled >= required ? "rgba(255,255,255,0.18)" : "transparent", opacity: filled >= required ? 1 : 0.75 },
+        children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(LuGift, { className: "h-[45%] w-[45%]", "aria-hidden": "true" })
+      }
+    ) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
       "span",
       {
         className: cn("flex items-center justify-center rounded-full border-[1.6px] border-dashed", filled >= required ? "border-terracotta bg-terracotta-tint" : "border-terracotta/50"),
@@ -25689,6 +25760,196 @@ var init_BrandPreview = __esm({
   }
 });
 
+// src/ui/islands/PasswordInput.tsx
+function PasswordInput({ name, autoComplete, invalid, showLabel, hideLabel, autoFocus, minLength }) {
+  const [shown, setShown] = (0, import_react15.useState)(false);
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "relative", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      "input",
+      {
+        id: name,
+        name,
+        type: shown ? "text" : "password",
+        autoComplete,
+        required: true,
+        minLength,
+        autoFocus,
+        "aria-invalid": invalid || void 0,
+        "aria-describedby": invalid ? `${name}-error` : void 0,
+        className: "input pr-12",
+        autoCapitalize: "none",
+        spellCheck: false
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      "button",
+      {
+        type: "button",
+        onClick: () => setShown((s) => !s),
+        className: "absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-[12px] text-muted-ink hover:text-ink",
+        "aria-label": shown ? hideLabel : showLabel,
+        "aria-pressed": shown,
+        children: shown ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(LuEyeOff, { className: "h-5 w-5", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(LuEye, { className: "h-5 w-5", "aria-hidden": "true" })
+      }
+    )
+  ] });
+}
+var import_react15, import_jsx_runtime15;
+var init_PasswordInput = __esm({
+  "src/ui/islands/PasswordInput.tsx"() {
+    "use strict";
+    import_react15 = __toESM(require_react(), 1);
+    init_lu();
+    import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
+  }
+});
+
+// src/ui/islands/ReplyBox.tsx
+function ReplyBox({ sendUrl, logUrl, csrf, email, phone, firstName, mailReady }) {
+  const [open, setOpen] = (0, import_react16.useState)(false);
+  const [text, setText] = (0, import_react16.useState)(`Hi ${firstName},
+
+
+
+Best regards,
+Perkora`);
+  const subject = "Re: your message to Perkora";
+  const log = (channel) => {
+    try {
+      fetch(logUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json", "x-csrf-token": csrf },
+        body: JSON.stringify({ body: text, channel }),
+        keepalive: true
+      });
+    } catch {
+    }
+  };
+  if (!open) {
+    return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("button", { type: "button", className: "btn btn-primary btn-sm", onClick: () => setOpen(true), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(LuReply, { className: "h-4 w-4", "aria-hidden": "true" }),
+      " Reply"
+    ] });
+  }
+  const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+  const wa = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : "";
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("form", { method: "post", action: sendUrl, className: "mt-1 grid w-full gap-2.5", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("input", { type: "hidden", name: "_csrf", value: csrf }),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("label", { className: "sr-only", htmlFor: `reply-${logUrl}`, children: "Your reply" }),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      "textarea",
+      {
+        id: `reply-${logUrl}`,
+        name: "body",
+        rows: 6,
+        maxLength: 5e3,
+        required: true,
+        value: text,
+        onChange: (e) => setText(e.currentTarget.value),
+        className: "textarea",
+        autoFocus: true
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex flex-wrap items-center gap-2", children: [
+      mailReady ? /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("button", { type: "submit", className: "btn btn-primary btn-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(LuSend, { className: "h-4 w-4", "aria-hidden": "true" }),
+        " Send to ",
+        email
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("a", { href: mailto, className: "btn btn-primary btn-sm", onClick: () => log("email_app"), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(LuMail, { className: "h-4 w-4", "aria-hidden": "true" }),
+        " Open in my email app"
+      ] }),
+      wa && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("a", { href: wa, target: "_blank", rel: "noopener noreferrer", className: "btn btn-secondary btn-sm", onClick: () => log("whatsapp"), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(LuMessageCircle, { className: "h-4 w-4", "aria-hidden": "true" }),
+        " Send on WhatsApp"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("button", { type: "button", className: "btn btn-ghost btn-sm", onClick: () => setOpen(false), children: "Cancel" })
+    ] }),
+    !mailReady && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[12.5px] text-muted-ink", children: "Email sending isn\u2019t set up yet, so your reply opens in your own email app, already written." })
+  ] });
+}
+var import_react16, import_jsx_runtime16;
+var init_ReplyBox = __esm({
+  "src/ui/islands/ReplyBox.tsx"() {
+    "use strict";
+    import_react16 = __toESM(require_react(), 1);
+    init_lu();
+    import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
+  }
+});
+
+// src/ui/islands/InstallPrompt.tsx
+function InstallPrompt({ title, body, iosHint, install, close, bottom = 84 }) {
+  const [mode, setMode] = (0, import_react17.useState)("none");
+  const [evt, setEvt] = (0, import_react17.useState)(null);
+  (0, import_react17.useEffect)(() => {
+    try {
+      if (localStorage.getItem(KEY)) return;
+    } catch {
+    }
+    const standalone = window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone;
+    if (standalone || window.innerWidth > 820) return;
+    const ua = navigator.userAgent;
+    const ios = /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    const t = window.setTimeout(() => ios && setMode("ios"), 1800);
+    const onPrompt = (e) => {
+      e.preventDefault();
+      setEvt(e);
+      setMode("prompt");
+    };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("beforeinstallprompt", onPrompt);
+    };
+  }, []);
+  const dismiss = () => {
+    setMode("none");
+    try {
+      localStorage.setItem(KEY, "1");
+    } catch {
+    }
+  };
+  if (mode === "none") return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "fixed inset-x-3 z-30 mx-auto max-w-[496px] animate-sheet-up rounded-[18px] border border-beige bg-paper/95 p-3.5 backdrop-blur", style: { bottom: `calc(${bottom}px + env(safe-area-inset-bottom))`, boxShadow: "var(--shadow-float)" }, role: "dialog", "aria-label": title, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-start gap-3", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-espresso text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(LuSmartphone, { className: "h-5 w-5", "aria-hidden": "true" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "min-w-0 flex-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[14.5px] font-semibold", children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[13px] text-muted-ink", children: mode === "ios" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
+        iosHint.split("{share}")[0],
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(LuShare, { className: "mx-0.5 inline h-3.5 w-3.5 align-[-2px]", "aria-label": "Share" }),
+        iosHint.split("{share}")[1] ?? ""
+      ] }) : body }),
+      mode === "prompt" && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+        "button",
+        {
+          type: "button",
+          className: "btn btn-primary btn-sm mt-2.5",
+          onClick: async () => {
+            try {
+              await evt?.prompt();
+            } finally {
+              dismiss();
+            }
+          },
+          children: install
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { type: "button", onClick: dismiss, className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-ink hover:bg-sand", "aria-label": close, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(LuX, { className: "h-4 w-4", "aria-hidden": "true" }) })
+  ] }) });
+}
+var import_react17, import_jsx_runtime17, KEY;
+var init_InstallPrompt = __esm({
+  "src/ui/islands/InstallPrompt.tsx"() {
+    "use strict";
+    import_react17 = __toESM(require_react(), 1);
+    init_lu();
+    import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
+    KEY = "pk_install_dismissed";
+  }
+});
+
 // src/ui/islands/registry.server.ts
 var islandComponents;
 var init_registry_server = __esm({
@@ -25707,6 +25968,9 @@ var init_registry_server = __esm({
     init_FillInput();
     init_ImagePicker();
     init_BrandPreview();
+    init_PasswordInput();
+    init_ReplyBox();
+    init_InstallPrompt();
     islandComponents = {
       MobileNav,
       WalletLive,
@@ -25720,7 +25984,10 @@ var init_registry_server = __esm({
       CafeScanner,
       FillInput,
       ImagePicker,
-      BrandPreview
+      BrandPreview,
+      PasswordInput,
+      ReplyBox,
+      InstallPrompt
     };
   }
 });
@@ -25738,13 +26005,13 @@ function Island({ name, props, className }) {
   if (!current) throw new Error("<Island> rendered outside render()");
   const id = `i${++seq}`;
   current.push({ id, name, props, className });
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("template", { "data-island-slot": id });
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("template", { "data-island-slot": id });
 }
-var import_jsx_runtime15, current, seq;
+var import_jsx_runtime18, current, seq;
 var init_Island = __esm({
   "src/ui/islands/Island.tsx"() {
     "use strict";
-    import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
     current = null;
     seq = 0;
   }
@@ -25752,14 +26019,14 @@ var init_Island = __esm({
 
 // src/ui/page-context.ts
 function usePage() {
-  return (0, import_react15.useContext)(PageContext);
+  return (0, import_react18.useContext)(PageContext);
 }
-var import_react15, PageContext;
+var import_react18, PageContext;
 var init_page_context = __esm({
   "src/ui/page-context.ts"() {
     "use strict";
-    import_react15 = __toESM(require_react(), 1);
-    PageContext = (0, import_react15.createContext)(null);
+    import_react18 = __toESM(require_react(), 1);
+    PageContext = (0, import_react18.createContext)(null);
   }
 });
 
@@ -25791,14 +26058,14 @@ function render(ctx, node, opts) {
   const collected = beginIslandCollection();
   let html;
   try {
-    html = (0, import_server.renderToString)(/* @__PURE__ */ (0, import_jsx_runtime16.jsx)(PageContext.Provider, { value: info, children: node }));
+    html = (0, import_server.renderToString)(/* @__PURE__ */ (0, import_jsx_runtime19.jsx)(PageContext.Provider, { value: info, children: node }));
   } finally {
     endIslandCollection();
   }
   for (const island of collected) {
     const Comp = islandComponents[island.name];
     if (!Comp) throw new Error(`Unknown island ${island.name}`);
-    const inner = (0, import_server.renderToString)(/* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Comp, { ...island.props }));
+    const inner = (0, import_server.renderToString)(/* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Comp, { ...island.props }));
     const markup = `<div data-island="${island.name}" data-island-id="${island.id}" class="${escapeHtml(island.className ?? "")}">${inner}</div><script type="application/json" data-island-props="${island.id}">${escapeJson(island.props)}</script>`;
     html = html.replace(`<template data-island-slot="${island.id}"></template>`, markup);
   }
@@ -25814,6 +26081,12 @@ ${opts.description ? `<meta name="description" content="${escapeHtml(opts.descri
 ${opts.noindex ? '<meta name="robots" content="noindex">' : ""}
 <meta name="theme-color" content="${escapeHtml(opts.themeColor ?? "#FAF6EF")}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Perkora">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preload" href="/fonts/Inter-Regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="/fonts/InterDisplay-SemiBold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="${m.css}">
@@ -25825,7 +26098,7 @@ ${collected.length ? `<script type="module" src="${m.js}"></script>` : ""}
 </html>`;
   return htmlReply(doc, opts.status ?? 200);
 }
-var import_node_fs2, import_node_path, import_server, import_jsx_runtime16, manifest, escapeJson, escapeHtml;
+var import_node_fs2, import_node_path, import_server, import_jsx_runtime19, manifest, escapeJson, escapeHtml;
 var init_render = __esm({
   "src/server/http/render.tsx"() {
     "use strict";
@@ -25836,10 +26109,171 @@ var init_render = __esm({
     init_registry_server();
     init_Island();
     init_page_context();
-    import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
     manifest = null;
     escapeJson = (v) => JSON.stringify(v).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+});
+
+// src/server/mail/smtp.ts
+function mailSettings() {
+  const c = config();
+  if (!c.SMTP_HOST || !c.SMTP_USER || !c.SMTP_PASS) return null;
+  const port = c.SMTP_PORT ?? 465;
+  return {
+    host: c.SMTP_HOST,
+    port,
+    secure: c.SMTP_SECURE ?? (port === 465 ? "ssl" : "starttls"),
+    user: c.SMTP_USER,
+    pass: c.SMTP_PASS,
+    from: c.MAIL_FROM || `Perkora <${c.SMTP_USER}>`
+  };
+}
+function formatFrom(from) {
+  const m = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(from);
+  return m && m[1] ? `${encodeWord(m[1].replace(/^"|"$/g, ""))} <${m[2]}>` : `<${addr(from)}>`;
+}
+function buildMessage(m) {
+  const domain = addr(m.from).split("@")[1] ?? "perkora.local";
+  const headers = [
+    `From: ${formatFrom(clean(m.from))}`,
+    `To: <${addr(clean(m.to))}>`,
+    ...m.replyTo ? [`Reply-To: <${addr(clean(m.replyTo))}>`] : [],
+    `Subject: ${encodeWord(clean(m.subject))}`,
+    `Date: ${(/* @__PURE__ */ new Date()).toUTCString().replace("GMT", "+0000")}`,
+    `Message-ID: <${import_node_crypto3.default.randomUUID()}@${domain}>`,
+    ...m.inReplyTo ? [`In-Reply-To: ${clean(m.inReplyTo)}`] : [],
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=utf-8",
+    "Content-Transfer-Encoding: base64"
+  ];
+  return headers.join("\r\n") + "\r\n\r\n" + wrap76(Buffer.from(m.text.replace(/\r?\n/g, "\r\n"), "utf8").toString("base64"));
+}
+async function sendMail(msg, settings = mailSettings()) {
+  if (!settings) throw new MailError("Email sending is not set up.");
+  const s = settings;
+  const timeoutMs = 2e4;
+  const socket = await new Promise((resolve, reject) => {
+    const onErr = (e) => reject(new MailError(`Couldn\u2019t reach the mail server (${e.message}).`));
+    const sock = s.secure === "ssl" ? import_node_tls2.default.connect({ host: s.host, port: s.port, servername: import_node_net2.default.isIP(s.host) ? void 0 : s.host }, () => resolve(sock)) : import_node_net2.default.connect({ host: s.host, port: s.port }, () => resolve(sock));
+    sock.once("error", onErr);
+    sock.setTimeout(timeoutMs, () => sock.destroy(new Error("timed out")));
+  });
+  const c = new Conn(socket);
+  const helo = (() => {
+    try {
+      return new URL(config().APP_URL).hostname || "localhost";
+    } catch {
+      return "localhost";
+    }
+  })();
+  try {
+    await c.reply([220]);
+    let ehlo = await c.cmd(`EHLO ${helo}`, [250]);
+    if (s.secure === "starttls") {
+      await c.cmd("STARTTLS", [220]);
+      const secured = await new Promise((resolve, reject) => {
+        const t = import_node_tls2.default.connect({ socket, servername: import_node_net2.default.isIP(s.host) ? void 0 : s.host }, () => resolve(t));
+        t.once("error", reject);
+      });
+      c.attach(secured);
+      ehlo = await c.cmd(`EHLO ${helo}`, [250]);
+    }
+    if (s.user) {
+      if (/AUTH[ =][^\n]*PLAIN/i.test(ehlo.text) || !/AUTH[ =][^\n]*LOGIN/i.test(ehlo.text)) {
+        await c.cmd(`AUTH PLAIN ${Buffer.from(`\0${s.user}\0${s.pass}`).toString("base64")}`, [235]);
+      } else {
+        await c.cmd("AUTH LOGIN", [334]);
+        await c.cmd(Buffer.from(s.user).toString("base64"), [334]);
+        await c.cmd(Buffer.from(s.pass).toString("base64"), [235]);
+      }
+    }
+    await c.cmd(`MAIL FROM:<${addr(s.from)}>`, [250]);
+    await c.cmd(`RCPT TO:<${addr(clean(msg.to))}>`, [250, 251]);
+    await c.cmd("DATA", [354]);
+    const data = buildMessage({ ...msg, from: s.from }).split("\r\n").map((l) => l.startsWith(".") ? "." + l : l).join("\r\n");
+    c.socket.write(data.replace(/\r\n$/, "") + "\r\n.\r\n");
+    await c.reply([250]);
+    await c.cmd("QUIT", [221]).catch(() => void 0);
+  } catch (e) {
+    if (e instanceof MailError) throw e;
+    throw new MailError(/auth/i.test(String(e.message)) ? "The mail server rejected the username or password." : `Sending failed (${e.message}).`);
+  } finally {
+    c.socket.destroy();
+  }
+}
+var import_node_net2, import_node_tls2, import_node_crypto3, MailError, clean, addr, encodeWord, wrap76, Conn;
+var init_smtp = __esm({
+  "src/server/mail/smtp.ts"() {
+    "use strict";
+    import_node_net2 = __toESM(require("node:net"), 1);
+    import_node_tls2 = __toESM(require("node:tls"), 1);
+    import_node_crypto3 = __toESM(require("node:crypto"), 1);
+    init_config();
+    MailError = class extends Error {
+    };
+    clean = (s) => s.replace(/[\r\n]+/g, " ").trim();
+    addr = (s) => (/<([^>]+)>/.exec(s)?.[1] ?? s).trim();
+    encodeWord = (s) => /^[\x20-\x7e]*$/.test(s) ? s : `=?UTF-8?B?${Buffer.from(s, "utf8").toString("base64")}?=`;
+    wrap76 = (b64) => b64.replace(/.{1,76}/g, (m) => m + "\r\n");
+    Conn = class {
+      constructor(socket) {
+        this.socket = socket;
+        this.attach(socket);
+      }
+      socket;
+      buf = "";
+      waiters = [];
+      lines = [];
+      failure = null;
+      attach(socket) {
+        this.socket = socket;
+        socket.setEncoding("utf8");
+        socket.on("data", (d) => {
+          this.buf += d;
+          let i;
+          while ((i = this.buf.indexOf("\n")) >= 0) {
+            const line = this.buf.slice(0, i).replace(/\r$/, "");
+            this.buf = this.buf.slice(i + 1);
+            const w = this.waiters.shift();
+            if (w) w(line);
+            else this.lines.push(line);
+          }
+        });
+        socket.on("error", (e) => this.fail(e));
+        socket.on("close", () => this.fail(new MailError("The mail server closed the connection.")));
+      }
+      fail(e) {
+        if (!this.failure) this.failure = e;
+        for (const w of this.waiters.splice(0)) w("");
+      }
+      nextLine() {
+        if (this.lines.length) return Promise.resolve(this.lines.shift());
+        if (this.failure) return Promise.reject(this.failure);
+        return new Promise(
+          (resolve, reject) => this.waiters.push((l) => this.failure && l === "" ? reject(this.failure) : resolve(l))
+        );
+      }
+      /** Read one (possibly multi-line) reply; throws unless the code is in `ok`. */
+      async reply(ok) {
+        const parts = [];
+        for (; ; ) {
+          const line = await this.nextLine();
+          parts.push(line.slice(4));
+          if (/^\d{3} /.test(line) || /^\d{3}$/.test(line)) {
+            const code = Number(line.slice(0, 3));
+            const text = parts.join("\n");
+            if (!ok.includes(code)) throw new MailError(`Mail server said: ${code} ${text}`.slice(0, 300));
+            return { code, text };
+          }
+        }
+      }
+      async cmd(line, ok) {
+        this.socket.write(line + "\r\n");
+        return this.reply(ok);
+      }
+    };
   }
 });
 
@@ -25995,34 +26429,38 @@ var init_ratelimit = __esm({
 // src/ui/components/ui.tsx
 function CsrfField() {
   const { csrf } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("input", { type: "hidden", name: "_csrf", value: csrf });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { type: "hidden", name: "_csrf", value: csrf });
 }
 function Form({ action, children, className, multipart, id, method = "post", ...rest }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("form", { action, method, encType: multipart ? "multipart/form-data" : void 0, className, id, ...rest, children: [
-    method === "post" && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(CsrfField, {}),
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { action, method, encType: multipart ? "multipart/form-data" : void 0, className, id, ...rest, children: [
+    method === "post" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(CsrfField, {}),
     children
   ] });
 }
 function Button({ variant = "primary", size, className, children, ...rest }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: cn("btn", `btn-${variant}`, size && `btn-${size}`, className), type: rest.type ?? "submit", ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: cn("btn", `btn-${variant}`, size && `btn-${size}`, className), type: rest.type ?? "submit", ...rest, children });
 }
 function Field({ label, name, hint, error, children, className, optional }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { htmlFor: name, className: "label", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { htmlFor: name, className: "label", children: [
       label,
-      optional && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "font-normal text-muted", children: [
+      optional && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "font-normal text-muted", children: [
         " (",
         t.common.optional,
         ")"
       ] })
     ] }),
     children,
-    error ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "error-text", id: `${name}-error`, children: error }) : hint ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "hint", id: `${name}-hint`, children: hint }) : null
+    error ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "error-text", id: `${name}-error`, children: error }) : hint ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "hint", id: `${name}-hint`, children: hint }) : null
   ] });
 }
+function PasswordField({ name = "password", label, hint, error, autoComplete, autoFocus }) {
+  const { t } = usePage();
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Field, { label, name, hint, error, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Island, { name: "PasswordInput", props: { name, autoComplete, invalid: Boolean(error), showLabel: t.common.showPassword, hideLabel: t.common.hidePassword, autoFocus, minLength: autoComplete === "new-password" ? 8 : void 0 } }) });
+}
 function Input({ name, error, className, ...rest }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
     "input",
     {
       id: rest.id ?? name,
@@ -26035,34 +26473,34 @@ function Input({ name, error, className, ...rest }) {
   );
 }
 function Select({ name, error, className, children, ...rest }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("select", { id: rest.id ?? name, name, className: cn("select", className), "aria-invalid": error ? "true" : void 0, ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("select", { id: rest.id ?? name, name, className: cn("select", className), "aria-invalid": error ? "true" : void 0, ...rest, children });
 }
 function Textarea({ name, error, className, ...rest }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("textarea", { id: rest.id ?? name, name, className: cn("textarea", className), "aria-invalid": error ? "true" : void 0, ...rest });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("textarea", { id: rest.id ?? name, name, className: cn("textarea", className), "aria-invalid": error ? "true" : void 0, ...rest });
 }
 function Checkbox({ name, label, hint, className, ...rest }) {
   const id = rest.id ?? `${name}-${typeof rest.value === "string" ? rest.value : "cb"}`;
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { htmlFor: id, className: cn("flex gap-3 items-start cursor-pointer", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("input", { type: "checkbox", id, name, className: "checkbox mt-[3px] shrink-0", ...rest }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-[15px] text-ink", children: label }),
-      hint && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "block text-[13px] text-muted-ink mt-0.5", children: hint })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { htmlFor: id, className: cn("flex gap-3 items-start cursor-pointer", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { type: "checkbox", id, name, className: "checkbox mt-[3px] shrink-0", ...rest }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[15px] text-ink", children: label }),
+      hint && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "block text-[13px] text-muted-ink mt-0.5", children: hint })
     ] })
   ] });
 }
 function Badge({ tone = "neutral", children, className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: cn("badge", `badge-${tone}`, className), children });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: cn("badge", `badge-${tone}`, className), children });
 }
 function Card({ children, className, ...rest }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: cn("card", className), ...rest, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("card", className), ...rest, children });
 }
 function CardHeader({ title, description, action }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-start justify-between gap-4 px-5 pt-5 pb-3", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "min-w-0", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h2", { className: "text-[17px] font-semibold", children: title }),
-      description && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-sm text-muted-ink mt-1", children: description })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-start justify-between gap-4 px-5 pt-5 pb-3", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-[17px] font-semibold", children: title }),
+      description && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-ink mt-1", children: description })
     ] }),
-    action && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "shrink-0", children: action })
+    action && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "shrink-0", children: action })
   ] });
 }
 function Alert({ tone = "info", title, children, className }) {
@@ -26074,54 +26512,54 @@ function Alert({ tone = "info", title, children, className }) {
   }[tone];
   const Icon = { info: LuInfo, success: LuCircleCheck, warning: LuCircleAlert, error: LuCircleAlert }[tone];
   const iconColor = { info: "text-muted-ink", success: "text-success", warning: "text-warning-ink", error: "text-error" }[tone];
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { role: tone === "error" ? "alert" : "status", className: cn("flex gap-3 rounded-[12px] border px-4 py-3 text-[14.5px]", styles, className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Icon, { className: cn("mt-0.5 h-[18px] w-[18px] shrink-0", iconColor), "aria-hidden": "true" }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "min-w-0", children: [
-      title && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "font-medium", children: title }),
-      children && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: cn(title && "mt-0.5 text-muted-ink"), children })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { role: tone === "error" ? "alert" : "status", className: cn("flex gap-3 rounded-[12px] border px-4 py-3 text-[14.5px]", styles, className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Icon, { className: cn("mt-0.5 h-[18px] w-[18px] shrink-0", iconColor), "aria-hidden": "true" }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0", children: [
+      title && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "font-medium", children: title }),
+      children && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn(title && "mt-0.5 text-muted-ink"), children })
     ] })
   ] });
 }
 function FlashMessage() {
   const { flash } = usePage();
   if (!flash) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "mb-5", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Alert, { tone: flash.type === "error" ? "error" : flash.type === "success" ? "success" : "info", children: flash.message }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mb-5", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Alert, { tone: flash.type === "error" ? "error" : flash.type === "success" ? "success" : "info", children: flash.message }) });
 }
 function EmptyState({ icon, title, body, action, className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: cn("flex flex-col items-center text-center px-6 py-12", className), children: [
-    icon && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-sand text-espresso", children: icon }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h3", { className: "text-[17px] font-semibold", children: title }),
-    body && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "mt-1.5 max-w-md text-[14.5px] text-muted-ink", children: body }),
-    action && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "mt-5", children: action })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("flex flex-col items-center text-center px-6 py-12", className), children: [
+    icon && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-sand text-espresso", children: icon }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-[17px] font-semibold", children: title }),
+    body && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-1.5 max-w-md text-[14.5px] text-muted-ink", children: body }),
+    action && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-5", children: action })
   ] });
 }
 function PageHeader({ title, description, actions, back: back2 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "min-w-0", children: [
-      back2 && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("a", { href: back2.href, className: "mb-2 inline-flex items-center gap-1 text-sm text-muted-ink hover:text-ink", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { "aria-hidden": "true", children: "\u2039" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0", children: [
+      back2 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("a", { href: back2.href, className: "mb-2 inline-flex items-center gap-1 text-sm text-muted-ink hover:text-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "aria-hidden": "true", children: "\u2039" }),
         " ",
         back2.label
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h1", { className: "text-[26px] font-semibold sm:text-[28px]", children: title }),
-      description && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "mt-1.5 max-w-2xl text-[15px] text-muted-ink", children: description })
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h1", { className: "text-[26px] font-semibold sm:text-[28px]", children: title }),
+      description && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-1.5 max-w-2xl text-[15px] text-muted-ink", children: description })
     ] }),
-    actions && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-wrap gap-2", children: actions })
+    actions && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex flex-wrap gap-2", children: actions })
   ] });
 }
 function Stat({ label, value, hint, tooltip }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "card px-5 py-4", title: tooltip, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[13px] text-muted-ink", children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "mt-1 font-display text-[28px] font-semibold tnum leading-tight", children: value }),
-    hint && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "mt-0.5 text-[12.5px] text-muted-ink", children: hint })
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "card px-5 py-4", title: tooltip, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[13px] text-muted-ink", children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-1 font-display text-[28px] font-semibold tnum leading-tight", children: value }),
+    hint && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-0.5 text-[12.5px] text-muted-ink", children: hint })
   ] });
 }
 function ProgressBar({ value, max, tone = "terracotta", label }) {
   const pctVal = max > 0 ? Math.min(100, Math.round(value / max * 100)) : 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, className: "h-2 w-full overflow-hidden rounded-full bg-beige", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: cn("h-full rounded-full", tone === "sage" ? "bg-sage" : "bg-terracotta"), style: { width: `${pctVal}%` } }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, className: "h-2 w-full overflow-hidden rounded-full bg-beige", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("h-full rounded-full", tone === "sage" ? "bg-sage" : "bg-terracotta"), style: { width: `${pctVal}%` } }) });
 }
 function Tabs({ items, current: current2 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("nav", { className: "mb-5 flex gap-1 overflow-x-auto border-b border-beige", "aria-label": "Sections", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("nav", { className: "mb-5 flex gap-1 overflow-x-auto border-b border-beige", "aria-label": "Sections", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
     "a",
     {
       href: i.href,
@@ -26132,7 +26570,7 @@ function Tabs({ items, current: current2 }) {
       ),
       children: [
         i.label,
-        i.count !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "ml-1.5 rounded-full bg-sand px-1.5 text-[12px] text-muted-ink tnum", children: i.count })
+        i.count !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "ml-1.5 rounded-full bg-sand px-1.5 text-[12px] text-muted-ink tnum", children: i.count })
       ]
     },
     i.key
@@ -26143,31 +26581,31 @@ function Pagination({ page, pageSize, total, hrefFor }) {
   if (pages <= 1) return null;
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between gap-3 px-4 py-3 text-sm text-muted-ink", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "tnum", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between gap-3 px-4 py-3 text-sm text-muted-ink", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "tnum", children: [
       from,
       "\u2013",
       to,
       " of ",
       total
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex gap-2", children: [
-      page > 1 ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("a", { className: "btn btn-secondary btn-sm", href: hrefFor(page - 1), children: "Previous" }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "btn btn-secondary btn-sm", "aria-disabled": "true", children: "Previous" }),
-      page < pages ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("a", { className: "btn btn-secondary btn-sm", href: hrefFor(page + 1), children: "Next" }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "btn btn-secondary btn-sm", "aria-disabled": "true", children: "Next" })
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex gap-2", children: [
+      page > 1 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { className: "btn btn-secondary btn-sm", href: hrefFor(page - 1), children: "Previous" }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "btn btn-secondary btn-sm", "aria-disabled": "true", children: "Previous" }),
+      page < pages ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { className: "btn btn-secondary btn-sm", href: hrefFor(page + 1), children: "Next" }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "btn btn-secondary btn-sm", "aria-disabled": "true", children: "Next" })
     ] })
   ] });
 }
 function DemoBanner({ dark }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: cn("px-4 py-2 text-center text-[13px]", dark ? "bg-coffee text-cream/85" : "bg-warning-tint text-warning-ink"), role: "note", children: t.common.demoBanner });
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("px-4 py-2 text-center text-[13px]", dark ? "bg-coffee text-cream/85" : "bg-warning-tint text-warning-ink"), role: "note", children: t.common.demoBanner });
 }
 function LanguageSwitcher({ className, tone = "light" }) {
   const { locale: locale2, t, path: path5, query } = usePage();
   const next = path5 + (Object.keys(query).length ? "?" + new URLSearchParams(query).toString() : "");
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(Form, { action: "/locale", className: cn("inline-flex items-center", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("input", { type: "hidden", name: "next", value: next }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "sr-only", children: t.common.language }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: cn("inline-flex rounded-full border p-0.5 text-[13px]", tone === "dark" ? "border-cream/20" : "border-beige-strong"), children: ["en", "tr"].map((l) => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Form, { action: "/locale", className: cn("inline-flex items-center", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { type: "hidden", name: "next", value: next }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "sr-only", children: t.common.language }),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("inline-flex rounded-full border p-0.5 text-[13px]", tone === "dark" ? "border-cream/20" : "border-beige-strong"), children: ["en", "tr"].map((l) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
       "button",
       {
         name: "locale",
@@ -26186,18 +26624,19 @@ function LanguageSwitcher({ className, tone = "light" }) {
 }
 function TermsNote() {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-[12.5px] text-muted-ink", children: t.auth.terms.split(/(\{terms\}|\{privacy\})/).map(
-    (part, i) => part === "{terms}" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("a", { className: "link", href: "/terms", target: "_blank", children: t.nav.terms }, i) : part === "{privacy}" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("a", { className: "link", href: "/privacy", target: "_blank", children: t.nav.privacy }, i) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { children: part }, i)
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[12.5px] text-muted-ink", children: t.auth.terms.split(/(\{terms\}|\{privacy\})/).map(
+    (part, i) => part === "{terms}" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { className: "link", href: "/terms", target: "_blank", children: t.nav.terms }, i) : part === "{privacy}" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { className: "link", href: "/privacy", target: "_blank", children: t.nav.privacy }, i) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: part }, i)
   ) });
 }
-var import_jsx_runtime17;
+var import_jsx_runtime20;
 var init_ui = __esm({
   "src/ui/components/ui.tsx"() {
     "use strict";
     init_cn();
+    init_Island();
     init_page_context();
     init_lu();
-    import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -26211,11 +26650,11 @@ function MarketingLayout({ children, active }) {
     { href: "/pricing", label: t.nav.pricing, key: "pricing" },
     { href: "/cafes", label: t.nav.findCafe, key: "cafes" }
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex min-h-screen flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("a", { href: "#main", className: "sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-paper focus:px-3 focus:py-2", children: "Skip to content" }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("header", { className: "sticky top-0 z-30 border-b border-beige/80 bg-cream/92 backdrop-blur supports-[backdrop-filter]:bg-cream/80", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "mx-auto flex h-16 max-w-[1180px] items-center gap-6 px-4 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Logo, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("nav", { className: "ml-4 hidden items-center gap-1 lg:flex", "aria-label": "Main", children: links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex min-h-screen flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: "#main", className: "sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-paper focus:px-3 focus:py-2", children: "Skip to content" }),
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("header", { className: "sticky top-0 z-30 border-b border-beige/80 bg-cream/92 backdrop-blur supports-[backdrop-filter]:bg-cream/80", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "mx-auto flex h-16 max-w-[1180px] items-center gap-6 px-4 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Logo, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("nav", { className: "ml-4 hidden items-center gap-1 lg:flex", "aria-label": "Main", children: links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
         "a",
         {
           href: l.href,
@@ -26225,41 +26664,44 @@ function MarketingLayout({ children, active }) {
         },
         l.key
       )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "ml-auto hidden items-center gap-2 lg:flex", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(LanguageSwitcher, {}),
-        user ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("a", { href: "/home", className: "btn btn-ghost btn-sm", children: t.nav.dashboard }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("a", { href: "/sign-in", className: "btn btn-ghost btn-sm", children: t.common.signIn }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("a", { href: "/demo", className: "btn btn-secondary btn-sm", children: t.common.bookDemo }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("a", { href: "/start", className: "btn btn-primary btn-sm", children: t.common.getStarted })
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "ml-auto hidden items-center gap-2 lg:flex", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(LanguageSwitcher, {}),
+        user ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: "/home", className: "btn btn-ghost btn-sm", children: t.nav.dashboard }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: "/sign-in", className: "btn btn-ghost btn-sm", children: t.common.signIn }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: "/demo", className: "btn btn-secondary btn-sm", children: t.common.bookDemo }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: "/start", className: "btn btn-primary btn-sm", children: t.common.getStarted })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "ml-auto lg:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-        Island,
-        {
-          name: "MobileNav",
-          props: {
-            links,
-            signIn: user ? { href: "/home", label: t.nav.dashboard } : { href: "/sign-in", label: t.common.signIn },
-            demo: { href: "/demo", label: t.common.bookDemo },
-            start: { href: "/start", label: t.common.getStarted },
-            menuLabel: t.nav.menu,
-            closeLabel: t.common.close
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "ml-auto flex items-center gap-1.5 lg:hidden", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(LanguageSwitcher, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+          Island,
+          {
+            name: "MobileNav",
+            props: {
+              links,
+              signIn: user ? { href: "/home", label: t.nav.dashboard } : { href: "/sign-in", label: t.common.signIn },
+              demo: { href: "/demo", label: t.common.bookDemo },
+              start: { href: "/start", label: t.common.getStarted },
+              menuLabel: t.nav.menu,
+              closeLabel: t.common.close
+            }
           }
-        }
-      ) })
+        )
+      ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("main", { id: "main", className: "flex-1", children }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Footer, {})
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("main", { id: "main", className: "flex-1", children }),
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Footer, {})
   ] });
 }
 function Footer() {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("footer", { className: "mt-24 bg-coffee text-cream/80", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "mx-auto grid max-w-[1180px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Logo, { tone: "light" }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "mt-4 max-w-xs text-[15px] text-cream/70", children: t.footer.tagline }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(LanguageSwitcher, { tone: "dark" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("footer", { className: "mt-24 bg-coffee text-cream/80", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "mx-auto grid grid-cols-1 max-w-[1180px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Logo, { tone: "light" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "mt-4 max-w-xs text-[15px] text-cream/70", children: t.footer.tagline }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(LanguageSwitcher, { tone: "dark" }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
         FooterCol,
         {
           title: t.footer.product,
@@ -26271,7 +26713,7 @@ function Footer() {
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
         FooterCol,
         {
           title: t.footer.company,
@@ -26283,7 +26725,7 @@ function Footer() {
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
         FooterCol,
         {
           title: t.footer.legal,
@@ -26294,16 +26736,16 @@ function Footer() {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "border-t border-cream/10", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "mx-auto max-w-[1180px] px-4 py-5 text-[13px] text-cream/55 sm:px-6", children: t.footer.rights }) })
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "border-t border-cream/10", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "mx-auto max-w-[1180px] px-4 py-5 text-[13px] text-cream/55 sm:px-6", children: t.footer.rights }) })
   ] });
 }
 function FooterCol({ title, links }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("h2", { className: "text-[13px] font-medium text-cream/50 font-sans tracking-normal", children: title }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("ul", { className: "mt-3 space-y-2", children: links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("a", { href: l.href, className: "text-[15px] text-cream/85 hover:text-cream", children: l.label }) }, l.href)) })
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h2", { className: "text-[13px] font-medium text-cream/50 font-sans tracking-normal", children: title }),
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("ul", { className: "mt-3 space-y-2", children: links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: l.href, className: "text-[15px] text-cream/85 hover:text-cream", children: l.label }) }, l.href)) })
   ] });
 }
-var import_jsx_runtime18;
+var import_jsx_runtime21;
 var init_MarketingLayout = __esm({
   "src/ui/layouts/MarketingLayout.tsx"() {
     "use strict";
@@ -26312,7 +26754,7 @@ var init_MarketingLayout = __esm({
     init_ui();
     init_Island();
     init_cn();
-    import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -28300,23 +28742,23 @@ function BarChart({ data, height = 180, color: color2 = "#3B2925", ariaLabel, cl
   const ticks2 = y2.ticks(4).filter((t) => Number.isInteger(t));
   const every = showEvery ?? Math.max(1, Math.ceil(data.length / 8));
   const total = data.reduce((s, d) => s + d.value, 0);
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("figure", { className: cn("w-full", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("svg", { viewBox: `0 0 ${width} ${height}`, className: "h-auto w-full", role: "img", "aria-label": `${ariaLabel}. Total ${total}.`, children: [
-      ticks2.map((t) => /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("g", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("line", { x1: m.l, x2: width - m.r, y1: y2(t), y2: y2(t), stroke: "#E9DED0", strokeWidth: "1" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("text", { x: m.l - 8, y: y2(t) + 4, textAnchor: "end", fontSize: "11", fill: "#77716B", className: "tnum", children: t })
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figure", { className: cn("w-full", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("svg", { viewBox: `0 0 ${width} ${height}`, className: "h-auto w-full", role: "img", "aria-label": `${ariaLabel}. Total ${total}.`, children: [
+      ticks2.map((t) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("g", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("line", { x1: m.l, x2: width - m.r, y1: y2(t), y2: y2(t), stroke: "#E9DED0", strokeWidth: "1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("text", { x: m.l - 8, y: y2(t) + 4, textAnchor: "end", fontSize: "11", fill: "#77716B", className: "tnum", children: t })
       ] }, t)),
       data.map((d, i) => {
         const h = Math.max(0, y2(0) - y2(d.value));
         const bw = x2.bandwidth();
-        return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("g", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("rect", { x: x2(i), y: y2(0) - h, width: bw, height: h, rx: Math.min(3, bw / 3), fill: color2, opacity: d.value === 0 ? 0 : 0.92, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("title", { children: `${d.title ?? d.label}: ${d.value}` }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("rect", { x: x2(i), y: m.t, width: bw, height: height - m.b - m.t, fill: "transparent", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("title", { children: `${d.title ?? d.label}: ${d.value}` }) }),
-          i % every === 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("text", { x: (x2(i) ?? 0) + bw / 2, y: height - 8, textAnchor: "middle", fontSize: "11", fill: "#77716B", children: d.label })
+        return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("g", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("rect", { x: x2(i), y: y2(0) - h, width: bw, height: h, rx: Math.min(3, bw / 3), fill: color2, opacity: d.value === 0 ? 0 : 0.92, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("title", { children: `${d.title ?? d.label}: ${d.value}` }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("rect", { x: x2(i), y: m.t, width: bw, height: height - m.b - m.t, fill: "transparent", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("title", { children: `${d.title ?? d.label}: ${d.value}` }) }),
+          i % every === 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("text", { x: (x2(i) ?? 0) + bw / 2, y: height - 8, textAnchor: "middle", fontSize: "11", fill: "#77716B", children: d.label })
         ] }, i);
       })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("figcaption", { className: "sr-only", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figcaption", { className: "sr-only", children: [
       ariaLabel,
       ": ",
       data.map((d) => `${d.title ?? d.label} ${d.value}`).join(", ")
@@ -28334,20 +28776,20 @@ function AreaChart({ data, height = 180, color: color2 = "#B86F52", ariaLabel, c
   const l = line_default().x((p) => p[0]).y((p) => p[1]).curve(monotoneX)(pts) ?? "";
   const ticks2 = y2.ticks(4).filter((t) => Number.isInteger(t));
   const every = Math.max(1, Math.ceil(data.length / 7));
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("figure", { className: cn("w-full", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("svg", { viewBox: `0 0 ${width} ${height}`, className: "h-auto w-full", role: "img", "aria-label": ariaLabel, children: [
-      ticks2.map((t) => /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("g", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("line", { x1: m.l, x2: width - m.r, y1: y2(t), y2: y2(t), stroke: "#E9DED0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("text", { x: m.l - 8, y: y2(t) + 4, textAnchor: "end", fontSize: "11", fill: "#77716B", children: t })
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figure", { className: cn("w-full", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("svg", { viewBox: `0 0 ${width} ${height}`, className: "h-auto w-full", role: "img", "aria-label": ariaLabel, children: [
+      ticks2.map((t) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("g", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("line", { x1: m.l, x2: width - m.r, y1: y2(t), y2: y2(t), stroke: "#E9DED0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("text", { x: m.l - 8, y: y2(t) + 4, textAnchor: "end", fontSize: "11", fill: "#77716B", children: t })
       ] }, t)),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("path", { d: a, fill: color2, opacity: "0.14" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("path", { d: l, fill: "none", stroke: color2, strokeWidth: "2.2", strokeLinejoin: "round" }),
-      data.map((d, i) => /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("g", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("circle", { cx: x2(i), cy: y2(d.value), r: "9", fill: "transparent", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("title", { children: `${d.title ?? d.label}: ${d.value}` }) }),
-        i % every === 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("text", { x: x2(i), y: height - 8, textAnchor: "middle", fontSize: "11", fill: "#77716B", children: d.label })
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("path", { d: a, fill: color2, opacity: "0.14" }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("path", { d: l, fill: "none", stroke: color2, strokeWidth: "2.2", strokeLinejoin: "round" }),
+      data.map((d, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("g", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("circle", { cx: x2(i), cy: y2(d.value), r: "9", fill: "transparent", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("title", { children: `${d.title ?? d.label}: ${d.value}` }) }),
+        i % every === 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("text", { x: x2(i), y: height - 8, textAnchor: "middle", fontSize: "11", fill: "#77716B", children: d.label })
       ] }, i))
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("figcaption", { className: "sr-only", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figcaption", { className: "sr-only", children: [
       ariaLabel,
       ": ",
       data.map((d) => `${d.title ?? d.label} ${d.value}`).join(", ")
@@ -28357,118 +28799,131 @@ function AreaChart({ data, height = 180, color: color2 = "#B86F52", ariaLabel, c
 function SparkBars({ values, color: color2 = "#3B2925", className }) {
   const max = Math.max(1, ...values);
   const w = 100 / values.length;
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("svg", { viewBox: "0 0 100 40", preserveAspectRatio: "none", className, "aria-hidden": "true", children: values.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("rect", { x: i * w + w * 0.15, width: w * 0.7, y: 40 - v / max * 38, height: v / max * 38, rx: "1.2", fill: color2, opacity: i === values.length - 1 ? 1 : 0.8 }, i)) });
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("svg", { viewBox: "0 0 100 40", preserveAspectRatio: "none", className, "aria-hidden": "true", children: values.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("rect", { x: i * w + w * 0.15, width: w * 0.7, y: 40 - v / max * 38, height: v / max * 38, rx: "1.2", fill: color2, opacity: i === values.length - 1 ? 1 : 0.8 }, i)) });
 }
-var import_jsx_runtime19;
+var import_jsx_runtime22;
 var init_charts = __esm({
   "src/ui/charts/charts.tsx"() {
     "use strict";
     init_src6();
     init_src8();
     init_cn();
-    import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
 // src/ui/components/mockups.tsx
 function PhoneFrame({ children, className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("relative rounded-[38px] border border-coffee/10 bg-coffee p-[9px]", className), style: { boxShadow: "var(--shadow-float)" }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative overflow-hidden rounded-[30px] bg-cream", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "absolute left-1/2 top-2 z-10 h-[18px] w-[86px] -translate-x-1/2 rounded-full bg-coffee", "aria-hidden": "true" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: cn("relative rounded-[38px] border border-coffee/10 bg-coffee p-[9px]", className), style: { boxShadow: "var(--shadow-float)" }, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "relative overflow-hidden rounded-[30px] bg-cream", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "absolute left-1/2 top-2 z-10 h-[18px] w-[86px] -translate-x-1/2 rounded-full bg-coffee", "aria-hidden": "true" }),
     children
   ] }) });
 }
 function CustomerCardMock({ filled = 7, required = 9, cafe = "Perkora Demo Caf\xE9", reward = "a free regular coffee", progressText, toGoText, compact, cta = "Show at the counter" }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("px-4 pb-5", compact ? "pt-9" : "pt-10"), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2.5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(CafeMark, { name: cafe, colour: "#3B2925", size: 34 }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "truncate text-[13.5px] font-semibold leading-tight text-ink", children: cafe }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[11.5px] text-muted-ink", children: "Coffee Club" })
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: cn("px-4 pb-5", compact ? "pt-9" : "pt-10"), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2.5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(CafeMark, { name: cafe, colour: "#3B2925", size: 34 }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "min-w-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "truncate text-[13.5px] font-semibold leading-tight text-ink", children: cafe }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[11.5px] text-muted-ink", children: "Coffee Club" })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-4 rounded-[18px] border border-beige bg-paper p-4", style: { boxShadow: "var(--shadow-card)" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(StampGrid, { required, filled, size: compact ? 30 : 34, ariaLabel: progressText }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-4 text-[14px] font-semibold text-ink", children: progressText }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[12.5px] text-muted-ink", children: toGoText.replace("{reward}", reward) })
-    ] }),
-    !compact && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 flex items-center gap-3 rounded-[14px] bg-espresso px-3.5 py-3 text-cream", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuQrCode, { className: "h-5 w-5 shrink-0", "aria-hidden": "true" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-[13px] font-medium", children: cta })
-    ] })
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+      "div",
+      {
+        className: "relative mt-4 overflow-hidden rounded-[20px] p-4 text-cream",
+        style: {
+          background: "radial-gradient(120% 80% at 100% 0%, rgba(140,110,100,0.55) 0%, transparent 60%), linear-gradient(165deg, #4a3632 0%, #3B2925 45%, #2e201d 100%)",
+          boxShadow: "0 18px 32px -18px rgba(36,25,22,0.7)"
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { "aria-hidden": "true", className: "pointer-events-none absolute inset-0 opacity-[0.06]", style: { backgroundImage: "radial-gradient(currentColor 1px, transparent 1.2px)", backgroundSize: "12px 12px" } }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "relative", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(StampGrid, { required, filled, size: compact ? 30 : 34, tone: "#FAF6EF", ariaLabel: progressText }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-4 text-[14px] font-semibold", children: progressText }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[12.5px] opacity-80", children: toGoText.replace("{reward}", reward) }),
+            !compact && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-3.5 flex items-center justify-center gap-2 rounded-[12px] bg-cream py-2.5 text-espresso", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuQrCode, { className: "h-4 w-4 shrink-0", "aria-hidden": "true" }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-[13px] font-semibold", children: cta })
+            ] })
+          ] })
+        ]
+      }
+    )
   ] });
 }
 function DashboardMock({ className }) {
   const visits = [18, 22, 19, 26, 31, 24, 29, 33, 27, 35, 38, 34, 41, 39];
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("rounded-[18px] border border-beige bg-paper p-5", className), style: { boxShadow: "var(--shadow-raised)" }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[13px] font-medium text-muted-ink", children: "Last 30 days" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "badge badge-sage", children: "Illustrative" })
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: cn("rounded-[18px] border border-beige bg-paper p-5", className), style: { boxShadow: "var(--shadow-raised)" }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[13px] font-medium text-muted-ink", children: "Last 30 days" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "badge badge-sage", children: "Illustrative" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-3 grid grid-cols-3 gap-3", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mt-3 grid grid-cols-3 gap-3", children: [
       ["Members", "248"],
       ["Visits", "612"],
       ["Rewards redeemed", "57"]
-    ].map(([l, v]) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "rounded-[12px] bg-cream px-3 py-2.5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[11.5px] leading-tight text-muted-ink", children: l }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-0.5 font-display text-[22px] font-semibold tnum", children: v })
+    ].map(([l, v]) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "rounded-[12px] bg-cream px-3 py-2.5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[11.5px] leading-tight text-muted-ink", children: l }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-0.5 font-display text-[22px] font-semibold tnum", children: v })
     ] }, l)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-4 text-[12.5px] font-medium text-ink", children: "Verified visits per day" }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SparkBars, { values: visits, className: "mt-2 h-16 w-full" })
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-4 text-[12.5px] font-medium text-ink", children: "Verified visits per day" }),
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(SparkBars, { values: visits, className: "mt-2 h-16 w-full" })
   ] });
 }
 function TerminalMock({ className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: cn("rounded-[18px] border border-beige bg-paper p-4", className), style: { boxShadow: "var(--shadow-raised)" }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2 rounded-[10px] border border-beige-strong bg-cream px-3 py-2 text-[13px] text-muted-ink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuSearch, { className: "h-4 w-4", "aria-hidden": "true" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: cn("rounded-[18px] border border-beige bg-paper p-4", className), style: { boxShadow: "var(--shadow-raised)" }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2 rounded-[10px] border border-beige-strong bg-cream px-3 py-2 text-[13px] text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuSearch, { className: "h-4 w-4", "aria-hidden": "true" }),
       " K7M2 9QXA"
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[15px] font-semibold", children: "Deniz A." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-[12px] text-muted-ink", children: "14 visits \xB7 Coffee Club 7 / 9" })
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-3 flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[15px] font-semibold", children: "Deniz A." }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-[12px] text-muted-ink", children: "14 visits \xB7 Coffee Club 7 / 9" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "badge badge-accent", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuGift, { className: "h-3.5 w-3.5", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "badge badge-accent", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuGift, { className: "h-3.5 w-3.5", "aria-hidden": "true" }),
         " 1 reward"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid grid-cols-2 gap-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "btn btn-primary btn-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuStamp, { className: "h-4 w-4", "aria-hidden": "true" }),
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-3 grid grid-cols-2 gap-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "btn btn-primary btn-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuStamp, { className: "h-4 w-4", "aria-hidden": "true" }),
         " Add stamp"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "btn btn-secondary btn-sm", children: "Redeem" })
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "btn btn-secondary btn-sm", children: "Redeem" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 flex items-center gap-2 rounded-[10px] bg-success-tint px-3 py-2 text-[12.5px] text-success", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuCheck, { className: "h-4 w-4", "aria-hidden": "true" }),
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-3 flex items-center gap-2 rounded-[10px] bg-success-tint px-3 py-2 text-[12.5px] text-success", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuCheck, { className: "h-4 w-4", "aria-hidden": "true" }),
       " Added 1 stamp: 7 \u2192 8 of 9"
     ] })
   ] });
 }
 function StepVisual({ step }) {
   if (step === 0)
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(CafeMark, { name: "Your Caf\xE9", colour: "#B86F52", size: 28 }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-2.5 w-24 rounded-full bg-beige" })
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(CafeMark, { name: "Your Caf\xE9", colour: "#B86F52", size: 28 }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "h-2.5 w-24 rounded-full bg-beige" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex gap-1.5", children: ["#3B2925", "#B86F52", "#87947A", "#C18A35"].map((c) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "h-5 w-5 rounded-full border border-paper", style: { background: c } }, c)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border border-beige bg-paper px-2.5 py-1.5 text-[12px] text-muted-ink", children: "Collect 9 stamps \u2192 1 free coffee" })
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex gap-1.5", children: ["#3B2925", "#B86F52", "#87947A", "#C18A35"].map((c) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "h-5 w-5 rounded-full border border-paper", style: { background: c } }, c)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "rounded-lg border border-beige bg-paper px-2.5 py-1.5 text-[12px] text-muted-ink", children: "Collect 9 stamps \u2192 1 free coffee" })
     ] });
   if (step === 1)
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border border-beige bg-paper p-2", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuQrCode, { className: "h-12 w-12 text-espresso", "aria-hidden": "true" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-[12px] text-muted-ink", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "font-medium text-ink", children: "Scan to join" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "No app needed" })
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "rounded-lg border border-beige bg-paper p-2", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuQrCode, { className: "h-12 w-12 text-espresso", "aria-hidden": "true" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-[12px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "font-medium text-ink", children: "Scan to join" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "No app needed" })
       ] })
     ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-3", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-espresso text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(LuScanLine, { className: "h-6 w-6", "aria-hidden": "true" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex -space-x-1", children: [0, 1, 2].map((i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(RewardBadgeIcon, { icon: "coffee", size: "sm" }, i)) })
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-3", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-espresso text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuScanLine, { className: "h-6 w-6", "aria-hidden": "true" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex -space-x-1", children: [0, 1, 2].map((i) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(RewardBadgeIcon, { icon: "coffee", size: "sm" }, i)) })
   ] });
 }
-var import_jsx_runtime20;
+var import_jsx_runtime23;
 var init_mockups = __esm({
   "src/ui/components/mockups.tsx"() {
     "use strict";
@@ -28476,16 +28931,16 @@ var init_mockups = __esm({
     init_brand();
     init_charts();
     init_cn();
-    import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
 // src/ui/pages/marketing/PlanCards.tsx
 function PlanCards({ plans, compact }) {
   const { t, locale: locale2 } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: cn("mx-auto grid gap-4", plans.length === 2 ? "max-w-[820px] md:grid-cols-2" : "md:grid-cols-3"), children: plans.map((p) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: cn("mx-auto grid gap-4", plans.length === 2 ? "max-w-[820px] md:grid-cols-2" : "md:grid-cols-3"), children: plans.map((p) => {
     const items = locale2 === "tr" ? p.highlightsTr : p.highlights;
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
       "div",
       {
         className: cn(
@@ -28494,30 +28949,30 @@ function PlanCards({ plans, compact }) {
         ),
         style: p.recommended ? { boxShadow: "var(--shadow-raised)" } : void 0,
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h3", { className: cn("text-[19px] font-semibold", p.recommended && "text-cream"), children: p.name }),
-            p.recommended && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "badge bg-terracotta text-white", children: t.pricing.recommended })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: cn("text-[19px] font-semibold", p.recommended && "text-cream"), children: p.name }),
+            p.recommended && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "badge bg-terracotta text-white", children: t.pricing.recommended })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: cn("mt-1 text-[14.5px]", p.recommended ? "text-cream/75" : "text-muted-ink"), children: p.description }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "mt-5 flex items-baseline gap-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "font-display text-[40px] font-semibold tracking-[-0.03em] tnum", children: moneyWhole(p.monthlyPriceMinor, p.currency, locale2) }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: cn("text-[15px]", p.recommended ? "text-cream/70" : "text-muted-ink"), children: t.pricing.perMonth })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: cn("mt-1 text-[14.5px]", p.recommended ? "text-cream/75" : "text-muted-ink"), children: p.description }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "mt-5 flex items-baseline gap-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-display text-[40px] font-semibold tracking-[-0.03em] tnum", children: moneyWhole(p.monthlyPriceMinor, p.currency, locale2) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: cn("text-[15px]", p.recommended ? "text-cream/70" : "text-muted-ink"), children: t.pricing.perMonth })
           ] }),
-          !compact && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-            p.inheritsFrom && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: cn("mt-5 text-[14px] font-medium", p.recommended ? "text-cream/85" : "text-ink"), children: fmt(t.pricing.everythingIn, { plan: p.inheritsFrom }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("ul", { className: cn("space-y-2.5", p.inheritsFrom ? "mt-3" : "mt-5"), children: items.map((h) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("li", { className: "flex gap-2.5 text-[14.5px]", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(LuCheck, { className: cn("mt-[3px] h-4 w-4 shrink-0", p.recommended ? "text-terracotta-tint" : "text-sage-ink"), "aria-hidden": "true" }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: h })
+          !compact && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+            p.inheritsFrom && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: cn("mt-5 text-[14px] font-medium", p.recommended ? "text-cream/85" : "text-ink"), children: fmt(t.pricing.everythingIn, { plan: p.inheritsFrom }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("ul", { className: cn("space-y-2.5", p.inheritsFrom ? "mt-3" : "mt-5"), children: items.map((h) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("li", { className: "flex gap-2.5 text-[14.5px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(LuCheck, { className: cn("mt-[3px] h-4 w-4 shrink-0", p.recommended ? "text-terracotta-tint" : "text-sage-ink"), "aria-hidden": "true" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: h })
             ] }, h)) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "mt-auto pt-6", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: `/get-started?plan=${p.id}`, className: cn("btn w-full", p.recommended ? "bg-cream text-espresso hover:bg-paper" : "btn-secondary"), children: fmt(t.pricing.choose, { plan: p.name }) }) })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "mt-auto pt-6", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: `/get-started?plan=${p.id}`, className: cn("btn w-full", p.recommended ? "bg-cream text-espresso hover:bg-paper" : "btn-secondary"), children: fmt(t.pricing.choose, { plan: p.name }) }) })
         ]
       },
       p.id
     );
   }) });
 }
-var import_jsx_runtime21;
+var import_jsx_runtime24;
 var init_PlanCards = __esm({
   "src/ui/pages/marketing/PlanCards.tsx"() {
     "use strict";
@@ -28526,7 +28981,7 @@ var init_PlanCards = __esm({
     init_i18n();
     init_format();
     init_cn();
-    import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -28537,54 +28992,42 @@ function HomePage({ plans }) {
   const reward = locale2 === "tr" ? "\xFCcretsiz bir kahve" : "free regular coffee";
   const progress = fmt(t.wallet.stampsProgress, { have: 7, need: 9 });
   const toGo = plural(t.wallet.stampsToGo, 2, { reward: "{reward}" });
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(MarketingLayout, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { className: "relative overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mx-auto grid max-w-[1180px] items-center gap-12 px-4 pb-16 pt-12 sm:px-6 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h1", { className: "max-w-[15ch] text-[42px] font-semibold leading-[1.04] tracking-[-0.035em] sm:text-[56px] lg:text-[64px]", children: h.heroTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-6 max-w-[54ch] text-[17px] leading-relaxed text-muted-ink sm:text-[18px]", children: h.heroBody }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-8 flex flex-col gap-3 sm:flex-row", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg", children: h.heroPrimary }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "#how-it-works", className: "btn btn-secondary btn-lg", children: h.heroSecondary })
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(MarketingLayout, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("section", { className: "relative overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mx-auto grid grid-cols-1 max-w-[1180px] items-center gap-12 px-4 pb-16 pt-12 sm:px-6 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h1", { className: "max-w-[15ch] text-[42px] font-semibold leading-[1.04] tracking-[-0.035em] sm:text-[56px] lg:text-[64px]", children: h.heroTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-5 max-w-[44ch] text-[18px] leading-relaxed text-muted-ink", children: h.heroBody }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-8 grid gap-3 sm:flex", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg", children: h.heroPrimary }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/cafes", className: "btn btn-secondary btn-lg", children: h.heroSecondary })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-6 text-[14.5px] text-muted-ink", children: h.heroNote }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("p", { className: "mt-2 text-[14.5px] text-muted-ink", children: [
-          h.heroCustomer,
-          " ",
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/start", className: "link font-medium text-ink", children: h.heroCustomerLink })
-        ] })
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { className: "mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px] text-muted-ink", children: h.heroPoints.map((p) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { className: "flex items-center gap-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(LuCheck, { className: "h-4 w-4 text-sage-ink", "aria-hidden": "true" }),
+          p
+        ] }, p)) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative mx-auto w-full max-w-[560px] sm:min-h-[520px] lg:mx-0", "aria-label": "Product preview: a customer loyalty card and the caf\xE9 dashboard", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DashboardMock, { className: "hidden w-[76%] sm:block" }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(PhoneFrame, { className: "relative mx-auto w-[72%] max-w-[260px] sm:absolute sm:bottom-0 sm:right-0 sm:mx-0 sm:w-[46%] sm:max-w-[248px]", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(CustomerCardMock, { filled: 7, required: 9, reward, progressText: progress, toGoText: toGo, cta: t.wallet.showAtCounter }) })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "relative mx-auto w-full max-w-[560px] sm:min-h-[520px] lg:mx-0", "aria-label": "Product preview: a customer loyalty card and the caf\xE9 dashboard", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DashboardMock, { className: "hidden w-[76%] sm:block" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(PhoneFrame, { className: "relative mx-auto w-[72%] max-w-[260px] sm:absolute sm:bottom-0 sm:right-0 sm:mx-0 sm:w-[46%] sm:max-w-[248px]", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(CustomerCardMock, { filled: 7, required: 9, reward, progressText: progress, toGoText: toGo, cta: t.wallet.showAtCounter }) })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { className: "border-y border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mx-auto max-w-[1180px] px-4 py-20 sm:px-6", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid gap-12 lg:grid-cols-[1fr_1.35fr]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "max-w-[20ch] text-[32px] font-semibold sm:text-[38px]", children: h.problemTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-4 max-w-[42ch] text-[16.5px] text-muted-ink", children: h.problemIntro })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "divide-y divide-beige", children: h.problems.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid gap-2 py-6 first:pt-0 sm:grid-cols-[1fr_1.2fr] sm:gap-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-[17px] font-semibold text-ink", children: p.problem }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-[16px] text-muted-ink", children: p.answer })
-      ] }, i)) })
-    ] }) }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("section", { id: "features", className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "max-w-[22ch] text-[32px] font-semibold sm:text-[38px]", children: h.featuresTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-3 text-[16.5px] text-muted-ink", children: h.featuresIntro }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-10 grid gap-4 lg:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "panel flex flex-col justify-between gap-8 p-7", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "text-[21px] font-semibold", children: h.features.card.title }),
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-2 max-w-[40ch] text-[15.5px] text-muted-ink", children: h.features.card.body })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { id: "features", className: "mx-auto max-w-[1180px] px-4 py-20 sm:px-6 sm:py-24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "max-w-[22ch] text-[32px] font-semibold sm:text-[38px]", children: h.featuresTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-3 text-[16.5px] text-muted-ink", children: h.featuresIntro }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel flex flex-col justify-between gap-8 p-7", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "text-[21px] font-semibold", children: h.features.card.title }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 max-w-[40ch] text-[15.5px] text-muted-ink", children: h.features.card.body })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "rounded-[16px] border border-beige bg-cream p-5", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(StampGrid, { required: 9, filled: 4, size: 40, ariaLabel: fmt(t.wallet.stampsProgress, { have: 4, need: 9 }) }) })
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "rounded-[16px] border border-beige bg-cream p-5", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(StampGrid, { required: 9, filled: 4, size: 40, ariaLabel: fmt(t.wallet.stampsProgress, { have: 4, need: 9 }) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "panel flex flex-col justify-between gap-8 p-7", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "text-[21px] font-semibold", children: h.features.insights.title }),
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-2 max-w-[40ch] text-[15.5px] text-muted-ink", children: h.features.insights.body })
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel flex flex-col justify-between gap-8 p-7", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "text-[21px] font-semibold", children: h.features.insights.title }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 max-w-[40ch] text-[15.5px] text-muted-ink", children: h.features.insights.body })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "rounded-[16px] border border-beige bg-cream p-4", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "rounded-[16px] border border-beige bg-cream p-4", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
             BarChart,
             {
               ariaLabel: "Example chart of verified visits per week",
@@ -28595,75 +29038,61 @@ function HomePage({ plans }) {
           ) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-4 grid gap-x-8 gap-y-8 rounded-[20px] border border-beige bg-paper p-7 sm:grid-cols-2 lg:grid-cols-3", children: [
-        ["stamps", LuStamp],
-        ["streaks", LuRepeat],
-        ["rewards", LuGift],
-        ["qr", LuQrCode],
-        ["offers", LuTicket],
-        ["winback", LuUndo2]
-      ].map(([k, Icon]) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Icon, { className: "h-5 w-5", "aria-hidden": "true" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "text-[16.5px] font-semibold", children: h.features[k].title }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-1 text-[15px] text-muted-ink", children: h.features[k].body })
-        ] })
-      ] }, k)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/features", className: "link text-[15px]", children: t.nav.features }) })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/features", className: "link text-[15px]", children: t.nav.features }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { id: "how-it-works", className: "scroll-mt-20 border-y border-beige bg-sand/60", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "text-[32px] font-semibold sm:text-[38px]", children: h.howTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("ol", { className: "mt-12 grid gap-10 md:grid-cols-3 md:gap-8", children: h.howSteps.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("li", { className: "relative", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center gap-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-espresso font-display text-[18px] font-semibold text-espresso tnum", children: i + 1 }),
-          i < 2 && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "hidden h-px flex-1 bg-beige-strong md:block", "aria-hidden": "true" })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("section", { id: "how-it-works", className: "scroll-mt-20 border-y border-beige bg-sand/60", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "text-[32px] font-semibold sm:text-[38px]", children: h.howTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ol", { className: "mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8", children: h.howSteps.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { className: "relative", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-espresso font-display text-[18px] font-semibold text-espresso tnum", children: i + 1 }),
+          i < 2 && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "hidden h-px flex-1 bg-beige-strong md:block", "aria-hidden": "true" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "mt-5 text-[19px] font-semibold", children: s.title }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-2 text-[15.5px] text-muted-ink", children: s.body }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-5 rounded-[14px] border border-beige bg-paper p-4", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(StepVisual, { step: i }) })
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "mt-5 text-[19px] font-semibold", children: s.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-[15.5px] text-muted-ink", children: s.body }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mt-5 rounded-[14px] border border-beige bg-paper p-4", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(StepVisual, { step: i }) })
       ] }, i)) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { id: "product", className: "scroll-mt-16 bg-coffee text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "text-[32px] font-semibold text-cream sm:text-[38px]", children: h.previewTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-3 max-w-[56ch] text-[16.5px] text-cream/70", children: h.previewBody }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-12 grid items-start gap-8 lg:grid-cols-[0.8fr_1fr_1.2fr]", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figure", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(PhoneFrame, { className: "mx-auto max-w-[270px] border-cream/10", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(CustomerCardMock, { filled: 8, required: 9, reward, progressText: fmt(t.wallet.stampsProgress, { have: 8, need: 9 }), toGoText: plural(t.wallet.stampsToGo, 1, { reward: "{reward}" }), cta: t.wallet.showAtCounter }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("figcaption", { className: "mt-4 text-center text-[14px] text-cream/70", children: h.previewCustomer })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("section", { id: "product", className: "scroll-mt-16 bg-coffee text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "text-[32px] font-semibold text-cream sm:text-[38px]", children: h.previewTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-3 max-w-[56ch] text-[16.5px] text-cream/70", children: h.previewBody }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-12 grid grid-cols-1 items-start gap-8 lg:grid-cols-[0.8fr_1fr_1.2fr]", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(PhoneFrame, { className: "mx-auto max-w-[270px] border-cream/10", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(CustomerCardMock, { filled: 8, required: 9, reward, progressText: fmt(t.wallet.stampsProgress, { have: 8, need: 9 }), toGoText: plural(t.wallet.stampsToGo, 1, { reward: "{reward}" }), cta: t.wallet.showAtCounter }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { className: "mt-4 text-center text-[14px] text-cream/70", children: h.previewCustomer })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figure", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(TerminalMock, { className: "text-ink" }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("figcaption", { className: "mt-4 text-center text-[14px] text-cream/70", children: h.previewStaff })
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(TerminalMock, { className: "text-ink" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { className: "mt-4 text-center text-[14px] text-cream/70", children: h.previewStaff })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figure", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DashboardMock, { className: "text-ink" }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("figcaption", { className: "mt-4 text-center text-[14px] text-cream/70", children: h.previewOwner })
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DashboardMock, { className: "text-ink" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { className: "mt-4 text-center text-[14px] text-cream/70", children: h.previewOwner })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-12 flex flex-col gap-3 sm:flex-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/c/perkora-demo-cafe", className: "btn btn-lg bg-cream text-espresso hover:bg-paper", children: t.demo.tryDemo }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/demo", className: "btn btn-lg border border-cream/25 text-cream hover:bg-cream/10", children: t.common.bookDemo })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-12 flex flex-col gap-3 sm:flex-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/c/perkora-demo-cafe", className: "btn btn-lg bg-cream text-espresso hover:bg-paper", children: t.demo.tryDemo }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/demo", className: "btn btn-lg border border-cream/25 text-cream hover:bg-cream/10", children: t.common.bookDemo })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("section", { className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex flex-col justify-between gap-4 sm:flex-row sm:items-end", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "text-[32px] font-semibold sm:text-[38px]", children: h.pricingTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/pricing", className: "link text-[15px]", children: h.pricingCta })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "mx-auto max-w-[1180px] px-4 py-24 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-col justify-between gap-4 sm:flex-row sm:items-end", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "text-[32px] font-semibold sm:text-[38px]", children: h.pricingTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/pricing", className: "link text-[15px]", children: h.pricingCta })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(PlanCards, { plans, compact: true }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-5 max-w-[80ch] text-[13.5px] text-muted-ink", children: h.pricingNote })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(PlanCards, { plans, compact: true }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-5 text-center text-[13.5px] text-muted-ink", children: h.pricingNote })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { className: "mx-auto max-w-[1180px] px-4 sm:px-6", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "rounded-[24px] bg-terracotta-tint px-6 py-14 text-center sm:px-12", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "mx-auto max-w-[22ch] text-[32px] font-semibold sm:text-[40px]", children: h.finalTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mx-auto mt-3 max-w-[48ch] text-[16.5px] text-muted-ink", children: h.finalBody }),
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-8 flex flex-col justify-center gap-3 sm:flex-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg", children: t.common.getStarted }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/demo", className: "btn btn-secondary btn-lg", children: t.common.bookDemo })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("section", { className: "mx-auto max-w-[1180px] px-4 sm:px-6", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "rounded-[24px] bg-terracotta-tint px-6 py-14 text-center sm:px-12", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "mx-auto max-w-[22ch] text-[32px] font-semibold sm:text-[40px]", children: h.finalTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mx-auto mt-3 max-w-[48ch] text-[16.5px] text-muted-ink", children: h.finalBody }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-8 flex flex-col justify-center gap-3 sm:flex-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg", children: t.common.getStarted }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("a", { href: "/demo", className: "btn btn-secondary btn-lg", children: t.common.bookDemo })
       ] })
     ] }) })
   ] });
 }
-var import_jsx_runtime22;
+var import_jsx_runtime25;
 var init_Home = __esm({
   "src/ui/pages/marketing/Home.tsx"() {
     "use strict";
@@ -28675,7 +29104,7 @@ var init_Home = __esm({
     init_charts();
     init_PlanCards();
     init_i18n();
-    import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -28686,52 +29115,52 @@ function FeaturesPage() {
   const visual = (key) => {
     switch (key) {
       case "digital":
-        return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(PhoneFrame, { className: "mx-auto max-w-[240px]", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(CustomerCardMock, { compact: true, filled: 5, required: 9, progressText: fmt(t.wallet.stampsProgress, { have: 5, need: 9 }), toGoText: plural(t.wallet.stampsToGo, 4, { reward: "{reward}" }), reward: "\u2615" }) });
+        return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PhoneFrame, { className: "mx-auto max-w-[240px]", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(CustomerCardMock, { compact: true, filled: 5, required: 9, progressText: fmt(t.wallet.stampsProgress, { have: 5, need: 9 }), toGoText: plural(t.wallet.stampsToGo, 4, { reward: "{reward}" }), reward: "\u2615" }) });
       case "stamps":
-        return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "rounded-[16px] border border-beige bg-paper p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(StampGrid, { required: 9, filled: 9, size: 38, ariaLabel: t.wallet.cardFull }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-4 text-[14px] font-medium", children: t.wallet.cardFull })
+        return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "rounded-[16px] border border-beige bg-paper p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(StampGrid, { required: 9, filled: 9, size: 38, ariaLabel: t.wallet.cardFull }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-4 text-[14px] font-medium", children: t.wallet.cardFull })
         ] });
       case "qr":
-        return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TerminalMock, {});
+        return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(TerminalMock, {});
       case "analytics":
-        return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "rounded-[16px] border border-beige bg-paper p-4", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(BarChart, { ariaLabel: "Example: rewards redeemed per week", height: 150, color: "#B86F52", showEvery: 1, data: [3, 5, 4, 7, 6, 8].map((v, i) => ({ label: `W${i + 1}`, value: v })) }) });
+        return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "rounded-[16px] border border-beige bg-paper p-4", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(BarChart, { ariaLabel: "Example: rewards redeemed per week", height: 150, color: "#B86F52", showEvery: 1, data: [3, 5, 4, 7, 6, 8].map((v, i) => ({ label: `W${i + 1}`, value: v })) }) });
       default:
         return null;
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(MarketingLayout, { active: "features", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mx-auto max-w-[1180px] px-4 pb-8 pt-14 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "max-w-[20ch] text-[40px] font-semibold tracking-[-0.03em] sm:text-[52px]", children: f.title }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-5 max-w-[60ch] text-[17px] text-muted-ink", children: f.intro })
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(MarketingLayout, { active: "features", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto max-w-[1180px] px-4 pb-8 pt-14 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "max-w-[20ch] text-[40px] font-semibold tracking-[-0.03em] sm:text-[52px]", children: f.title }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-5 max-w-[60ch] text-[17px] text-muted-ink", children: f.intro })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mx-auto max-w-[1180px] divide-y divide-beige px-4 sm:px-6", children: f.sections.map((s) => {
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mx-auto max-w-[1180px] divide-y divide-beige px-4 sm:px-6", children: f.sections.map((s) => {
       const v = visual(s.key);
-      return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { id: s.key, className: "grid scroll-mt-20 gap-8 py-14 md:grid-cols-[1.2fr_1fr] md:items-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "text-[26px] font-semibold sm:text-[30px]", children: s.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-3 max-w-[62ch] text-[16px] leading-relaxed text-muted-ink", children: s.body }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "mt-5 space-y-2", children: s.points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "flex gap-2.5 text-[15px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuCheck, { className: "mt-[3px] h-4 w-4 shrink-0 text-sage-ink", "aria-hidden": "true" }),
+      return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { id: s.key, className: "grid grid-cols-1 scroll-mt-20 gap-8 py-14 md:grid-cols-[1.2fr_1fr] md:items-center", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[26px] font-semibold sm:text-[30px]", children: s.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-3 max-w-[62ch] text-[16px] leading-relaxed text-muted-ink", children: s.body }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("ul", { className: "mt-5 space-y-2", children: s.points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("li", { className: "flex gap-2.5 text-[15px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuCheck, { className: "mt-[3px] h-4 w-4 shrink-0 text-sage-ink", "aria-hidden": "true" }),
             " ",
             p
           ] }, p)) })
         ] }),
-        v && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { children: v })
+        v && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { children: v })
       ] }, s.key);
     }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mx-auto mt-6 max-w-[1180px] px-4 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "rounded-[20px] border border-beige bg-sand/70 p-7", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "text-[20px] font-semibold", children: f.limitsTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "mt-4 space-y-2.5", children: f.limits.map((l) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "flex gap-2.5 text-[15px] text-ink", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(LuCircleAlert, { className: "mt-[3px] h-4 w-4 shrink-0 text-warning-ink", "aria-hidden": "true" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto mt-6 max-w-[1180px] px-4 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "rounded-[20px] border border-beige bg-sand/70 p-7", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[20px] font-semibold", children: f.limitsTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("ul", { className: "mt-4 space-y-2.5", children: f.limits.map((l) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("li", { className: "flex gap-2.5 text-[15px] text-ink", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuCircleAlert, { className: "mt-[3px] h-4 w-4 shrink-0 text-warning-ink", "aria-hidden": "true" }),
           " ",
           l
         ] }, l)) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-10 flex flex-col gap-3 sm:flex-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg", children: t.common.getStarted }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "/demo", className: "btn btn-secondary btn-lg", children: t.common.bookDemo })
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-10 flex flex-col gap-3 sm:flex-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg", children: t.common.getStarted }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/demo", className: "btn btn-secondary btn-lg", children: t.common.bookDemo })
       ] })
     ] })
   ] });
@@ -28739,22 +29168,22 @@ function FeaturesPage() {
 function PricingPage({ plans }) {
   const { t } = usePage();
   const p = t.pricing;
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(MarketingLayout, { active: "pricing", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mx-auto max-w-[1180px] px-4 pt-14 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "text-[40px] font-semibold tracking-[-0.03em] sm:text-[52px]", children: p.title }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-4 max-w-[60ch] text-[17px] text-muted-ink", children: p.intro }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(PlanCards, { plans }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-6 space-y-2 text-[14px] text-muted-ink", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: p.proposalNote }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: p.extrasNote }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: p.billingNote })
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(MarketingLayout, { active: "pricing", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto max-w-[1180px] px-4 pt-14 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[40px] font-semibold tracking-[-0.03em] sm:text-[52px]", children: p.title }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-4 max-w-[60ch] text-[17px] text-muted-ink", children: p.intro }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PlanCards, { plans }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-6 space-y-2 text-[14px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: p.proposalNote }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: p.extrasNote }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: p.billingNote })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mx-auto mt-16 max-w-[820px] px-4 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "text-[26px] font-semibold", children: p.faqTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dl", { className: "mt-6 divide-y divide-beige border-y border-beige", children: p.faq.map((f) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dt", { className: "text-[16.5px] font-semibold", children: f.q }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dd", { className: "mt-1.5 text-[15.5px] text-muted-ink", children: f.a })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto mt-16 max-w-[820px] px-4 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[26px] font-semibold", children: p.faqTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("dl", { className: "mt-6 divide-y divide-beige border-y border-beige", children: p.faq.map((f) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("dt", { className: "text-[16.5px] font-semibold", children: f.q }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("dd", { className: "mt-1.5 text-[15.5px] text-muted-ink", children: f.a })
       ] }, f.q)) })
     ] })
   ] });
@@ -28762,102 +29191,102 @@ function PricingPage({ plans }) {
 function DemoRequestPage({ kind, values = {}, errors = {}, done }) {
   const { t } = usePage();
   const d = t.demo;
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(MarketingLayout, { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mx-auto grid max-w-[1180px] gap-12 px-4 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "max-w-[18ch] text-[38px] font-semibold tracking-[-0.03em] sm:text-[46px]", children: kind === "demo" ? d.title : d.contactTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-4 max-w-[48ch] text-[16.5px] text-muted-ink", children: kind === "demo" ? d.intro : d.contactIntro }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mt-8 hidden max-w-[300px] lg:block", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(PhoneFrame, { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(CustomerCardMock, { filled: 6, required: 9, progressText: fmt(t.wallet.stampsProgress, { have: 6, need: 9 }), toGoText: plural(t.wallet.stampsToGo, 3, { reward: "{reward}" }), reward: "\u2615" }) }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MarketingLayout, { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto grid grid-cols-1 max-w-[1180px] gap-12 px-4 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "max-w-[18ch] text-[38px] font-semibold tracking-[-0.03em] sm:text-[46px]", children: kind === "demo" ? d.title : d.contactTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-4 max-w-[48ch] text-[16.5px] text-muted-ink", children: kind === "demo" ? d.intro : d.contactIntro }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-8 hidden max-w-[300px] lg:block", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PhoneFrame, { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(CustomerCardMock, { filled: 6, required: 9, progressText: fmt(t.wallet.stampsProgress, { have: 6, need: 9 }), toGoText: plural(t.wallet.stampsToGo, 3, { reward: "{reward}" }), reward: "\u2615" }) }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "panel p-6 sm:p-8", children: done ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Alert, { tone: "success", title: d.thanksTitle, children: fmt(d.thanksBody, { email: done }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "/c/perkora-demo-cafe", className: "btn btn-primary mt-6", children: d.tryDemo })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Form, { action: kind === "demo" ? "/demo" : "/contact", className: "grid gap-5", noValidate: true, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(FlashMessage, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Field, { label: t.common.name, name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Input, { name: "name", autoComplete: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Field, { label: t.common.email, name: "email", error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Input, { name: "email", type: "email", autoComplete: "email", required: true, maxLength: 254, defaultValue: values.email, error: errors.email }) })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "panel p-6 sm:p-8", children: done ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Alert, { tone: "success", title: d.thanksTitle, children: fmt(d.thanksBody, { email: done }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/c/perkora-demo-cafe", className: "btn btn-primary mt-6", children: d.tryDemo })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: kind === "demo" ? "/demo" : "/contact", className: "grid gap-5", noValidate: true, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(FlashMessage, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.name, name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "name", autoComplete: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.email, name: "email", error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "email", type: "email", autoComplete: "email", required: true, maxLength: 254, defaultValue: values.email, error: errors.email }) })
       ] }),
-      kind === "demo" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Field, { label: d.cafeName, name: "cafe_name", error: errors.cafe_name, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Input, { name: "cafe_name", maxLength: 120, defaultValue: values.cafe_name, error: errors.cafe_name }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Field, { label: d.city, name: "city", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Input, { name: "city", maxLength: 80, defaultValue: values.city ?? "Girne" }) })
+      kind === "demo" && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: d.cafeName, name: "cafe_name", error: errors.cafe_name, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "cafe_name", maxLength: 120, defaultValue: values.cafe_name, error: errors.cafe_name }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: d.city, name: "city", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "city", maxLength: 80, defaultValue: values.city ?? "Girne" }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Field, { label: t.common.phone, name: "phone", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Input, { name: "phone", type: "tel", autoComplete: "tel", maxLength: 40, defaultValue: values.phone }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Field, { label: kind === "demo" ? d.message : d.messageContact, name: "message", error: errors.message, optional: kind === "demo", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Textarea, { name: "message", rows: 4, maxLength: 2e3, defaultValue: values.message, error: errors.message }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { type: "text", name: "website", tabIndex: -1, autoComplete: "off", className: "hidden", "aria-hidden": "true" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Button, { size: "lg", children: kind === "demo" ? d.submit : d.submitContact }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: d.privacyNote })
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.phone, name: "phone", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "phone", type: "tel", autoComplete: "tel", maxLength: 40, defaultValue: values.phone }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: kind === "demo" ? d.message : d.messageContact, name: "message", error: errors.message, optional: kind === "demo", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, { name: "message", rows: 4, maxLength: 2e3, defaultValue: values.message, error: errors.message }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "text", name: "website", tabIndex: -1, autoComplete: "off", className: "hidden", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { size: "lg", children: kind === "demo" ? d.submit : d.submitContact }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: d.privacyNote })
       ] })
     ] }) })
   ] }) });
 }
 function LegalPage({ kind }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(MarketingLayout, { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("article", { className: "prose-legal mx-auto max-w-[760px] px-4 pt-14 sm:px-6", children: kind === "privacy" ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(PrivacyContent, {}) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TermsContent, {}) }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MarketingLayout, { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("article", { className: "prose-legal mx-auto max-w-[760px] px-4 pt-14 sm:px-6", children: kind === "privacy" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PrivacyContent, {}) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(TermsContent, {}) }) });
 }
 function DraftNotice() {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "my-6", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Alert, { tone: "warning", title: "Template for the pilot \u2014 not legal advice", children: "This text describes how the Perkora software handles data. It has not been reviewed by a lawyer. Before commercial launch, the operator must review it against the privacy, consumer-protection, electronic-marketing and data-retention rules that apply in Northern Cyprus and anywhere else customers are located, and add the operator\u2019s legal name and contact details." }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "my-6", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Alert, { tone: "warning", title: "Template for the pilot \u2014 not legal advice", children: "This text describes how the Perkora software handles data. It has not been reviewed by a lawyer. Before commercial launch, the operator must review it against the privacy, consumer-protection, electronic-marketing and data-retention rules that apply in Northern Cyprus and anywhere else customers are located, and add the operator\u2019s legal name and contact details." }) });
 }
 function PrivacyContent() {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "text-[38px] font-semibold tracking-[-0.03em]", children: "Privacy policy" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-muted-ink", children: "Draft for pilot use. Last updated 27 October 2026." }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DraftNotice, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Who is responsible" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Each participating caf\xE9 runs its own loyalty programme and decides how it uses its members\u2019 data. Perkora provides the software that stores and processes that data on the caf\xE9\u2019s behalf. The operator\u2019s contact details will be added here before launch." }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "What we collect" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Account details: your name, email address and a securely hashed password." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Optional details you choose to add: phone number, and the day and month of your birthday (never the year)." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Loyalty activity at each caf\xE9 you join: verified visits, stamps and points earned or used, rewards unlocked and redeemed, and which staff member recorded each action." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Your marketing choice for each caf\xE9, and when you changed it." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Basic technical data needed to keep the service secure, such as session cookies and rate-limit counters." })
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[38px] font-semibold tracking-[-0.03em]", children: "Privacy policy" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-muted-ink", children: "Draft for pilot use. Last updated 27 October 2026." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(DraftNotice, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "Who is responsible" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "Each participating caf\xE9 runs its own loyalty programme and decides how it uses its members\u2019 data. Perkora provides the software that stores and processes that data on the caf\xE9\u2019s behalf. The operator\u2019s contact details will be added here before launch." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "What we collect" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("ul", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Account details: your name, email address and a securely hashed password." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Optional details you choose to add: phone number, and the day and month of your birthday (never the year)." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Loyalty activity at each caf\xE9 you join: verified visits, stamps and points earned or used, rewards unlocked and redeemed, and which staff member recorded each action." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Your marketing choice for each caf\xE9, and when you changed it." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Basic technical data needed to keep the service secure, such as session cookies and rate-limit counters." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "We do not collect your precise location, payment card details, or the contents of your purchases beyond an optional receipt number and amount entered by staff." }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "How it is used" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "To operate the loyalty programmes you joined: show your balance, add stamps or points, and let you redeem rewards." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "To show each caf\xE9 reports about its own programme. A caf\xE9 never sees your activity at another caf\xE9." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "To show you offers inside your card. A caf\xE9 may contact you about offers only if you opted in for that caf\xE9; joining never depends on it." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "To prevent fraud and mistakes, for example duplicate awards." })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "We do not collect your precise location, payment card details, or the contents of your purchases beyond an optional receipt number and amount entered by staff." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "How it is used" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("ul", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "To operate the loyalty programmes you joined: show your balance, add stamps or points, and let you redeem rewards." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "To show each caf\xE9 reports about its own programme. A caf\xE9 never sees your activity at another caf\xE9." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "To show you offers inside your card. A caf\xE9 may contact you about offers only if you opted in for that caf\xE9; joining never depends on it." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "To prevent fraud and mistakes, for example duplicate awards." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Cookies" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "We use only the cookies needed to run the service: a sign-in session, a security token for forms, your language choice and the caf\xE9 you are working in. We do not use advertising or tracking cookies." }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Your choices" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Change your details and marketing choices at any time under Account settings." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Download a copy of your data from Account settings." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Delete your account. Your name and contact details are removed and your memberships closed. Caf\xE9s may keep anonymised transaction records where they need them." })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "Cookies" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "We use only the cookies needed to run the service: a sign-in session, a security token for forms, your language choice and the caf\xE9 you are working in. We do not use advertising or tracking cookies." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "Your choices" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("ul", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Change your details and marketing choices at any time under Account settings." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Download a copy of your data from Account settings." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Delete your account. Your name and contact details are removed and your memberships closed. Caf\xE9s may keep anonymised transaction records where they need them." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Retention" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Retention periods will be set with each caf\xE9 before launch, according to the applicable record-keeping rules." })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "Retention" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "Retention periods will be set with each caf\xE9 before launch, according to the applicable record-keeping rules." })
   ] });
 }
 function TermsContent() {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "text-[38px] font-semibold tracking-[-0.03em]", children: "Terms of service" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-muted-ink", children: "Draft for pilot use. Last updated 27 October 2026." }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DraftNotice, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "The service" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Perkora is software that lets caf\xE9s run digital loyalty programmes. Each caf\xE9 sets its own programme rules, rewards and offers and is responsible for honouring them." }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "For customers" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Joining a programme is free. Stamps, points and rewards have no cash value and cannot be exchanged for money." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Each caf\xE9 decides which purchases qualify, when rewards expire and any other conditions, which are shown on its programme page." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "A caf\xE9 may correct mistakes in your balance; every correction is recorded." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "If a caf\xE9 stops using Perkora, its programme and unused rewards may end." })
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[38px] font-semibold tracking-[-0.03em]", children: "Terms of service" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-muted-ink", children: "Draft for pilot use. Last updated 27 October 2026." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(DraftNotice, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "The service" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "Perkora is software that lets caf\xE9s run digital loyalty programmes. Each caf\xE9 sets its own programme rules, rewards and offers and is responsible for honouring them." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "For customers" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("ul", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Joining a programme is free. Stamps, points and rewards have no cash value and cannot be exchanged for money." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Each caf\xE9 decides which purchases qualify, when rewards expire and any other conditions, which are shown on its programme page." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "A caf\xE9 may correct mistakes in your balance; every correction is recorded." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "If a caf\xE9 stops using Perkora, its programme and unused rewards may end." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "For caf\xE9s" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Plans and prices shown on the pricing page are introductory proposals and may change. A trial does not take payment; billing is agreed separately." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "You are responsible for the accuracy of the purchases your staff confirm and for honouring rewards you offer." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "You must have a lawful basis for any marketing you send to members and respect their choices." }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Do not use the service to collect more personal data than your programme needs." })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "For caf\xE9s" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("ul", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Plans and prices shown on the pricing page are introductory proposals and may change. A trial does not take payment; billing is agreed separately." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "You are responsible for the accuracy of the purchases your staff confirm and for honouring rewards you offer." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "You must have a lawful basis for any marketing you send to members and respect their choices." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: "Do not use the service to collect more personal data than your programme needs." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Availability" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "During the pilot the service is provided as is. We aim for high availability but do not yet offer a contractual service level." })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: "Availability" }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "During the pilot the service is provided as is. We aim for high availability but do not yet offer a contractual service level." })
   ] });
 }
-var import_jsx_runtime23;
+var import_jsx_runtime26;
 var init_Pages = __esm({
   "src/ui/pages/marketing/Pages.tsx"() {
     "use strict";
@@ -28870,7 +29299,7 @@ var init_Pages = __esm({
     init_charts();
     init_mockups();
     init_i18n();
-    import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime26 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -28885,26 +29314,26 @@ function WalletLayout({ cafe, tab, children, showTabs = true, referralsOn = true
     { key: "activity", href: `${base}/activity`, label: t.wallet.tabs.activity, Icon: LuActivity },
     ...referralsOn ? [{ key: "refer", href: `${base}/refer`, label: t.wallet.tabs.refer, Icon: LuUserPlus }] : []
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-h-screen bg-cream pb-24", children: [
-    cafe.isDemo && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(DemoBanner, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "min-h-screen bg-cream pb-24", children: [
+    cafe.isDemo && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DemoBanner, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
       CafeBar,
       {
         look: cafe,
         href: "/wallet",
         subtitle: t.common.poweredBy,
-        right: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/account", className: cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", lightHeader(cafe) ? "bg-sand hover:bg-beige" : "bg-white/15 hover:bg-white/25"), "aria-label": t.account.title, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(LuUser, { className: "h-5 w-5", "aria-hidden": "true" }) })
+        right: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/account", className: cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", lightHeader(cafe) ? "bg-sand hover:bg-beige" : "bg-white/15 hover:bg-white/25"), "aria-label": t.account.title, children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LuUser, { className: "h-5 w-5", "aria-hidden": "true" }) })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("main", { className: "mx-auto max-w-[520px] px-4 pt-5", children }),
-    showTabs && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { className: "fixed inset-x-0 bottom-0 z-20 border-t border-beige bg-paper/95 backdrop-blur", style: { paddingBottom: "env(safe-area-inset-bottom)" }, "aria-label": "Card sections", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "mx-auto flex max-w-[520px]", children: tabs.map(({ key, href, label, Icon }) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("main", { className: "mx-auto max-w-[520px] px-4 pt-5", children }),
+    showTabs && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("nav", { className: "fixed inset-x-0 bottom-0 z-20 border-t border-beige/70 bg-paper/85 backdrop-blur-xl backdrop-saturate-150", style: { paddingBottom: "env(safe-area-inset-bottom)" }, "aria-label": "Card sections", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "mx-auto flex max-w-[520px] px-1", children: tabs.map(({ key, href, label, Icon }) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
       "a",
       {
         href,
         "aria-current": tab === key ? "page" : void 0,
-        className: cn("flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11.5px] font-medium", tab === key ? "text-espresso" : "text-muted"),
+        className: cn("flex flex-1 flex-col items-center gap-1 pb-2 pt-2 text-[11.5px] font-medium transition-colors", tab === key ? "text-ink" : "text-muted hover:text-ink"),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Icon, { className: cn("h-[22px] w-[22px]", tab === key && "text-terracotta"), "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: cn("flex h-8 w-14 items-center justify-center rounded-full transition-colors", tab === key && "bg-sand"), children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Icon, { className: cn("h-[21px] w-[21px]", tab === key && "text-espresso"), "aria-hidden": "true" }) }),
           label
         ]
       },
@@ -28914,22 +29343,22 @@ function WalletLayout({ cafe, tab, children, showTabs = true, referralsOn = true
 }
 function PlainCustomerLayout({ children, title }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-h-screen bg-cream pb-16", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("header", { className: "border-b border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mx-auto flex max-w-[640px] items-center justify-between px-4 py-3.5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Logo, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/wallet", className: "btn btn-ghost btn-sm", children: t.nav.wallet }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(LanguageSwitcher, {}),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/account", className: "btn btn-ghost btn-sm", "aria-label": t.account.title, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(LuUser, { className: "h-5 w-5", "aria-hidden": "true" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "min-h-screen bg-cream pb-16", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("header", { className: "border-b border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mx-auto flex max-w-[640px] items-center justify-between px-4 py-3.5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Logo, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/wallet", className: "btn btn-ghost btn-sm", children: t.nav.wallet }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LanguageSwitcher, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/account", className: "btn btn-ghost btn-sm", "aria-label": t.account.title, children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LuUser, { className: "h-5 w-5", "aria-hidden": "true" }) })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("main", { className: "mx-auto max-w-[640px] px-4 pt-7", children: [
-      title && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "mb-6 text-[28px] font-semibold", children: title }),
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("main", { className: "mx-auto max-w-[640px] px-4 pt-7", children: [
+      title && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h1", { className: "mb-6 text-[28px] font-semibold", children: title }),
       children
     ] })
   ] });
 }
-var import_jsx_runtime24;
+var import_jsx_runtime27;
 var init_WalletLayout = __esm({
   "src/ui/layouts/WalletLayout.tsx"() {
     "use strict";
@@ -28939,62 +29368,111 @@ var init_WalletLayout = __esm({
     init_cafe_look();
     init_ui();
     init_cn();
-    import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime27 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
 // src/ui/pages/customer/parts.tsx
-function StampCardPanel({ p, color: color2, icon, fresh = 0 }) {
+function Pass({ colours, labelledBy, children }) {
+  const fg = contrastText(colours.primary);
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+    "section",
+    {
+      "aria-labelledby": labelledBy,
+      className: "rise relative overflow-hidden rounded-[26px] p-5",
+      style: {
+        color: fg,
+        background: `radial-gradient(120% 80% at 100% 0%, ${alpha(mix(colours.primary, "#ffffff", 0.35), 0.55)} 0%, transparent 60%), linear-gradient(165deg, ${mix(colours.primary, "#ffffff", 0.08)} 0%, ${colours.primary} 45%, ${mix(colours.primary, "#000000", 0.22)} 100%)`,
+        boxShadow: `0 1px 0 rgba(255,255,255,0.12) inset, 0 22px 40px -20px ${alpha(mix(colours.primary, "#000000", 0.4), 0.75)}, 0 2px 6px rgba(36,25,22,0.12)`
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { "aria-hidden": "true", className: "pointer-events-none absolute inset-0 opacity-[0.06]", style: { backgroundImage: "radial-gradient(currentColor 1px, transparent 1.2px)", backgroundSize: "12px 12px" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "relative", children })
+      ]
+    }
+  );
+}
+function PassButton({ href, colours, children }) {
+  const fg = contrastText(colours.primary);
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("a", { href, className: "mt-5 flex min-h-[54px] items-center justify-center gap-2.5 rounded-[16px] text-[16px] font-semibold transition-transform active:scale-[0.98]", style: { background: fg, color: mix(colours.primary, "#000000", 0.1) }, children });
+}
+function StampCardPanel({ p, color: color2, icon, fresh = 0, pass, footer }) {
   const { t } = usePage();
   const need = Number(p.config?.stampsRequired ?? 9);
   const have = Math.min(p.balance, need);
   const reward = p.cardReward?.name ?? "";
   const progress = fmt(t.wallet.stampsProgress, { have, need });
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "card p-5", "aria-labelledby": `prog-${p.id}`, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-baseline justify-between gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { id: `prog-${p.id}`, className: "text-[17px] font-semibold", children: p.name }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { className: "text-[13px] text-muted-ink tnum", children: [
+  if (pass) {
+    const fg = contrastText(pass.primary);
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(Pass, { colours: pass, labelledBy: `prog-${p.id}`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-start justify-between gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "min-w-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[13px] font-medium opacity-75", children: p.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h2", { id: `prog-${p.id}`, className: "mt-0.5 truncate text-[21px] font-semibold", style: { color: fg }, children: reward })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "shrink-0 rounded-full px-3 py-1 text-[13.5px] font-semibold tnum", style: { background: alpha(fg === "#292421" ? "#000000" : "#ffffff", 0.14) }, children: [
+          have,
+          "/",
+          need
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mt-5", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(StampGrid, { required: need, filled: have, color: pass.secondary === pass.primary ? mix(pass.primary, "#ffffff", 0.3) : pass.secondary, icon, tone: fg, fresh, size: 46, ariaLabel: progress }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-5 text-[16px] font-semibold", children: progress }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[14px] opacity-80", children: have >= need ? t.wallet.cardFull : plural(t.wallet.stampsToGo, need - have, { reward }) }),
+      footer
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "card p-5", "aria-labelledby": `prog-${p.id}`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-baseline justify-between gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h2", { id: `prog-${p.id}`, className: "text-[17px] font-semibold", children: p.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "text-[13px] text-muted-ink tnum", children: [
         have,
         "/",
         need
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(StampGrid, { required: need, filled: have, color: color2, icon, fresh, size: 46, ariaLabel: progress }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-4 text-[16px] font-semibold", children: progress }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-[14px] text-muted-ink", children: have >= need ? t.wallet.cardFull : plural(t.wallet.stampsToGo, need - have, { reward }) })
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(StampGrid, { required: need, filled: have, color: color2, icon, fresh, size: 46, ariaLabel: progress }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-4 text-[16px] font-semibold", children: progress }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[14px] text-muted-ink", children: have >= need ? t.wallet.cardFull : plural(t.wallet.stampsToGo, need - have, { reward }) })
   ] });
 }
-function PointsPanel({ p }) {
+function PointsPanel({ p, pass, footer }) {
   const { t, locale: locale2 } = usePage();
   const next = p.catalogue.filter((r2) => r2.cost > p.balance).sort((a, b) => a.cost - b.cost)[0];
   const affordable = p.catalogue.filter((r2) => r2.cost <= p.balance);
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "card p-5", "aria-labelledby": `prog-${p.id}`, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { id: `prog-${p.id}`, className: "text-[17px] font-semibold", children: p.name }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: t.wallet.pointsBalance }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "font-display text-[44px] font-semibold leading-none tracking-[-0.03em] tnum", children: num2(p.balance, locale2) }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("dl", { className: "mt-3 flex gap-6 text-[13px] text-muted-ink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("dt", { className: "inline", children: [
-          t.wallet.pointsEarned,
-          ": "
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("dd", { className: "inline font-medium text-ink tnum", children: num2(p.lifetimeEarned, locale2) })
+  if (pass) {
+    const fg = contrastText(pass.primary);
+    const track = alpha(fg === "#292421" ? "#000000" : "#ffffff", 0.18);
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(Pass, { colours: pass, labelledBy: `prog-${p.id}`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[13px] font-medium opacity-75", children: p.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h2", { id: `prog-${p.id}`, className: "sr-only", children: p.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-1 font-display text-[52px] font-semibold leading-none tracking-[-0.035em] tnum", style: { color: fg }, children: [
+        num2(p.balance, locale2),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ml-1.5 text-[16px] font-medium tracking-normal opacity-75", children: t.wallet.pointsUnit })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("dt", { className: "inline", children: [
-          t.wallet.pointsRedeemed,
-          ": "
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("dd", { className: "inline font-medium text-ink tnum", children: num2(p.lifetimeSpent, locale2) })
-      ] })
+      next && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "h-2 overflow-hidden rounded-full", style: { background: track }, children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "h-full rounded-full", style: { width: `${Math.max(4, Math.min(100, p.balance / next.cost * 100))}%`, background: fg } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-2 text-[14px] opacity-85", children: fmt(t.wallet.nextReward, { n: num2(next.cost - p.balance, locale2), reward: next.name }) })
+      ] }),
+      affordable.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-3 rounded-[12px] px-3.5 py-2.5 text-[14px]", style: { background: track }, children: [
+        t.wallet.canAfford,
+        ": ",
+        affordable.map((r2) => r2.name).join(", ")
+      ] }),
+      footer
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "card p-5", "aria-labelledby": `prog-${p.id}`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h2", { id: `prog-${p.id}`, className: "text-[17px] font-semibold", children: p.name }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: t.wallet.pointsBalance }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "font-display text-[44px] font-semibold leading-none tracking-[-0.03em] tnum", children: num2(p.balance, locale2) }),
+    next && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ProgressBar, { value: p.balance, max: next.cost, tone: "sage", label: fmt(t.wallet.nextReward, { n: next.cost - p.balance, reward: next.name }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: fmt(t.wallet.nextReward, { n: num2(next.cost - p.balance, locale2), reward: next.name }) })
     ] }),
-    next && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(ProgressBar, { value: p.balance, max: next.cost, tone: "sage", label: fmt(t.wallet.nextReward, { n: next.cost - p.balance, reward: next.name }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: fmt(t.wallet.nextReward, { n: num2(next.cost - p.balance, locale2), reward: next.name }) })
-    ] }),
-    affordable.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-4 rounded-[12px] bg-sage-tint px-3.5 py-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-[13px] font-medium text-sage-ink", children: t.wallet.canAfford }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { className: "mt-1 text-[14.5px]", children: affordable.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { children: [
+    affordable.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-4 rounded-[12px] bg-sage-tint px-3.5 py-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[13px] font-medium text-sage-ink", children: t.wallet.canAfford }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("ul", { className: "mt-1 text-[14.5px]", children: affordable.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("li", { children: [
         r2.name,
         " \xB7 ",
         fmt(t.wallet.costPoints, { n: num2(r2.cost, locale2) })
@@ -29005,14 +29483,14 @@ function PointsPanel({ p }) {
 function VoucherCard({ v, tz, compact }) {
   const { t, locale: locale2 } = usePage();
   const status = v.status === "available" ? v.expiresAt ? fmt(t.wallet.validUntil, { date: dateShort(v.expiresAt, tz, locale2) }) : t.common.noExpiry : v.status === "redeemed" ? fmt(t.wallet.redeemedOn, { date: dateShort(v.redeemedAt ?? v.issuedAt, tz, locale2) }) : fmt(t.wallet.expiredOn, { date: v.expiresAt ? dateShort(v.expiresAt, tz, locale2) : "" });
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: cn("flex items-start gap-3.5 rounded-[14px] border p-4", v.status === "available" ? "border-terracotta/40 bg-paper" : "border-beige bg-paper/60 opacity-80"), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(RewardBadgeIcon, { icon: v.icon, tone: v.status === "available" ? "accent" : "muted" }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-w-0 flex-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-[15.5px] font-semibold leading-snug", children: v.name }),
-      !compact && v.description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-0.5 text-[14px] text-muted-ink", children: v.description }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: cn("mt-1 text-[13px]", v.status === "available" ? "text-terracotta-ink" : "text-muted-ink"), children: status }),
-      !compact && v.status === "available" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-[13px] text-muted-ink", children: t.wallet.howToRedeem }),
-      !compact && v.terms && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-1 text-[12.5px] text-muted", children: v.terms })
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: cn("flex items-start gap-3.5 rounded-[14px] border p-4", v.status === "available" ? "border-terracotta/40 bg-paper" : "border-beige bg-paper/60 opacity-80"), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(RewardBadgeIcon, { icon: v.icon, tone: v.status === "available" ? "accent" : "muted" }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "min-w-0 flex-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[15.5px] font-semibold leading-snug", children: v.name }),
+      !compact && v.description && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-0.5 text-[14px] text-muted-ink", children: v.description }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: cn("mt-1 text-[13px]", v.status === "available" ? "text-terracotta-ink" : "text-muted-ink"), children: status }),
+      !compact && v.status === "available" && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-2 text-[13px] text-muted-ink", children: t.wallet.howToRedeem }),
+      !compact && v.terms && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-1 text-[12.5px] text-muted", children: v.terms })
     ] })
   ] });
 }
@@ -29020,18 +29498,18 @@ function ChallengeCard({ c, tz }) {
   const { t, locale: locale2 } = usePage();
   const unit2 = c.ruleType === "distinct_days" ? t.wallet.challengeDays : t.wallet.challengeVisits;
   const period = c.period === "week" ? t.wallet.periodWeek : c.period === "month" ? t.wallet.periodMonth : t.wallet.periodCampaign;
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "card p-5", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-start gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-tint text-sage-ink", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(LuTrophy, { className: "h-5 w-5", "aria-hidden": "true" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-[12.5px] font-medium text-sage-ink", children: t.wallet.challengeTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "text-[16px] font-semibold leading-snug", children: c.name }),
-        c.description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-0.5 text-[14px] text-muted-ink", children: c.description })
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "card p-5", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-start gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-tint text-sage-ink", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(LuTrophy, { className: "h-5 w-5", "aria-hidden": "true" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[12.5px] font-medium text-sage-ink", children: t.wallet.challengeTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-[16px] font-semibold leading-snug", children: c.name }),
+        c.description && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-0.5 text-[14px] text-muted-ink", children: c.description })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mt-4 flex gap-1.5", "aria-hidden": "true", children: Array.from({ length: c.required }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: cn("h-2 flex-1 rounded-full", i < c.progress ? "bg-sage" : "bg-beige") }, i)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-2.5 text-[14px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { className: "font-semibold tnum", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mt-4 flex gap-1.5", "aria-hidden": "true", children: Array.from({ length: c.required }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: cn("h-2 flex-1 rounded-full", i < c.progress ? "bg-sage" : "bg-beige") }, i)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-2.5 text-[14px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "font-semibold tnum", children: [
         c.progress,
         " / ",
         c.required
@@ -29043,11 +29521,7 @@ function ChallengeCard({ c, tz }) {
       " \u2192 ",
       c.rewardLabel
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-1 text-[12.5px] text-muted-ink", children: [
-      c.completedThisPeriod ? t.wallet.challengeDone : fmt(t.wallet.challengeEnds, { date: dateShort(c.endDate, tz, locale2) }),
-      " \xB7 ",
-      t.wallet.challengeRule
-    ] })
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-1 text-[12.5px] text-muted-ink", children: c.completedThisPeriod ? t.wallet.challengeDone : fmt(t.wallet.challengeEnds, { date: dateShort(c.endDate, tz, locale2) }) })
   ] });
 }
 function offerWhen(o, locale2) {
@@ -29058,26 +29532,26 @@ function offerWhen(o, locale2) {
 function OfferCard({ o, tz, segmentLabel }) {
   const { t, locale: locale2 } = usePage();
   const when = offerWhen(o, locale2);
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("article", { className: "card overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "border-l-4 border-terracotta p-5", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-start justify-between gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "text-[16.5px] font-semibold leading-snug", children: o.name }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "badge badge-accent shrink-0", children: o.endDate ? fmt(t.wallet.offerValid, { date: dateShort(o.endDate, tz, locale2) }) : t.wallet.offerOngoing })
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("article", { className: "card overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "border-l-4 border-terracotta p-5", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-start justify-between gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-[16.5px] font-semibold leading-snug", children: o.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "badge badge-accent shrink-0", children: o.endDate ? fmt(t.wallet.offerValid, { date: dateShort(o.endDate, tz, locale2) }) : t.wallet.offerOngoing })
     ] }),
-    o.description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-1.5 text-[14.5px] text-muted-ink", children: o.description }),
-    when && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-2 flex items-center gap-1.5 text-[13.5px] text-ink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(LuCalendarClock, { className: "h-4 w-4 text-muted-ink", "aria-hidden": "true" }),
+    o.description && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-1.5 text-[14.5px] text-muted-ink", children: o.description }),
+    when && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-2 flex items-center gap-1.5 text-[13.5px] text-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(LuCalendarClock, { className: "h-4 w-4 text-muted-ink", "aria-hidden": "true" }),
       " ",
       when
     ] }),
-    segmentLabel && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-2 text-[13px] text-muted-ink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { className: "font-medium text-ink", children: [
+    segmentLabel && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-2 text-[13px] text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "font-medium text-ink", children: [
         t.wallet.offerEligibility,
         ": "
       ] }),
       segmentLabel
     ] }),
-    o.instructions && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-2 text-[13px] text-muted-ink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { className: "font-medium text-ink", children: [
+    o.instructions && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-2 text-[13px] text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "font-medium text-ink", children: [
         t.wallet.offerHow,
         ": "
       ] }),
@@ -29087,19 +29561,19 @@ function OfferCard({ o, tz, segmentLabel }) {
 }
 function ActivityList({ items, tz }) {
   const { t, locale: locale2 } = usePage();
-  if (!items.length) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "py-6 text-center text-[14.5px] text-muted-ink", children: t.wallet.activityEmpty });
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { className: "divide-y divide-beige", children: items.map((a) => {
+  if (!items.length) return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "py-6 text-center text-[14.5px] text-muted-ink", children: t.wallet.activityEmpty });
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("ul", { className: "divide-y divide-beige", children: items.map((a) => {
     const Icon = a.type === "redeem" ? LuGift : a.type === "reversal" || a.type === "voucher_void" ? LuUndo2 : a.type === "referral" ? LuUserPlus : a.type === "card_completed" || a.type === "voucher_issued" ? LuGift : a.delta < 0 ? LuArrowUpRight : a.unit === "stamps" ? LuStamp : LuArrowDownLeft;
-    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { className: "flex items-center gap-3 py-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", a.delta > 0 ? "bg-sage-tint text-sage-ink" : a.delta < 0 ? "bg-terracotta-tint text-terracotta-ink" : "bg-sand text-muted-ink"), children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Icon, { className: "h-4 w-4", "aria-hidden": "true" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "truncate text-[14.5px]", children: activityText(a, t) }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("li", { className: "flex items-center gap-3 py-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", a.delta > 0 ? "bg-sage-tint text-sage-ink" : a.delta < 0 ? "bg-terracotta-tint text-terracotta-ink" : "bg-sand text-muted-ink"), children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Icon, { className: "h-4 w-4", "aria-hidden": "true" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "truncate text-[14.5px]", children: activityText(a, t) }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
           a.programmeName ? `${a.programmeName} \xB7 ` : "",
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("time", { dateTime: new Date(a.createdAt).toISOString(), children: relative(a.createdAt, locale2) })
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("time", { dateTime: new Date(a.createdAt).toISOString(), children: relative(a.createdAt, locale2) })
         ] })
       ] }),
-      a.delta !== 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { className: cn("shrink-0 text-[14.5px] font-semibold tnum", a.delta > 0 ? "text-success" : "text-terracotta-ink"), children: [
+      a.delta !== 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: cn("shrink-0 text-[14.5px] font-semibold tnum", a.delta > 0 ? "text-success" : "text-terracotta-ink"), children: [
         a.delta > 0 ? "+" : "",
         a.delta
       ] })
@@ -29117,22 +29591,22 @@ function activityText(a, t) {
 function ProgrammeSummary({ p, currency }) {
   const { t, locale: locale2 } = usePage();
   if (p.type === "stamps") {
-    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-[15.5px] font-medium", children: fmt(t.cafe.stampRule, { n: p.config?.stampsRequired, reward: p.cardReward?.name ?? "" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: fmt(t.cafe.stampEligible, { what: p.config?.eligiblePurchase ?? "" }) })
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[15.5px] font-medium", children: fmt(t.cafe.stampRule, { n: p.config?.stampsRequired, reward: p.cardReward?.name ?? "" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: fmt(t.cafe.stampEligible, { what: p.config?.eligiblePurchase ?? "" }) })
     ] });
   }
   const unit2 = new Intl.NumberFormat(locale2 === "tr" ? "tr-TR" : "en-GB", { style: "currency", currency, maximumFractionDigits: 0 }).format(1);
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-[15.5px] font-medium", children: p.config?.earnMode === "per_currency_unit" ? plural(t.cafe.pointsRulePerUnit, p.config?.pointsPerUnit ?? 1, { unit: unit2 }) : fmt(t.cafe.pointsRulePerPurchase, { n: p.config?.pointsPerPurchase ?? 10 }) }),
-    p.catalogue.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[15.5px] font-medium", children: p.config?.earnMode === "per_currency_unit" ? plural(t.cafe.pointsRulePerUnit, p.config?.pointsPerUnit ?? 1, { unit: unit2 }) : fmt(t.cafe.pointsRulePerPurchase, { n: p.config?.pointsPerPurchase ?? 10 }) }),
+    p.catalogue.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
       t.cafe.pointsRewards,
       ": ",
       p.catalogue.map((r2) => `${r2.name} (${fmt(t.wallet.costPoints, { n: r2.cost })})`).join(", ")
     ] })
   ] });
 }
-var import_jsx_runtime25, WEEKDAY_EN, WEEKDAY_TR;
+var import_jsx_runtime28, WEEKDAY_EN, WEEKDAY_TR;
 var init_parts = __esm({
   "src/ui/pages/customer/parts.tsx"() {
     "use strict";
@@ -29143,7 +29617,7 @@ var init_parts = __esm({
     init_i18n();
     init_format();
     init_cn();
-    import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime28 = __toESM(require_jsx_runtime(), 1);
     WEEKDAY_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     WEEKDAY_TR = ["Pzt", "Sal", "\xC7ar", "Per", "Cum", "Cmt", "Paz"];
   }
@@ -29153,78 +29627,81 @@ var init_parts = __esm({
 function CafePublicPage({ cafe, programmes, offers, state, errors = {}, values = {}, referral }) {
   const { t, user } = usePage();
   const fg = contrastText(cafe.primaryColour);
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "min-h-screen bg-cream pb-16", children: [
-    cafe.isDemo && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(DemoBanner, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "min-h-screen bg-cream pb-16", children: [
+    cafe.isDemo && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(DemoBanner, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
       CafeHero,
       {
         look: { name: cafe.name, logoUrl: cafe.logoUrl, bannerUrl: cafe.bannerUrl, primaryColour: cafe.primaryColour, secondaryColour: cafe.secondaryColour, layout: cafe.settings.pageLayout, tagline: cafe.settings.tagline },
         title: fmt(t.cafe.joinTitle, { cafe: cafe.name }),
-        topBar: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-[12.5px] opacity-80", children: t.common.poweredBy }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LanguageSwitcher, { tone: cafe.settings.pageLayout === "minimal" || cafe.settings.pageLayout === "classic" && fg === "#292421" ? "light" : "dark" })
+        topBar: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-[12.5px] opacity-80", children: t.common.poweredBy }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LanguageSwitcher, { tone: cafe.settings.pageLayout === "minimal" || cafe.settings.pageLayout === "classic" && fg === "#292421" ? "light" : "dark" })
         ] }),
         children: [
-          cafe.description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-2 max-w-[46ch] text-[15.5px]", children: cafe.description }),
-          (cafe.city || cafe.address) && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "mt-3 flex items-center gap-1.5 text-[13.5px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuMapPin, { className: "h-4 w-4", "aria-hidden": "true" }),
+          cafe.description && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-2 max-w-[46ch] text-[15.5px]", children: cafe.description }),
+          (cafe.city || cafe.address) && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "mt-3 flex items-center gap-1.5 text-[13.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuMapPin, { className: "h-4 w-4", "aria-hidden": "true" }),
             [cafe.address, cafe.city].filter(Boolean).join(", ")
           ] })
         ]
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("main", { className: "mx-auto -mt-5 max-w-[560px] space-y-4 px-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(FlashMessage, {}),
-      state === "unavailable" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Alert, { tone: "warning", children: t.cafe.unavailable }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-        referral && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Alert, { tone: referral.valid ? "success" : "info", children: referral.valid ? `${referral.on === "join" ? t.cafe.referralAppliedJoin : t.cafe.referralAppliedVisit}${referral.friendReward ? " " + fmt(t.cafe.referralYouGet, { reward: referral.friendReward }) : ""}` : t.cafe.referralInvalid }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold", children: t.cafe.programmes }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-3 space-y-4 divide-y divide-beige", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex gap-3 pt-4 first:pt-0", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(RewardBadgeIcon, { icon: p.type === "stamps" ? p.cardReward?.icon ?? "coffee" : "star", size: "sm" }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[13px] font-medium text-muted-ink", children: p.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ProgrammeSummary, { p, currency: cafe.currency })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("main", { className: "mx-auto -mt-5 max-w-[560px] space-y-4 px-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FlashMessage, {}),
+      state === "unavailable" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Alert, { tone: "warning", children: t.cafe.unavailable }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
+        referral && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Alert, { tone: referral.valid ? "success" : "info", children: referral.valid ? `${referral.on === "join" ? t.cafe.referralAppliedJoin : t.cafe.referralAppliedVisit}${referral.friendReward ? " " + fmt(t.cafe.referralYouGet, { reward: referral.friendReward }) : ""}` : t.cafe.referralInvalid }),
+        state === "member" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card p-5 text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[15px] font-medium", children: t.cafe.alreadyMember }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: `/wallet/${cafe.slug}`, className: "btn btn-primary btn-lg mt-4 w-full", children: t.cafe.openCard })
+        ] }) : state === "signed-in" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("section", { className: "card p-5", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: `/c/${cafe.slug}/join`, className: "space-y-4", children: [
+          referral?.valid && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "ref", value: referral.code }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Checkbox, { name: "marketing", value: "1", label: fmt(t.cafe.marketing, { cafe: cafe.name }), hint: t.cafe.marketingHelp }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { size: "lg", className: "w-full", children: fmt(t.cafe.joinSignedIn, { name: user?.name.split(" ")[0] ?? "" }) })
+        ] }) }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[19px] font-semibold", children: t.cafe.join }),
+          (() => {
+            const sp = programmes.find((p) => p.type === "stamps");
+            return sp?.cardReward ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-[14.5px] text-muted-ink", children: fmt(t.cafe.stampRule, { n: Number(sp.config?.stampsRequired ?? 9), reward: sp.cardReward.name }) }) : null;
+          })(),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: `/c/${cafe.slug}/join`, className: "mt-4 space-y-4", noValidate: true, children: [
+            referral?.valid && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "ref", value: referral.code }),
+            errors.form && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Alert, { tone: "error", children: errors.form }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.email, name: "email", error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "email", type: "email", inputMode: "email", autoComplete: "email", autoCapitalize: "none", required: true, defaultValue: values.email, error: errors.email }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(PasswordField, { label: t.common.password, hint: t.auth.passwordHint, error: errors.password, autoComplete: "new-password" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Checkbox, { name: "marketing", value: "1", defaultChecked: values.marketing === "1", label: fmt(t.cafe.marketing, { cafe: cafe.name }), hint: t.cafe.marketingHelp }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(TermsNote, {}),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { size: "lg", className: "w-full", children: t.cafe.joinCta })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-4 text-center text-[14px]", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "link", href: `/sign-in?next=${encodeURIComponent(`/c/${cafe.slug}${referral?.valid ? `?ref=${referral.code}` : ""}`)}`, children: t.cafe.signInToJoin }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold", children: t.cafe.programmes }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mt-3 space-y-4 divide-y divide-beige", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex gap-3 pt-4 first:pt-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(RewardBadgeIcon, { icon: p.type === "stamps" ? p.cardReward?.icon ?? "coffee" : "star", size: "sm" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[13px] font-medium text-muted-ink", children: p.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ProgrammeSummary, { p, currency: cafe.currency })
             ] })
           ] }, p.id)) })
         ] }),
-        state === "member" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card p-5 text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[15px] font-medium", children: t.cafe.alreadyMember }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: `/wallet/${cafe.slug}`, className: "btn btn-primary btn-lg mt-4 w-full", children: t.cafe.openCard })
-        ] }) : state === "signed-in" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "card p-5", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: `/c/${cafe.slug}/join`, className: "space-y-4", children: [
-          referral?.valid && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "hidden", name: "ref", value: referral.code }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Checkbox, { name: "marketing", value: "1", label: fmt(t.cafe.marketing, { cafe: cafe.name }), hint: t.cafe.marketingHelp }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { size: "lg", className: "w-full", children: fmt(t.cafe.joinSignedIn, { name: user?.name.split(" ")[0] ?? "" }) })
-        ] }) }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold", children: t.cafe.join }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: `/c/${cafe.slug}/join`, className: "mt-4 space-y-4", noValidate: true, children: [
-            referral?.valid && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "hidden", name: "ref", value: referral.code }),
-            errors.form && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Alert, { tone: "error", children: errors.form }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.name, name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "name", autoComplete: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.email, name: "email", error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "email", type: "email", autoComplete: "email", required: true, defaultValue: values.email, error: errors.email }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.password, name: "password", hint: t.auth.passwordHint, error: errors.password, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "password", type: "password", autoComplete: "new-password", required: true, minLength: 10, error: errors.password }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Checkbox, { name: "marketing", value: "1", defaultChecked: values.marketing === "1", label: fmt(t.cafe.marketing, { cafe: cafe.name }), hint: t.cafe.marketingHelp }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(TermsNote, {}),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { size: "lg", className: "w-full", children: t.cafe.joinCta })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-4 text-center text-[14px]", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { className: "link", href: `/sign-in?next=${encodeURIComponent(`/c/${cafe.slug}${referral?.valid ? `?ref=${referral.code}` : ""}`)}`, children: t.cafe.signInToJoin }) })
-        ] }),
-        cafe.isDemo && state !== "member" && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "rounded-[14px] border border-dashed border-warning/60 bg-warning-tint/60 p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "flex items-center gap-2 text-[14.5px] font-semibold text-warning-ink", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuSparkles, { className: "h-4 w-4", "aria-hidden": "true" }),
+        cafe.isDemo && state !== "member" && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "rounded-[14px] border border-dashed border-warning/60 bg-warning-tint/60 p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "flex items-center gap-2 text-[14.5px] font-semibold text-warning-ink", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuSparkles, { className: "h-4 w-4", "aria-hidden": "true" }),
             " ",
             t.cafe.demoShortcut
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-1 text-[14px] text-ink/80", children: t.cafe.demoShortcutBody }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Form, { action: `/c/${cafe.slug}/demo-join`, className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { variant: "secondary", className: "w-full", children: t.cafe.demoShortcutButton }) })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-[14px] text-ink/80", children: t.cafe.demoShortcutBody }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Form, { action: `/c/${cafe.slug}/demo-join`, className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { variant: "secondary", className: "w-full", children: t.cafe.demoShortcutButton }) })
         ] }),
-        offers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "mb-3 mt-6 text-[17px] font-semibold", children: t.cafe.offers }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-3", children: offers.map((o) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(OfferCard, { o, tz: cafe.timezone }, o.id)) })
+        offers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "mb-3 mt-6 text-[17px] font-semibold", children: t.cafe.offers }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-3", children: offers.map((o) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(OfferCard, { o, tz: cafe.timezone }, o.id)) })
         ] }),
-        programmes.some((p) => p.terms) && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("details", { className: "card p-5 text-[14px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("summary", { className: "cursor-pointer font-medium", children: t.cafe.terms }),
-          programmes.filter((p) => p.terms).map((p) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "mt-3 whitespace-pre-line text-muted-ink", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "font-medium text-ink", children: [
+        programmes.some((p) => p.terms) && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("details", { className: "card p-5 text-[14px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("summary", { className: "cursor-pointer font-medium", children: t.cafe.terms }),
+          programmes.filter((p) => p.terms).map((p) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "mt-3 whitespace-pre-line text-muted-ink", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "font-medium text-ink", children: [
               p.name,
               ": "
             ] }),
@@ -29232,7 +29709,7 @@ function CafePublicPage({ cafe, programmes, offers, state, errors = {}, values =
           ] }, p.id))
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "pt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Logo, { className: "opacity-70" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "pt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Logo, { className: "opacity-70" }) })
     ] })
   ] });
 }
@@ -29252,33 +29729,46 @@ function cafeScannerLabels(t) {
 }
 function WalletListPage({ items }) {
   const { t, user } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(PlainCustomerLayout, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[28px] font-semibold", children: t.wallet.title }),
-    user && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-1 text-muted-ink", children: fmt(t.wallet.hello, { name: user.name.split(" ")[0] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(FlashMessage, {}) }),
-    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "card mt-2 px-6 py-12 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sand", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuQrCode, { className: "h-6 w-6", "aria-hidden": "true" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "mt-4 text-[18px] font-semibold", children: t.wallet.empty }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mx-auto mt-1.5 max-w-sm text-[14.5px] text-muted-ink", children: t.wallet.emptyBody }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mx-auto mt-5 grid max-w-xs gap-2.5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t) } }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/cafes", className: "btn btn-secondary w-full", children: t.wallet.findCafe })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(PlainCustomerLayout, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[28px] font-semibold", children: t.wallet.title }),
+    user && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-muted-ink", children: fmt(t.wallet.hello, { name: user.name.split(" ")[0] }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FlashMessage, {}) }),
+    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "card mt-2 px-6 py-12 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sand", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuQrCode, { className: "h-6 w-6", "aria-hidden": "true" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "mt-4 text-[18px] font-semibold", children: t.wallet.empty }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mx-auto mt-1.5 max-w-sm text-[14.5px] text-muted-ink", children: t.wallet.emptyBody }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mx-auto mt-5 grid max-w-xs gap-2.5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t) } }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: "/cafes", className: "btn btn-secondary w-full", children: t.wallet.findCafe })
       ] })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("ul", { className: "space-y-3", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("a", { href: `/wallet/${i.slug}`, className: "card flex items-center gap-4 p-4 hover:border-beige-strong", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(CafeMark, { name: i.name, logoUrl: i.logoUrl, colour: i.primaryColour, size: 48 }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "block truncate text-[16px] font-semibold", children: i.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "block truncate text-[14px] text-muted-ink", children: i.summary }),
-        i.ready > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "badge badge-accent mt-1.5", children: plural(t.wallet.rewardsReady, i.ready) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuChevronRight, { className: "h-5 w-5 text-muted", "aria-hidden": "true" })
-    ] }) }, i.slug)) }),
-    items.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "card mt-6 p-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[16px] font-semibold", children: t.wallet.addAnotherTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: t.wallet.addAnother }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-4 grid gap-2.5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t), variant: "secondary" } }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/cafes", className: "btn btn-secondary w-full", children: t.wallet.findCafe })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ul", { className: "space-y-3", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+      "a",
+      {
+        href: `/wallet/${i.slug}`,
+        className: "rise relative flex items-center gap-4 overflow-hidden rounded-[22px] p-4 transition-transform active:scale-[0.985]",
+        style: {
+          color: contrastText(i.primaryColour),
+          background: `radial-gradient(120% 90% at 100% 0%, ${alpha(mix(i.primaryColour, "#ffffff", 0.35), 0.5)} 0%, transparent 60%), linear-gradient(165deg, ${mix(i.primaryColour, "#ffffff", 0.08)}, ${mix(i.primaryColour, "#000000", 0.2)})`,
+          boxShadow: `0 14px 28px -18px ${alpha(mix(i.primaryColour, "#000000", 0.4), 0.8)}`
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(CafeMark, { name: i.name, logoUrl: i.logoUrl, colour: mix(i.primaryColour, "#ffffff", 0.15), size: 48, className: "ring-1 ring-white/25" }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block truncate font-display text-[17px] font-semibold", children: i.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block truncate text-[14px] opacity-80", children: i.summary }),
+            i.ready > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "mt-1.5 inline-flex rounded-full bg-white/20 px-2.5 py-0.5 text-[12.5px] font-semibold", children: plural(t.wallet.rewardsReady, i.ready) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuChevronRight, { className: "h-5 w-5 opacity-70", "aria-hidden": "true" })
+        ]
+      }
+    ) }, i.slug)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Island, { name: "InstallPrompt", props: { title: t.wallet.installTitle, body: t.wallet.installBody, iosHint: t.wallet.installIos, install: t.wallet.install, close: t.common.close, bottom: 16 } }),
+    items.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "card mt-6 p-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[16px] font-semibold", children: t.wallet.addAnotherTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: t.wallet.addAnother }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t), variant: "secondary" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: "/cafes", className: "btn btn-secondary w-full", children: t.wallet.findCafe })
       ] })
     ] })
   ] });
@@ -29287,74 +29777,71 @@ function WalletCardPage({ cafe, view, offers, welcome, referralsOn, referralPitc
   const { t, user } = usePage();
   const ready = view.vouchers.filter((v) => v.status === "available");
   const stampColour = cafe.secondaryColour;
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(WalletLayout, { cafe, tab: "card", referralsOn, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Island, { name: "WalletLive", props: { url: `/api/wallet/${cafe.slug}/state`, hash: view.stateHash, message: t.wallet.updated } }),
-    welcome && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Alert, { tone: "success", title: fmt(t.cafe.welcomeTitle, { cafe: cafe.name }), className: "mb-4", children: t.cafe.welcomeBody }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(FlashMessage, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[15px] text-muted-ink", children: fmt(t.wallet.hello, { name: (user?.name ?? view.customer.name).split(" ")[0] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
-      "a",
-      {
-        href: `/wallet/${cafe.slug}/code`,
-        className: "mt-3 flex items-center gap-4 rounded-[16px] bg-espresso px-5 py-4 text-cream hover:bg-coffee",
-        style: { boxShadow: "var(--shadow-raised)" },
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuQrCode, { className: "h-8 w-8 shrink-0", "aria-hidden": "true" }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "min-w-0 flex-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "block text-[16.5px] font-semibold", children: t.wallet.showAtCounter }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "block text-[13px] text-cream/70", children: [
-              t.wallet.memberCode,
-              " ",
-              formatMemberCode(view.membership.memberCode)
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuChevronRight, { className: "h-5 w-5 opacity-70", "aria-hidden": "true" })
-        ]
-      }
-    ),
-    ready.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mt-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("h2", { className: "mb-2.5 text-[15px] font-semibold", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(WalletLayout, { cafe, tab: "card", referralsOn, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Island, { name: "WalletLive", props: { url: `/api/wallet/${cafe.slug}/state`, hash: view.stateHash, message: t.wallet.updated } }),
+    welcome && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Alert, { tone: "success", title: fmt(t.cafe.welcomeTitle, { cafe: cafe.name }), className: "mb-4", children: t.cafe.welcomeBody }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FlashMessage, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mb-3 text-[15px] text-muted-ink", children: fmt(t.wallet.hello, { name: (user?.name ?? view.customer.name).split(" ")[0] }) }),
+    view.programmes.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("a", { href: `/wallet/${cafe.slug}/code`, className: "btn btn-primary btn-lg w-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuQrCode, { className: "h-5 w-5", "aria-hidden": "true" }),
+      " ",
+      t.wallet.showAtCounter
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-4", children: view.programmes.map((p, i) => {
+      const pass = i === 0 ? { primary: cafe.primaryColour, secondary: cafe.secondaryColour } : void 0;
+      const footer = i === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(PassButton, { href: `/wallet/${cafe.slug}/code`, colours: pass, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuQrCode, { className: "h-5 w-5", "aria-hidden": "true" }),
+        " ",
+        t.wallet.showAtCounter
+      ] }) : void 0;
+      return p.type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(StampCardPanel, { p, color: stampColour, icon: cafe.stampIcon, pass, footer }, p.id) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(PointsPanel, { p, pass, footer }, p.id);
+    }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "mt-2 text-center text-[12.5px] text-muted-ink tnum", children: [
+      t.wallet.memberCode,
+      " ",
+      formatMemberCode(view.membership.memberCode)
+    ] }),
+    ready.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "mt-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("h2", { className: "mb-2.5 text-[15px] font-semibold", children: [
         t.wallet.rewardReady,
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "badge badge-accent ml-1 tnum", children: ready.length })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "badge badge-accent ml-1 tnum", children: ready.length })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-2.5", children: ready.map((v) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(VoucherCard, { v, tz, compact: true }, v.id)) })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-2.5", children: ready.map((v) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(VoucherCard, { v, tz, compact: true }, v.id)) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-5 space-y-4", children: [
-      view.programmes.map((p) => p.type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(StampCardPanel, { p, color: stampColour, icon: cafe.stampIcon }, p.id) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PointsPanel, { p }, p.id)),
-      view.challenges.map((c) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ChallengeCard, { c, tz }, c.id))
-    ] }),
-    referralsOn && referralPitch && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("a", { href: `/wallet/${cafe.slug}/refer`, className: "card mt-5 flex items-center gap-4 p-4 hover:border-beige-strong", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-espresso", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuUserPlus, { className: "h-5 w-5", "aria-hidden": "true" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "block text-[15.5px] font-semibold", children: t.wallet.inviteCardTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "block text-[13.5px] text-muted-ink", children: fmt(t.wallet.inviteCardBody, { reward: referralPitch }) })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mt-5 space-y-4", children: view.challenges.map((c) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ChallengeCard, { c, tz }, c.id)) }),
+    referralsOn && referralPitch && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("a", { href: `/wallet/${cafe.slug}/refer`, className: "card mt-5 flex items-center gap-4 p-4 hover:border-beige-strong", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-espresso", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuUserPlus, { className: "h-5 w-5", "aria-hidden": "true" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block text-[15.5px] font-semibold", children: t.wallet.inviteCardTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block text-[13.5px] text-muted-ink", children: fmt(t.wallet.inviteCardBody, { reward: referralPitch }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuChevronRight, { className: "h-5 w-5 text-muted", "aria-hidden": "true" })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuChevronRight, { className: "h-5 w-5 text-muted", "aria-hidden": "true" })
     ] }),
-    offers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mt-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mb-2.5 flex items-baseline justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[15px] font-semibold", children: t.wallet.tabs.offers }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: `/wallet/${cafe.slug}/offers`, className: "text-[13.5px] link", children: t.wallet.seeAll })
+    offers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "mt-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mb-2.5 flex items-baseline justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[15px] font-semibold", children: t.wallet.tabs.offers }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: `/wallet/${cafe.slug}/offers`, className: "text-[13.5px] link", children: t.wallet.seeAll })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(OfferCard, { o: offers[0], tz })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(OfferCard, { o: offers[0], tz })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mt-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mb-1 flex items-baseline justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[15px] font-semibold", children: t.wallet.recentActivity }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: `/wallet/${cafe.slug}/activity`, className: "text-[13.5px] link", children: t.wallet.seeAll })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "mt-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mb-1 flex items-baseline justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[15px] font-semibold", children: t.wallet.recentActivity }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: `/wallet/${cafe.slug}/activity`, className: "text-[13.5px] link", children: t.wallet.seeAll })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "card px-4", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ActivityList, { items: view.activity.slice(0, 5), tz }) })
-    ] })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "card px-4", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ActivityList, { items: view.activity.slice(0, 5), tz }) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Island, { name: "InstallPrompt", props: { title: t.wallet.installTitle, body: t.wallet.installBody, iosHint: t.wallet.installIos, install: t.wallet.install, close: t.common.close } })
   ] });
 }
 function WalletCodePage({ cafe, view, referralsOn }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(WalletLayout, { cafe, tab: "card", referralsOn, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "card px-5 py-7 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[20px] font-semibold", children: t.wallet.showAtCounter }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mx-auto mt-1 max-w-xs text-[14px] text-muted-ink", children: view.customer.name }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(WalletLayout, { cafe, tab: "card", referralsOn, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "card px-5 py-7 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[20px] font-semibold", children: t.wallet.showAtCounter }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mx-auto mt-1 max-w-xs text-[14px] text-muted-ink", children: view.customer.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
         Island,
         {
           name: "MemberQr",
@@ -29365,11 +29852,11 @@ function WalletCodePage({ cafe, view, referralsOn }) {
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-5 text-[13px] text-muted-ink", children: t.wallet.memberCode }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-display text-[30px] font-semibold tracking-[0.12em] tnum", children: formatMemberCode(view.membership.memberCode) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mx-auto mt-4 max-w-xs text-[13px] text-muted-ink", children: t.wallet.qrHelp })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-5 text-[13px] text-muted-ink", children: t.wallet.memberCode }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-display text-[30px] font-semibold tracking-[0.12em] tnum", children: formatMemberCode(view.membership.memberCode) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mx-auto mt-4 max-w-xs text-[13px] text-muted-ink", children: t.wallet.qrHelp })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: `/wallet/${cafe.slug}`, className: "btn btn-secondary mt-4 w-full", children: t.common.back })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: `/wallet/${cafe.slug}`, className: "btn btn-secondary mt-4 w-full", children: t.common.back })
   ] });
 }
 function WalletRewardsPage({ cafe, view, referralsOn, tz }) {
@@ -29380,25 +29867,25 @@ function WalletRewardsPage({ cafe, view, referralsOn, tz }) {
     { key: "expired", title: t.wallet.expired, items: view.vouchers.filter((v) => v.status === "expired") }
   ];
   const points = view.programmes.filter((p) => p.type === "points");
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(WalletLayout, { cafe, tab: "rewards", referralsOn, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[24px] font-semibold", children: t.wallet.tabs.rewards }),
-    view.vouchers.length === 0 && points.every((p) => p.catalogue.length === 0) && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "card mt-4 p-6 text-center text-[14.5px] text-muted-ink", children: t.wallet.noRewards }),
-    groups[0].items.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(RewardGroup, { title: groups[0].title, items: groups[0].items, tz }),
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(WalletLayout, { cafe, tab: "rewards", referralsOn, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[24px] font-semibold", children: t.wallet.tabs.rewards }),
+    view.vouchers.length === 0 && points.every((p) => p.catalogue.length === 0) && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "card mt-4 p-6 text-center text-[14.5px] text-muted-ink", children: t.wallet.noRewards }),
+    groups[0].items.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(RewardGroup, { title: groups[0].title, items: groups[0].items, tz }),
     points.map(
-      (p) => p.catalogue.length ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mt-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("h2", { className: "mb-2.5 text-[15px] font-semibold", children: [
+      (p) => p.catalogue.length ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "mt-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("h2", { className: "mb-2.5 text-[15px] font-semibold", children: [
           p.name,
           " \xB7 ",
           fmt(t.common.pointOne.split("|")[1], { n: num2(p.balance, locale2) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("ul", { className: "space-y-2.5", children: p.catalogue.map((r2) => {
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ul", { className: "space-y-2.5", children: p.catalogue.map((r2) => {
           const ok = p.balance >= r2.cost;
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("li", { className: "card flex items-start gap-3.5 p-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(RewardBadgeIcon, { icon: r2.icon, tone: ok ? "accent" : "muted" }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "min-w-0 flex-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[15.5px] font-semibold", children: r2.name }),
-              r2.description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[14px] text-muted-ink", children: r2.description }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: ok ? "mt-1 text-[13px] text-sage-ink font-medium" : "mt-1 text-[13px] text-muted-ink", children: [
+          return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("li", { className: "card flex items-start gap-3.5 p-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(RewardBadgeIcon, { icon: r2.icon, tone: ok ? "accent" : "muted" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "min-w-0 flex-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[15.5px] font-semibold", children: r2.name }),
+              r2.description && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[14px] text-muted-ink", children: r2.description }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: ok ? "mt-1 text-[13px] text-sage-ink font-medium" : "mt-1 text-[13px] text-muted-ink", children: [
                 fmt(t.wallet.costPoints, { n: num2(r2.cost, locale2) }),
                 " \xB7 ",
                 ok ? t.wallet.affordable : fmt(t.terminal.cannotAfford, { n: num2(r2.cost - p.balance, locale2) })
@@ -29408,137 +29895,137 @@ function WalletRewardsPage({ cafe, view, referralsOn, tz }) {
         }) })
       ] }, p.id) : null
     ),
-    groups.slice(1).map((g) => g.items.length ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(RewardGroup, { title: g.title, items: g.items, tz }, g.key) : null)
+    groups.slice(1).map((g) => g.items.length ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(RewardGroup, { title: g.title, items: g.items, tz }, g.key) : null)
   ] });
 }
 function RewardGroup({ title, items, tz }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mt-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "mb-2.5 text-[15px] font-semibold", children: title }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-2.5", children: items.map((v) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(VoucherCard, { v, tz }, v.id)) })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "mt-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "mb-2.5 text-[15px] font-semibold", children: title }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-2.5", children: items.map((v) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(VoucherCard, { v, tz }, v.id)) })
   ] });
 }
 function WalletOffersPage({ cafe, offers, referralsOn, tz, segmentLabels }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(WalletLayout, { cafe, tab: "offers", referralsOn, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[24px] font-semibold", children: t.wallet.tabs.offers }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-4 space-y-3", children: offers.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "card p-6 text-center text-[14.5px] text-muted-ink", children: t.wallet.offersEmpty }) : offers.map((o) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(OfferCard, { o, tz, segmentLabel: o.segment !== "all" ? segmentLabels[o.segment] : void 0 }, o.id)) })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(WalletLayout, { cafe, tab: "offers", referralsOn, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[24px] font-semibold", children: t.wallet.tabs.offers }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mt-4 space-y-3", children: offers.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "card p-6 text-center text-[14.5px] text-muted-ink", children: t.wallet.offersEmpty }) : offers.map((o) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(OfferCard, { o, tz, segmentLabel: o.segment !== "all" ? segmentLabels[o.segment] : void 0 }, o.id)) })
   ] });
 }
 function WalletActivityPage({ cafe, view, referralsOn, tz }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(WalletLayout, { cafe, tab: "activity", referralsOn, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[24px] font-semibold", children: t.wallet.tabs.activity }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "card mt-4 px-4", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ActivityList, { items: view.activity, tz }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(WalletLayout, { cafe, tab: "activity", referralsOn, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[24px] font-semibold", children: t.wallet.tabs.activity }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "card mt-4 px-4", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ActivityList, { items: view.activity, tz }) })
   ] });
 }
 function WalletReferPage({ cafe, view, link, rewards, joined, rewarded }) {
   const { t } = usePage();
   const shareText = link ? fmt(t.wallet.referShareText, { cafe: cafe.name, link }) : "";
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(WalletLayout, { cafe, tab: "refer", referralsOn: true, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "text-[24px] font-semibold", children: rewards?.name || t.wallet.referTitle }),
-    !link || !rewards ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "card mt-4 p-6 text-[14.5px] text-muted-ink", children: fmt(t.wallet.referUnavailable, { cafe: cafe.name }) }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "card mt-4 p-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[16px] font-medium", children: fmt(rewards.on === "join" ? t.wallet.referYouGetJoin : t.wallet.referYouGetVisit, { reward: rewards.mine, cafe: cafe.name }) }),
-        rewards.friend && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-1.5 text-[14.5px] text-muted-ink", children: fmt(t.wallet.referFriendGets, { reward: rewards.friend }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("a", { className: "btn btn-primary mt-5 w-full", href: `https://wa.me/?text=${encodeURIComponent(shareText)}`, target: "_blank", rel: "noopener noreferrer", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LuMessageCircle, { className: "h-5 w-5", "aria-hidden": "true" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(WalletLayout, { cafe, tab: "refer", referralsOn: true, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[24px] font-semibold", children: rewards?.name || t.wallet.referTitle }),
+    !link || !rewards ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "card mt-4 p-6 text-[14.5px] text-muted-ink", children: fmt(t.wallet.referUnavailable, { cafe: cafe.name }) }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "card mt-4 p-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[16px] font-medium", children: fmt(rewards.on === "join" ? t.wallet.referYouGetJoin : t.wallet.referYouGetVisit, { reward: rewards.mine, cafe: cafe.name }) }),
+        rewards.friend && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1.5 text-[14.5px] text-muted-ink", children: fmt(t.wallet.referFriendGets, { reward: rewards.friend }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("a", { className: "btn btn-primary mt-5 w-full", href: `https://wa.me/?text=${encodeURIComponent(shareText)}`, target: "_blank", rel: "noopener noreferrer", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LuMessageCircle, { className: "h-5 w-5", "aria-hidden": "true" }),
           " ",
           t.wallet.shareWhatsApp
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-5 text-[13px] font-medium text-muted-ink", children: t.wallet.referLink }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Island, { name: "CopyField", props: { value: link, copyLabel: t.common.copy, copiedLabel: t.common.copied, shareLabel: t.wallet.share, shareTitle: cafe.name } }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "mt-1 text-[12.5px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-5 text-[13px] font-medium text-muted-ink", children: t.wallet.referLink }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Island, { name: "CopyField", props: { value: link, copyLabel: t.common.copy, copiedLabel: t.common.copied, shareLabel: t.wallet.share, shareTitle: cafe.name } }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "mt-1 text-[12.5px] text-muted-ink", children: [
           t.wallet.referYourCode,
           ": ",
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "font-medium tracking-[0.06em]", children: view.membership.referralCode })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "font-medium tracking-[0.06em]", children: view.membership.referralCode })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "card mt-4 grid grid-cols-2 divide-x divide-beige", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-4 text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-display text-[26px] font-semibold tnum", children: joined }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[13px] text-muted-ink", children: t.wallet.referJoined })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "card mt-4 grid grid-cols-2 divide-x divide-beige", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "p-4 text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-display text-[26px] font-semibold tnum", children: joined }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[13px] text-muted-ink", children: t.wallet.referJoined })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-4 text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-display text-[26px] font-semibold tnum", children: rewarded }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-[13px] text-muted-ink", children: t.wallet.referRewarded })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "p-4 text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-display text-[26px] font-semibold tnum", children: rewarded }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[13px] text-muted-ink", children: t.wallet.referRewarded })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: t.wallet.referRules })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: t.wallet.referRules })
     ] })
   ] });
 }
 function AccountPage({ profile, memberships, errors = {} }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(PlainCustomerLayout, { title: t.account.title, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(FlashMessage, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card p-5 sm:p-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.profile }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: "/account/profile", className: "mt-4 grid gap-4", noValidate: true, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.name, name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "name", defaultValue: profile.name, required: true, maxLength: 120, autoComplete: "name", error: errors.name }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.email, name: "email_display", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "email_display", defaultValue: profile.email, disabled: true }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.common.phone, name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "phone", type: "tel", defaultValue: profile.phone ?? "", maxLength: 40, autoComplete: "tel", error: errors.phone }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("fieldset", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("legend", { className: "label", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(PlainCustomerLayout, { title: t.account.title, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FlashMessage, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card p-5 sm:p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.profile }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: "/account/profile", className: "mt-4 grid gap-4", noValidate: true, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.name, name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "name", defaultValue: profile.name, required: true, maxLength: 120, autoComplete: "name", error: errors.name }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.email, name: "email_display", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "email_display", defaultValue: profile.email, disabled: true }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.phone, name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "phone", type: "tel", defaultValue: profile.phone ?? "", maxLength: 40, autoComplete: "tel", error: errors.phone }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("fieldset", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("legend", { className: "label", children: [
             t.account.birthday,
             " ",
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "font-normal text-muted", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "font-normal text-muted", children: [
               "(",
               t.common.optional,
               ")"
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid grid-cols-[1.4fr_1fr] gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Select, { name: "birthday_month", "aria-label": t.account.month, defaultValue: profile.birthdayMonth ? String(profile.birthdayMonth) : "", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t.account.month }),
-              t.months.map((m, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: String(i + 1), children: m }, m))
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid grid-cols-[1.4fr_1fr] gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Select, { name: "birthday_month", "aria-label": t.account.month, defaultValue: profile.birthdayMonth ? String(profile.birthdayMonth) : "", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: "", children: t.account.month }),
+              t.months.map((m, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: String(i + 1), children: m }, m))
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Select, { name: "birthday_day", "aria-label": t.account.day, defaultValue: profile.birthdayDay ? String(profile.birthdayDay) : "", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t.account.day }),
-              Array.from({ length: 31 }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: String(i + 1), children: i + 1 }, i))
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Select, { name: "birthday_day", "aria-label": t.account.day, defaultValue: profile.birthdayDay ? String(profile.birthdayDay) : "", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: "", children: t.account.day }),
+              Array.from({ length: 31 }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: String(i + 1), children: i + 1 }, i))
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "hint", children: errors.birthday ?? t.account.birthdayHelp })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "hint", children: errors.birthday ?? t.account.birthdayHelp })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { children: t.common.save }) })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { children: t.common.save }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card mt-4 p-5 sm:p-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.preferences }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: t.account.preferencesHelp }),
-      memberships.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-4 text-[14.5px] text-muted-ink", children: t.account.noMemberships }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: "/account/preferences", className: "mt-4 space-y-3", children: [
-        memberships.map((m) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Checkbox, { name: "consent", value: m.id, defaultChecked: m.marketingConsent, label: fmt(t.cafe.marketing, { cafe: m.cafeName }).replace(/ \(.*\)$/, "") }, m.id)),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "pt-1", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { variant: "secondary", children: t.common.save }) })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card mt-4 p-5 sm:p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.preferences }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: t.account.preferencesHelp }),
+      memberships.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-4 text-[14.5px] text-muted-ink", children: t.account.noMemberships }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: "/account/preferences", className: "mt-4 space-y-3", children: [
+        memberships.map((m) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Checkbox, { name: "consent", value: m.id, defaultChecked: m.marketingConsent, label: fmt(t.cafe.marketing, { cafe: m.cafeName }).replace(/ \(.*\)$/, "") }, m.id)),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "pt-1", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { variant: "secondary", children: t.common.save }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card mt-4 p-5 sm:p-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.passwordTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: "/account/password", className: "mt-4 grid gap-4 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.account.currentPassword, name: "current", error: errors.current, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "current", type: "password", autoComplete: "current-password", required: true, error: errors.current }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.account.newPassword, name: "next", hint: t.auth.passwordHint, error: errors.next, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "next", type: "password", autoComplete: "new-password", required: true, minLength: 10, error: errors.next }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { variant: "secondary", children: t.account.passwordTitle }) })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card mt-4 p-5 sm:p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.passwordTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: "/account/password", className: "mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.account.currentPassword, name: "current", error: errors.current, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "current", type: "password", autoComplete: "current-password", required: true, error: errors.current }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.account.newPassword, name: "next", hint: t.auth.passwordHint, error: errors.next, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "next", type: "password", autoComplete: "new-password", required: true, minLength: 8, error: errors.next }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { variant: "secondary", children: t.account.passwordTitle }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card mt-4 p-5 sm:p-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.privacy }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card mt-4 p-5 sm:p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold", children: t.account.privacy }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
         t.account.privacyBody,
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { className: "link", href: "/privacy", children: t.nav.privacy })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "link", href: "/privacy", children: t.nav.privacy })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/account/export.json", className: "btn btn-secondary mt-4", children: t.account.exportData })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: "/account/export.json", className: "btn btn-secondary mt-4", children: t.account.exportData })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "card mt-4 border-error/30 p-5 sm:p-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-[17px] font-semibold text-error", children: t.account.deleteTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: t.account.deleteBody }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(Form, { action: "/account/delete", className: "mt-4 flex flex-col gap-3 sm:flex-row sm:items-end", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Field, { label: t.account.deleteConfirm, name: "confirm", error: errors.confirm, className: "sm:w-56", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Input, { name: "confirm", autoComplete: "off", error: errors.confirm }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { variant: "danger", children: t.account.deleteButton })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "card mt-4 border-error/30 p-5 sm:p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold text-error", children: t.account.deleteTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: t.account.deleteBody }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: "/account/delete", className: "mt-4 flex flex-col gap-3 sm:flex-row sm:items-end", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.account.deleteConfirm, name: "confirm", error: errors.confirm, className: "sm:w-56", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "confirm", autoComplete: "off", error: errors.confirm }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { variant: "danger", children: t.account.deleteButton })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Form, { action: "/sign-out", className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, { variant: "ghost", children: t.common.signOut }) })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Form, { action: "/sign-out", className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { variant: "ghost", children: t.common.signOut }) })
   ] });
 }
-var import_jsx_runtime26;
+var import_jsx_runtime29;
 var init_CustomerPages = __esm({
   "src/ui/pages/customer/CustomerPages.tsx"() {
     "use strict";
@@ -29553,7 +30040,7 @@ var init_CustomerPages = __esm({
     init_i18n();
     init_format();
     init_cn();
-    import_jsx_runtime26 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime29 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -29561,39 +30048,39 @@ var init_CustomerPages = __esm({
 function StartPage() {
   const { t, user } = usePage();
   const s = t.start;
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(MarketingLayout, { active: "start", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { className: "mx-auto max-w-[980px] px-4 pb-10 pt-12 sm:px-6 sm:pt-16", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h1", { className: "text-[34px] font-semibold leading-tight tracking-[-0.03em] sm:text-[44px]", children: s.title }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-3 max-w-[60ch] text-[17px] text-muted-ink", children: s.intro }),
-    user && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("p", { className: "mt-4 text-[15px]", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(MarketingLayout, { active: "start", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("section", { className: "mx-auto max-w-[980px] px-4 pb-10 pt-12 sm:px-6 sm:pt-16", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h1", { className: "text-[34px] font-semibold leading-tight tracking-[-0.03em] sm:text-[44px]", children: s.title }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "mt-3 max-w-[60ch] text-[17px] text-muted-ink", children: s.intro }),
+    user && /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("p", { className: "mt-4 text-[15px]", children: [
       fmt(s.signedInAs, { name: user.name }),
       " ",
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { className: "link font-medium", href: "/home", children: s.continue })
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { className: "link font-medium", href: "/home", children: s.continue })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mt-8 grid gap-5 md:grid-cols-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "panel flex flex-col p-6 sm:p-7", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-espresso text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LuStore, { className: "h-6 w-6", "aria-hidden": "true" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "mt-4 text-[22px] font-semibold", children: s.cafeTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-1.5 text-[15.5px] text-muted-ink", children: s.cafeBody }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mt-auto grid gap-2.5 pt-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg w-full", children: s.cafeCreate }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/sign-in", className: "btn btn-secondary w-full", children: s.cafeSignIn }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-[13px] text-muted-ink", children: s.staffNote })
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "mt-8 grid grid-cols-1 gap-5 md:grid-cols-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "panel flex flex-col p-6 sm:p-7", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-espresso text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(LuStore, { className: "h-6 w-6", "aria-hidden": "true" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h2", { className: "mt-4 text-[22px] font-semibold", children: s.cafeTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "mt-1.5 text-[15.5px] text-muted-ink", children: s.cafeBody }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "mt-auto grid gap-2.5 pt-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/get-started", className: "btn btn-primary btn-lg w-full", children: s.cafeCreate }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/sign-in", className: "btn btn-secondary w-full", children: s.cafeSignIn }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-[13px] text-muted-ink", children: s.staffNote })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "panel flex flex-col p-6 sm:p-7", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-terracotta text-white", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LuUser, { className: "h-6 w-6", "aria-hidden": "true" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "mt-4 text-[22px] font-semibold", children: s.customerTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-1.5 text-[15.5px] text-muted-ink", children: s.customerBody }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mt-auto grid gap-2.5 pt-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("a", { href: "/cafes", className: "btn btn-primary btn-lg w-full", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LuSearch, { className: "h-5 w-5", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "panel flex flex-col p-6 sm:p-7", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-terracotta text-white", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(LuUser, { className: "h-6 w-6", "aria-hidden": "true" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h2", { className: "mt-4 text-[22px] font-semibold", children: s.customerTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "mt-1.5 text-[15.5px] text-muted-ink", children: s.customerBody }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "mt-auto grid gap-2.5 pt-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("a", { href: "/cafes", className: "btn btn-primary btn-lg w-full", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(LuSearch, { className: "h-5 w-5", "aria-hidden": "true" }),
             " ",
             s.customerFind
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t), variant: "secondary" } }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid grid-cols-2 gap-2.5", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/sign-up", className: "btn btn-secondary w-full", children: s.customerCreate }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "/sign-in", className: "btn btn-secondary w-full", children: s.customerSignIn })
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t), variant: "secondary" } }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "grid grid-cols-2 gap-2.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/sign-up", className: "btn btn-secondary w-full", children: s.customerCreate }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/sign-in", className: "btn btn-secondary w-full", children: s.customerSignIn })
           ] })
         ] })
       ] })
@@ -29603,39 +30090,39 @@ function StartPage() {
 function CafesPage({ cafes, q }) {
   const { t } = usePage();
   const s = t.cafes;
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(MarketingLayout, { active: "cafes", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { className: "mx-auto max-w-[880px] px-4 pb-10 pt-12 sm:px-6 sm:pt-16", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h1", { className: "text-[34px] font-semibold leading-tight tracking-[-0.03em] sm:text-[44px]", children: s.title }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-3 max-w-[60ch] text-[17px] text-muted-ink", children: s.intro }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("form", { action: "/cafes", method: "get", className: "mt-6 flex gap-2", role: "search", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "cafe-q", className: "sr-only", children: s.search }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "cafe-q", name: "q", defaultValue: q, placeholder: s.search, className: "input flex-1", maxLength: 80 }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("button", { className: "btn btn-primary", type: "submit", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LuSearch, { className: "h-4 w-4", "aria-hidden": "true" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(MarketingLayout, { active: "cafes", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("section", { className: "mx-auto max-w-[880px] px-4 pb-10 pt-12 sm:px-6 sm:pt-16", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h1", { className: "text-[34px] font-semibold leading-tight tracking-[-0.03em] sm:text-[44px]", children: s.title }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "mt-3 max-w-[60ch] text-[17px] text-muted-ink", children: s.intro }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("form", { action: "/cafes", method: "get", className: "mt-6 flex gap-2", role: "search", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { htmlFor: "cafe-q", className: "sr-only", children: s.search }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("input", { id: "cafe-q", name: "q", defaultValue: q, placeholder: s.search, className: "input flex-1", maxLength: 80 }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("button", { className: "btn btn-primary", type: "submit", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(LuSearch, { className: "h-4 w-4", "aria-hidden": "true" }),
         " ",
         s.searchButton
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "mt-4 max-w-sm", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t), variant: "secondary" } }) }),
-    cafes.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "card mt-6 p-8 text-center text-muted-ink", children: q ? fmt(s.none, { q }) : s.empty }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("ul", { className: "mt-6 grid gap-3 sm:grid-cols-2", children: cafes.map((c) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("a", { href: `/c/${c.slug}`, className: "card flex h-full items-start gap-4 p-4 hover:border-beige-strong", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(CafeMark, { name: c.name, logoUrl: c.logoUrl, colour: c.primaryColour, size: 52 }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "block truncate text-[16.5px] font-semibold", children: c.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "block text-[13.5px] text-muted-ink", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "mt-4 max-w-sm", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Island, { name: "CafeScanner", props: { labels: cafeScannerLabels(t), variant: "secondary" } }) }),
+    cafes.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "card mt-6 p-8 text-center text-muted-ink", children: q ? fmt(s.none, { q }) : s.empty }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("ul", { className: "mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2", children: cafes.map((c) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("a", { href: `/c/${c.slug}`, className: "card flex h-full items-start gap-4 p-4 hover:border-beige-strong", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(CafeMark, { name: c.name, logoUrl: c.logoUrl, colour: c.primaryColour, size: 52 }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("span", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "block truncate text-[16.5px] font-semibold", children: c.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("span", { className: "block text-[13.5px] text-muted-ink", children: [
           c.city,
           c.isDemo ? ` \xB7 ${s.demo}` : ""
         ] }),
-        c.description && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "mt-1 line-clamp-2 block text-[14px] text-muted-ink", children: c.description }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "mt-2 inline-block text-[14px] font-medium text-espresso underline underline-offset-4", children: s.open })
+        c.description && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "mt-1 line-clamp-2 block text-[14px] text-muted-ink", children: c.description }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "mt-2 inline-block text-[14px] font-medium text-espresso underline underline-offset-4", children: s.open })
       ] })
     ] }) }, c.slug)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("p", { className: "mt-8 text-[14px] text-muted-ink", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("p", { className: "mt-8 text-[14px] text-muted-ink", children: [
       s.ownCafe,
       " ",
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { className: "link", href: "/get-started", children: s.ownCafeLink })
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { className: "link", href: "/get-started", children: s.ownCafeLink })
     ] })
   ] }) });
 }
-var import_jsx_runtime27;
+var import_jsx_runtime30;
 var init_Start = __esm({
   "src/ui/pages/marketing/Start.tsx"() {
     "use strict";
@@ -29646,7 +30133,7 @@ var init_Start = __esm({
     init_Island();
     init_i18n();
     init_CustomerPages();
-    import_jsx_runtime27 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime30 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -29668,12 +30155,12 @@ async function demoPost(ctx, kind) {
   if (kind === "demo" && parsed.success && !parsed.data.cafe_name) errors.cafe_name = "Enter your caf\xE9\u2019s name.";
   if (kind === "contact" && parsed.success && !parsed.data.message) errors.message = "Write a short message.";
   if (Object.keys(errors).length || !parsed.success) {
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(DemoRequestPage, { kind, values, errors }), { title: ctx.t.demo.metaTitle, status: 422 });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DemoRequestPage, { kind, values, errors }), { title: ctx.t.demo.metaTitle, status: 422 });
   }
   try {
     await rateLimit(`demo:${ctx.ip}`, 5, 3600);
   } catch (e) {
-    if (e instanceof DomainError) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(DemoRequestPage, { kind, values, errors: { message: ctx.t.errors.tooMany } }), { title: ctx.t.demo.metaTitle, status: 429 });
+    if (e instanceof DomainError) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DemoRequestPage, { kind, values, errors: { message: ctx.t.errors.tooMany } }), { title: ctx.t.demo.metaTitle, status: 429 });
     throw e;
   }
   const d = parsed.data;
@@ -29686,20 +30173,28 @@ async function demoPost(ctx, kind) {
     d.phone || null,
     d.message || null
   ]);
-  return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(DemoRequestPage, { kind, done: d.email }), { title: ctx.t.demo.metaTitle });
+  const mail = mailSettings();
+  if (mail) {
+    const to = config().NOTIFY_EMAIL || mail.user;
+    const lines = [`${d.name} <${d.email}>${d.phone ? `, ${d.phone}` : ""}`, d.cafe_name ? `Caf\xE9: ${d.cafe_name}${d.city ? `, ${d.city}` : ""}` : "", "", d.message || "(demo request)", "", `Reply: ${config().APP_URL.replace(/\/$/, "")}/admin/requests`];
+    sendMail({ to, subject: `New ${kind === "demo" ? "demo request" : "message"} from ${d.name}`, text: lines.filter((l, i) => l || i > 1).join("\n"), replyTo: d.email }, mail).catch(
+      (e) => console.error("[mail] notification failed:", e instanceof Error ? e.message : e)
+    );
+  }
+  return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DemoRequestPage, { kind, done: d.email }), { title: ctx.t.demo.metaTitle });
 }
 function marketingRoutes(r2) {
   r2.get("/", async (ctx) => {
     const plans = await loadPlans(db);
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(HomePage, { plans }), { title: ctx.t.home.metaTitle, description: ctx.t.home.metaDescription });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(HomePage, { plans }), { title: ctx.t.home.metaTitle, description: ctx.t.home.metaDescription });
   });
-  r2.get("/features", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(FeaturesPage, {}), { title: ctx.t.featuresPage.metaTitle, description: ctx.t.home.metaDescription }));
+  r2.get("/features", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(FeaturesPage, {}), { title: ctx.t.featuresPage.metaTitle, description: ctx.t.home.metaDescription }));
   r2.get("/how-it-works", (ctx) => redirect(ctx, "/#how-it-works", void 0, 302));
   r2.get("/pricing", async (ctx) => {
     const plans = await loadPlans(db);
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PricingPage, { plans }), { title: ctx.t.pricing.metaTitle });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(PricingPage, { plans }), { title: ctx.t.pricing.metaTitle });
   });
-  r2.get("/start", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(StartPage, {}), { title: ctx.t.start.metaTitle, description: ctx.t.start.intro }));
+  r2.get("/start", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(StartPage, {}), { title: ctx.t.start.metaTitle, description: ctx.t.start.intro }));
   r2.get("/cafes", async (ctx) => {
     const q = (ctx.query.get("q") ?? "").trim().slice(0, 80);
     const like = "%" + q.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
@@ -29714,14 +30209,14 @@ function marketingRoutes(r2) {
       [config().DEMO_MODE, q, like]
     );
     const cafes = rows.map((r3) => ({ slug: r3.slug, name: r3.name, city: r3.city, description: r3.description, logoUrl: r3.logo_upload_id ? `/media/${r3.logo_upload_id}` : null, primaryColour: r3.primary_colour, isDemo: r3.is_demo }));
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(CafesPage, { cafes, q }), { title: ctx.t.cafes.metaTitle, description: ctx.t.cafes.intro });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(CafesPage, { cafes, q }), { title: ctx.t.cafes.metaTitle, description: ctx.t.cafes.intro });
   });
-  r2.get("/demo", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(DemoRequestPage, { kind: "demo" }), { title: ctx.t.demo.metaTitle }));
+  r2.get("/demo", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DemoRequestPage, { kind: "demo" }), { title: ctx.t.demo.metaTitle }));
   r2.post("/demo", (ctx) => demoPost(ctx, "demo"));
-  r2.get("/contact", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(DemoRequestPage, { kind: "contact" }), { title: ctx.t.demo.contactTitle }));
+  r2.get("/contact", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DemoRequestPage, { kind: "contact" }), { title: ctx.t.demo.contactTitle }));
   r2.post("/contact", (ctx) => demoPost(ctx, "contact"));
-  r2.get("/privacy", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(LegalPage, { kind: "privacy" }), { title: ctx.t.nav.privacy }));
-  r2.get("/terms", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(LegalPage, { kind: "terms" }), { title: ctx.t.nav.terms }));
+  r2.get("/privacy", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(LegalPage, { kind: "privacy" }), { title: ctx.t.nav.privacy }));
+  r2.get("/terms", (ctx) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(LegalPage, { kind: "terms" }), { title: ctx.t.nav.terms }));
   r2.post("/locale", async (ctx) => {
     const body = await readBody(ctx);
     const locale2 = field(body, "locale");
@@ -29737,7 +30232,7 @@ function marketingRoutes(r2) {
     return reply(200, "ok", { "content-type": "text/plain", "cache-control": "no-store" });
   });
 }
-var import_jsx_runtime28, demoSchema;
+var import_jsx_runtime31, demoSchema;
 var init_marketing = __esm({
   "src/server/routes/marketing.tsx"() {
     "use strict";
@@ -29746,6 +30241,7 @@ var init_marketing = __esm({
     init_render();
     init_db();
     init_config();
+    init_smtp();
     init_plans();
     init_ratelimit();
     init_i18n();
@@ -29753,7 +30249,7 @@ var init_marketing = __esm({
     init_Pages();
     init_Start();
     init_errors2();
-    import_jsx_runtime28 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime31 = __toESM(require_jsx_runtime(), 1);
     demoSchema = external_exports.object({
       name: external_exports.string().trim().min(1, "Enter your name.").max(120),
       email: external_exports.string().trim().email("Enter a valid email address.").max(254),
@@ -29766,6 +30262,11 @@ var init_marketing = __esm({
 });
 
 // src/server/domain/accounts.ts
+function nameFromEmail(email) {
+  const local = email.split("@")[0].split("+")[0];
+  const words = local.split(/[._\-\s]+/).map((w) => w.replace(/[0-9]+/g, "")).filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  return (words.join(" ") || "Guest").slice(0, 120);
+}
 async function createUser(q, input) {
   try {
     const u = await one(
@@ -29841,45 +30342,45 @@ var init_accounts = __esm({
     init_crypto();
     init_errors2();
     emailSchema = external_exports.string().trim().toLowerCase().email("Enter a valid email address.").max(254);
-    passwordSchema = external_exports.string().min(10, "Use at least 10 characters.").max(200, "That password is too long.");
+    passwordSchema = external_exports.string().min(8, "Use at least 8 characters.").max(200, "That password is too long.");
     nameSchema = external_exports.string().trim().min(1, "Enter your name.").max(120, "That name is too long.");
-    signUpSchema = external_exports.object({ name: nameSchema, email: emailSchema, password: passwordSchema });
+    signUpSchema = external_exports.object({ name: external_exports.string().trim().max(120, "That name is too long.").optional(), email: emailSchema, password: passwordSchema }).transform((v) => ({ ...v, name: v.name || nameFromEmail(v.email) }));
   }
 });
 
 // src/ui/pages/auth/AuthPages.tsx
 function AuthLayout({ children, aside }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex min-h-screen flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("header", { className: "mx-auto flex h-16 w-full max-w-[1180px] items-center justify-between px-4 sm:px-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Logo, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(LanguageSwitcher, {})
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex min-h-screen flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("header", { className: "mx-auto flex h-16 w-full max-w-[1180px] items-center justify-between px-4 sm:px-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Logo, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(LanguageSwitcher, {})
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("main", { className: "mx-auto grid w-full max-w-[1000px] flex-1 items-start gap-10 px-4 pb-16 pt-8 sm:px-6 md:grid-cols-[1fr_0.9fr] md:pt-14", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "panel p-6 sm:p-8", children }),
-      aside && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("aside", { children: aside })
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("main", { className: "mx-auto grid grid-cols-1 w-full max-w-[1000px] flex-1 items-start gap-10 px-4 pb-16 pt-8 sm:px-6 md:grid-cols-[1fr_0.9fr] md:pt-14", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "panel p-6 sm:p-8", children }),
+      aside && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("aside", { children: aside })
     ] })
   ] });
 }
 function SignInPage({ next, email, error, demo }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(AuthLayout, { aside: demo ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(DemoAccountsBox, { demo, next }) : void 0, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[26px] font-semibold", children: t.auth.signInTitle }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1.5 text-muted-ink", children: t.auth.signInIntro }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: "/sign-in", className: "mt-6 grid gap-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FlashMessage, {}),
-      error && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Alert, { tone: "error", children: error }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "next", value: next }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.email, name: "email", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "email", type: "email", autoComplete: "email", required: true, defaultValue: email, autoFocus: !email }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.password, name: "password", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "password", type: "password", autoComplete: "current-password", required: true, autoFocus: Boolean(email) }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { size: "lg", children: t.common.signIn })
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(AuthLayout, { aside: demo ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(DemoAccountsBox, { demo, next }) : void 0, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { className: "text-[26px] font-semibold", children: t.auth.signInTitle }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "mt-1.5 text-muted-ink", children: t.auth.signInIntro }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(Form, { action: "/sign-in", className: "mt-6 grid gap-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(FlashMessage, {}),
+      error && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Alert, { tone: "error", children: error }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "hidden", name: "next", value: next }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Field, { label: t.common.email, name: "email", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Input, { name: "email", type: "email", autoComplete: "email", required: true, defaultValue: email, autoFocus: !email }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(PasswordField, { label: t.common.password, autoComplete: "current-password", autoFocus: Boolean(email) }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Button, { size: "lg", children: t.common.signIn })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-6 border-t border-beige pt-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[14.5px] font-medium", children: t.auth.noAccount }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-3 grid gap-2.5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "btn btn-secondary w-full", href: `/sign-up${next ? `?next=${encodeURIComponent(next)}` : ""}`, children: t.auth.createOne }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "btn btn-secondary w-full", href: "/get-started", children: t.auth.forBusinessLink })
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "mt-6 border-t border-beige pt-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-[14.5px] font-medium", children: t.auth.noAccount }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "btn btn-secondary w-full", href: `/sign-up${next ? `?next=${encodeURIComponent(next)}` : ""}`, children: t.auth.createOne }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "btn btn-secondary w-full", href: "/get-started", children: t.auth.forBusinessLink })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-3 text-[13.5px] text-muted-ink", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "link", href: "/cafes", children: t.wallet.findCafe }) })
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "mt-3 text-[13.5px] text-muted-ink", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "link", href: "/cafes", children: t.wallet.findCafe }) })
     ] })
   ] });
 }
@@ -29890,63 +30391,62 @@ function DemoAccountsBox({ demo, next }) {
     [t.auth.demoStaff, demo.staff],
     [t.auth.demoCustomer, demo.customer]
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "rounded-[20px] border border-dashed border-beige-strong p-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-[17px] font-semibold", children: t.auth.demoAccounts }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: fmt(t.auth.demoAccountsBody, { password: demo.password }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ul", { className: "mt-4 space-y-2", children: rows.map(([label, email]) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: "/sign-in", className: "flex items-center justify-between gap-3 rounded-[12px] bg-paper px-3.5 py-2.5 border border-beige", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "email", value: email }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "password", value: demo.password }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "next", value: next }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "min-w-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block text-[14px] font-medium", children: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block truncate text-[12.5px] text-muted-ink", children: email })
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "rounded-[20px] border border-dashed border-beige-strong p-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { className: "text-[17px] font-semibold", children: t.auth.demoAccounts }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "mt-1 text-[14px] text-muted-ink", children: fmt(t.auth.demoAccountsBody, { password: demo.password }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("ul", { className: "mt-4 space-y-2", children: rows.map(([label, email]) => /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(Form, { action: "/sign-in", className: "flex items-center justify-between gap-3 rounded-[12px] bg-paper px-3.5 py-2.5 border border-beige", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "hidden", name: "email", value: email }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "hidden", name: "password", value: demo.password }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "hidden", name: "next", value: next }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { className: "min-w-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "block text-[14px] font-medium", children: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "block truncate text-[12.5px] text-muted-ink", children: email })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("button", { className: "btn btn-secondary btn-sm", type: "submit", children: t.common.signIn })
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { className: "btn btn-secondary btn-sm", type: "submit", children: t.common.signIn })
     ] }) }, email)) })
   ] });
 }
 function SignUpPage({ next, values = {}, errors = {}, business, plan }) {
   const { t } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
     AuthLayout,
     {
-      aside: business ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-4 text-[15px] text-muted-ink", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ol", { className: "space-y-3", children: t.home.howSteps.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("li", { className: "flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-espresso text-[13px] font-semibold text-espresso tnum", children: i + 1 }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "block font-medium text-ink", children: s.title }),
+      aside: business ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "space-y-4 text-[15px] text-muted-ink", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("ol", { className: "space-y-3", children: t.home.howSteps.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("li", { className: "flex gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-espresso text-[13px] font-semibold text-espresso tnum", children: i + 1 }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "block font-medium text-ink", children: s.title }),
           s.body
         ] })
       ] }, i)) }) }) : void 0,
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mb-5 grid grid-cols-2 rounded-[12px] border border-beige bg-cream p-1", role: "tablist", "aria-label": t.start.title, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { role: "tab", "aria-selected": !business, href: `/sign-up${next ? `?next=${encodeURIComponent(next)}` : ""}`, className: `rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${!business ? "bg-espresso text-cream" : "text-muted-ink hover:text-ink"}`, children: t.auth.switchCustomer }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { role: "tab", "aria-selected": Boolean(business), href: `/get-started${plan ? `?plan=${encodeURIComponent(plan)}` : ""}`, className: `rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${business ? "bg-espresso text-cream" : "text-muted-ink hover:text-ink"}`, children: t.auth.switchCafe })
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "mb-5 grid grid-cols-2 rounded-[12px] border border-beige bg-cream p-1", role: "tablist", "aria-label": t.start.title, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { role: "tab", "aria-selected": !business, href: `/sign-up${next ? `?next=${encodeURIComponent(next)}` : ""}`, className: `rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${!business ? "bg-espresso text-cream" : "text-muted-ink hover:text-ink"}`, children: t.auth.switchCustomer }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { role: "tab", "aria-selected": Boolean(business), href: `/get-started${plan ? `?plan=${encodeURIComponent(plan)}` : ""}`, className: `rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${business ? "bg-espresso text-cream" : "text-muted-ink hover:text-ink"}`, children: t.auth.switchCafe })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { className: "text-[26px] font-semibold", children: business ? t.auth.businessSignUpTitle : t.auth.signUpTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-1.5 text-muted-ink", children: business ? t.auth.businessSignUpIntro : t.auth.signUpIntro }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Form, { action: business ? "/get-started" : "/sign-up", className: "mt-6 grid gap-5", noValidate: true, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FlashMessage, {}),
-          errors.form && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Alert, { tone: "error", children: errors.form }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "next", value: next }),
-          plan && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { type: "hidden", name: "plan", value: plan }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.name, name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "name", autoComplete: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.email, name: "email", error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "email", type: "email", autoComplete: "email", required: true, maxLength: 254, defaultValue: values.email, error: errors.email }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Field, { label: t.common.password, name: "password", hint: t.auth.passwordHint, error: errors.password, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Input, { name: "password", type: "password", autoComplete: "new-password", required: true, minLength: 10, error: errors.password }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[13px] text-muted-ink", children: t.auth.terms.split(/(\{terms\}|\{privacy\})/).map(
-            (part, i) => part === "{terms}" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "link", href: "/terms", target: "_blank", children: t.nav.terms }, i) : part === "{privacy}" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "link", href: "/privacy", target: "_blank", children: t.nav.privacy }, i) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: part }, i)
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { className: "text-[26px] font-semibold", children: business ? t.auth.businessSignUpTitle : t.auth.signUpTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "mt-1.5 text-muted-ink", children: business ? t.auth.businessSignUpIntro : t.auth.signUpIntro }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(Form, { action: business ? "/get-started" : "/sign-up", className: "mt-6 grid gap-5", noValidate: true, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(FlashMessage, {}),
+          errors.form && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Alert, { tone: "error", children: errors.form }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "hidden", name: "next", value: next }),
+          plan && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "hidden", name: "plan", value: plan }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Field, { label: t.common.email, name: "email", error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Input, { name: "email", type: "email", inputMode: "email", autoComplete: "email", autoCapitalize: "none", required: true, maxLength: 254, defaultValue: values.email, error: errors.email, autoFocus: true }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(PasswordField, { label: t.common.password, hint: t.auth.passwordHint, error: errors.password, autoComplete: "new-password" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-[13px] text-muted-ink", children: t.auth.terms.split(/(\{terms\}|\{privacy\})/).map(
+            (part, i) => part === "{terms}" ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "link", href: "/terms", target: "_blank", children: t.nav.terms }, i) : part === "{privacy}" ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "link", href: "/privacy", target: "_blank", children: t.nav.privacy }, i) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { children: part }, i)
           ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Button, { size: "lg", children: business ? t.common.continue : t.common.signUp })
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Button, { size: "lg", children: business ? t.common.continue : t.common.signUp })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "mt-6 border-t border-beige pt-5 text-[14.5px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "mt-6 border-t border-beige pt-5 text-[14.5px] text-muted-ink", children: [
           t.auth.haveAccount,
           " ",
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "link", href: `/sign-in?next=${encodeURIComponent(next)}`, children: t.common.signIn })
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "link", href: `/sign-in?next=${encodeURIComponent(next)}`, children: t.common.signIn })
         ] })
       ]
     }
   );
 }
-var import_jsx_runtime29;
+var import_jsx_runtime32;
 var init_AuthPages = __esm({
   "src/ui/pages/auth/AuthPages.tsx"() {
     "use strict";
@@ -29954,7 +30454,7 @@ var init_AuthPages = __esm({
     init_brand();
     init_ui();
     init_i18n();
-    import_jsx_runtime29 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime32 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -30098,7 +30598,7 @@ function authRoutes(r2) {
   r2.get("/home", async (ctx) => redirect(ctx, await homeFor(ctx), void 0, 302));
   r2.get("/sign-in", async (ctx) => {
     if (ctx.user) return redirect(ctx, safeNext(ctx.query.get("next"), await homeFor(ctx)), void 0, 302);
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SignInPage, { next: safeNext(ctx.query.get("next"), ""), demo: demoAccounts() }), { title: ctx.t.common.signIn, noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(SignInPage, { next: safeNext(ctx.query.get("next"), ""), demo: demoAccounts() }), { title: ctx.t.common.signIn, noindex: true });
   });
   r2.post("/sign-in", async (ctx) => {
     const body = await readBody(ctx);
@@ -30110,13 +30610,13 @@ function authRoutes(r2) {
       await rateLimit(`signin:email:${email}`, 8, 600);
     } catch (e) {
       if (e instanceof DomainError) {
-        return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SignInPage, { next, email, error: ctx.t.errors.tooMany, demo: demoAccounts() }), { title: ctx.t.common.signIn, status: 429 });
+        return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(SignInPage, { next, email, error: ctx.t.errors.tooMany, demo: demoAccounts() }), { title: ctx.t.common.signIn, status: 429 });
       }
       throw e;
     }
     const user = email && password ? await authenticate(email, password) : null;
     if (!user) {
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SignInPage, { next, email, error: ctx.t.auth.invalid, demo: demoAccounts() }), { title: ctx.t.common.signIn, status: 401 });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(SignInPage, { next, email, error: ctx.t.auth.invalid, demo: demoAccounts() }), { title: ctx.t.common.signIn, status: 401 });
     }
     await createSession(ctx, user.id);
     const u = await maybeOne(db, "select id, name, email, platform_role, locale, is_demo from users where id = $1", [user.id]);
@@ -30133,7 +30633,7 @@ function authRoutes(r2) {
       if (business) return redirect(ctx, await loadBusinessContext(ctx) ? "/dashboard" : "/onboarding", void 0, 302);
       return redirect(ctx, safeNext(ctx.query.get("next"), "/wallet"), void 0, 302);
     }
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SignUpPage, { business, next: safeNext(ctx.query.get("next"), ""), plan: ctx.query.get("plan") ?? void 0 }), {
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(SignUpPage, { business, next: safeNext(ctx.query.get("next"), ""), plan: ctx.query.get("plan") ?? void 0 }), {
       title: business ? ctx.t.auth.businessSignUpTitle : ctx.t.common.signUp
     });
   };
@@ -30143,7 +30643,7 @@ function authRoutes(r2) {
     const next = safeNext(field(body, "next"), "");
     const plan = field(body, "plan");
     const parsed = signUpSchema.safeParse(values);
-    const page = (errors, status) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SignUpPage, { business, next, plan: plan || void 0, values, errors }), { title: ctx.t.common.signUp, status });
+    const page = (errors, status) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(SignUpPage, { business, next, plan: plan || void 0, values, errors }), { title: ctx.t.common.signUp, status });
     if (!parsed.success) return page(zodErrors(parsed.error), 422);
     try {
       await rateLimit(`signup:${ctx.ip}`, 10, 3600);
@@ -30167,7 +30667,7 @@ function authRoutes(r2) {
   r2.get("/get-started", signUpGet(true));
   r2.post("/get-started", signUpPost(true));
 }
-var import_jsx_runtime30;
+var import_jsx_runtime33;
 var init_auth = __esm({
   "src/server/routes/auth.tsx"() {
     "use strict";
@@ -30182,7 +30682,7 @@ var init_auth = __esm({
     init_AuthPages();
     init_marketing();
     init_guards();
-    import_jsx_runtime30 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime33 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -30402,14 +30902,14 @@ async function loadMemberView(q, cafe, membershipId, opts = {}) {
       createdAt: a.created_at,
       programmeName: a.programme_name
     })),
-    stateHash: import_node_crypto3.default.createHash("sha1").update(stateHash).digest("hex").slice(0, 16)
+    stateHash: import_node_crypto4.default.createHash("sha1").update(stateHash).digest("hex").slice(0, 16)
   };
 }
-var import_node_crypto3;
+var import_node_crypto4;
 var init_views = __esm({
   "src/server/domain/views.ts"() {
     "use strict";
-    import_node_crypto3 = __toESM(require("node:crypto"), 1);
+    import_node_crypto4 = __toESM(require("node:crypto"), 1);
     init_db();
     init_schemas();
     init_time();
@@ -30818,7 +31318,7 @@ async function cafePage(ctx, cafe, extra = {}) {
   }
   return render(
     ctx,
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(CafePublicPage, { cafe, programmes, offers, state, errors: extra.errors, values: extra.values, referral }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CafePublicPage, { cafe, programmes, offers, state, errors: extra.errors, values: extra.values, referral }),
     { title: fmt(ctx.t.cafe.joinTitle, { cafe: cafe.name }), description: cafe.description ?? void 0, status: extra.status, themeColor: cafe.primaryColour }
   );
 }
@@ -30888,10 +31388,10 @@ function customerRoutes(r2) {
     const cafe = await requireCafe(ctx.params.slug);
     if (!cafe.isDemo || !config().DEMO_MODE) throw notFound();
     await rateLimit(`demo-join:${ctx.ip}`, 30, 3600);
-    const n = import_node_crypto4.default.randomInt(1e3, 9999);
+    const n = import_node_crypto5.default.randomInt(1e3, 9999);
     const name = `Demo Guest ${n}`;
     const email = `guest-${randomCode(6).toLowerCase()}@demo.perkora.invalid`;
-    const userId = (await tx((q) => createUser(q, { name, email, password: import_node_crypto4.default.randomBytes(18).toString("base64url"), locale: ctx.locale, isDemo: true }))).id;
+    const userId = (await tx((q) => createUser(q, { name, email, password: import_node_crypto5.default.randomBytes(18).toString("base64url"), locale: ctx.locale, isDemo: true }))).id;
     await createSession(ctx, userId);
     ctx.user = { id: userId, name, email, platformRole: null, locale: ctx.locale, isDemo: true };
     return joinAndRedirect(ctx, cafe, false, null, "demo");
@@ -30932,7 +31432,7 @@ function customerRoutes(r2) {
     );
     return render(
       ctx,
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         WalletListPage,
         {
           items: rows.map((r3) => ({ slug: r3.slug, name: r3.name, logoUrl: r3.logo_upload_id ? `/media/${r3.logo_upload_id}` : null, primaryColour: r3.primary_colour, summary: r3.summary ?? "", ready: r3.ready }))
@@ -30949,7 +31449,7 @@ function customerRoutes(r2) {
     const offers = await offersForMember(w.cafe, w.membershipId);
     const refCfg = w.referralsOn ? await referralSetup(w.cafe) : null;
     const referralPitch = refCfg ? await describeGrant(w.cafe.id, refCfg.referrerGrant, ctx.locale) : null;
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(WalletCardPage, { cafe: walletCafe(w.cafe), view, offers, welcome: ctx.query.get("welcome") === "1", referralsOn: w.referralsOn, referralPitch, tz: w.cafe.timezone }), {
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(WalletCardPage, { cafe: walletCafe(w.cafe), view, offers, welcome: ctx.query.get("welcome") === "1", referralsOn: w.referralsOn, referralPitch, tz: w.cafe.timezone }), {
       title: w.cafe.name,
       noindex: true,
       themeColor: w.cafe.primaryColour
@@ -30959,13 +31459,13 @@ function customerRoutes(r2) {
     const w = await walletCtx(ctx);
     if (isReplyLike(w)) return w;
     const view = await loadMemberView(db, w.cafe, w.membershipId, { activityLimit: 1 });
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(WalletCodePage, { cafe: walletCafe(w.cafe), view, referralsOn: w.referralsOn }), { title: ctx.t.wallet.showAtCounter, noindex: true, themeColor: w.cafe.primaryColour });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(WalletCodePage, { cafe: walletCafe(w.cafe), view, referralsOn: w.referralsOn }), { title: ctx.t.wallet.showAtCounter, noindex: true, themeColor: w.cafe.primaryColour });
   });
   r2.get("/wallet/:slug/rewards", async (ctx) => {
     const w = await walletCtx(ctx);
     if (isReplyLike(w)) return w;
     const view = await loadMemberView(db, w.cafe, w.membershipId, { activityLimit: 1 });
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(WalletRewardsPage, { cafe: walletCafe(w.cafe), view, referralsOn: w.referralsOn, tz: w.cafe.timezone }), { title: ctx.t.wallet.tabs.rewards, noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(WalletRewardsPage, { cafe: walletCafe(w.cafe), view, referralsOn: w.referralsOn, tz: w.cafe.timezone }), { title: ctx.t.wallet.tabs.rewards, noindex: true });
   });
   r2.get("/wallet/:slug/offers", async (ctx) => {
     const w = await walletCtx(ctx);
@@ -30980,13 +31480,13 @@ function customerRoutes(r2) {
       );
     }
     const labels = Object.fromEntries(Object.entries(SEGMENT_LABELS).map(([k, v]) => [k, v.describe(w.cafe.settings)]));
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(WalletOffersPage, { cafe: walletCafe(w.cafe), offers, referralsOn: w.referralsOn, tz: w.cafe.timezone, segmentLabels: labels }), { title: ctx.t.wallet.tabs.offers, noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(WalletOffersPage, { cafe: walletCafe(w.cafe), offers, referralsOn: w.referralsOn, tz: w.cafe.timezone, segmentLabels: labels }), { title: ctx.t.wallet.tabs.offers, noindex: true });
   });
   r2.get("/wallet/:slug/activity", async (ctx) => {
     const w = await walletCtx(ctx);
     if (isReplyLike(w)) return w;
     const view = await loadMemberView(db, w.cafe, w.membershipId, { activityLimit: 200 });
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(WalletActivityPage, { cafe: walletCafe(w.cafe), view, referralsOn: w.referralsOn, tz: w.cafe.timezone }), { title: ctx.t.wallet.tabs.activity, noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(WalletActivityPage, { cafe: walletCafe(w.cafe), view, referralsOn: w.referralsOn, tz: w.cafe.timezone }), { title: ctx.t.wallet.tabs.activity, noindex: true });
   });
   r2.get("/wallet/:slug/refer", async (ctx) => {
     const w = await walletCtx(ctx);
@@ -31000,7 +31500,7 @@ function customerRoutes(r2) {
     }
     const joined = await one(db, `select count(*)::int as n, count(*) filter (where status = 'qualified')::int as q from referrals where referrer_membership_id = $1`, [w.membershipId]);
     const link = cfg ? `${config().APP_URL.replace(/\/$/, "")}/c/${w.cafe.slug}?ref=${view.membership.referralCode}` : null;
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(WalletReferPage, { cafe: walletCafe(w.cafe), view, link, rewards, joined: joined.n, rewarded: joined.q }), { title: ctx.t.wallet.referTitle, noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(WalletReferPage, { cafe: walletCafe(w.cafe), view, link, rewards, joined: joined.n, rewarded: joined.q }), { title: ctx.t.wallet.referTitle, noindex: true });
   });
   r2.get("/api/wallet/:slug/state", async (ctx) => {
     const w = await walletCtx(ctx);
@@ -31027,7 +31527,7 @@ function customerRoutes(r2) {
     ) : [];
     return render(
       ctx,
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         AccountPage,
         {
           profile: { name: u.name, email: u.email, phone: c?.phone ?? null, birthdayMonth: c?.birthday_month ?? null, birthdayDay: c?.birthday_day ?? null },
@@ -31131,11 +31631,11 @@ function customerRoutes(r2) {
     return redirect(ctx, "/", { type: "success", message: ctx.t.account.deleted });
   });
 }
-var import_node_crypto4, import_jsx_runtime31;
+var import_node_crypto5, import_jsx_runtime34;
 var init_customer = __esm({
   "src/server/routes/customer.tsx"() {
     "use strict";
-    import_node_crypto4 = __toESM(require("node:crypto"), 1);
+    import_node_crypto5 = __toESM(require("node:crypto"), 1);
     init_core();
     init_render();
     init_db();
@@ -31158,7 +31658,7 @@ var init_customer = __esm({
     init_marketing();
     init_CustomerPages();
     init_crypto();
-    import_jsx_runtime31 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime34 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -31174,30 +31674,30 @@ function TerminalPage({ biz, initialMemberId }) {
   };
   const showDashboard = biz.role === "owner" || can(biz, "view_customers") || can(biz, "view_reports") || can(biz, "manage_rewards");
   const symbol = biz.currency === "EUR" ? "\u20AC" : "\u20BA";
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "min-h-screen bg-sand/60", children: [
-    biz.isDemo && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(DemoBanner, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("header", { className: "border-b border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "mx-auto flex h-16 max-w-[1100px] items-center gap-3 px-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(CafeMark, { name: biz.name, colour: biz.primaryColour, logoUrl: biz.logoUploadId ? `/media/${biz.logoUploadId}` : null, size: 36 }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "truncate text-[15.5px] font-semibold leading-tight", children: biz.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "flex items-center gap-1.5 text-[12.5px] text-muted-ink", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(LogoMark, { className: "h-3.5 w-3.5" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "min-h-screen bg-sand/60", children: [
+    biz.isDemo && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(DemoBanner, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("header", { className: "border-b border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mx-auto flex h-16 max-w-[1100px] items-center gap-3 px-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CafeMark, { name: biz.name, colour: biz.primaryColour, logoUrl: biz.logoUploadId ? `/media/${biz.logoUploadId}` : null, size: 36 }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "truncate text-[15.5px] font-semibold leading-tight", children: biz.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("p", { className: "flex items-center gap-1.5 text-[12.5px] text-muted-ink", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LogoMark, { className: "h-3.5 w-3.5" }),
           " ",
           t.terminal.title,
           " \xB7 ",
           user?.name
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(LanguageSwitcher, { className: "hidden sm:inline-flex" }),
-      showDashboard && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("a", { href: "/dashboard", className: "btn btn-ghost btn-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(LuLayoutDashboard, { className: "h-4 w-4", "aria-hidden": "true" }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "hidden sm:inline", children: t.terminal.dashboard })
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LanguageSwitcher, { className: "hidden sm:inline-flex" }),
+      showDashboard && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("a", { href: "/dashboard", className: "btn btn-ghost btn-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuLayoutDashboard, { className: "h-4 w-4", "aria-hidden": "true" }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "hidden sm:inline", children: t.terminal.dashboard })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Form, { action: "/sign-out", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { className: "btn btn-ghost btn-sm", type: "submit", "aria-label": t.common.signOut, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(LuLogOut, { className: "h-4 w-4", "aria-hidden": "true" }) }) })
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Form, { action: "/sign-out", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("button", { className: "btn btn-ghost btn-sm", type: "submit", "aria-label": t.common.signOut, children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuLogOut, { className: "h-4 w-4", "aria-hidden": "true" }) }) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("main", { className: "px-4 py-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "mx-auto max-w-[1100px]", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(FlashMessage, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("main", { className: "px-4 py-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "mx-auto max-w-[1100px]", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(FlashMessage, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
         Island,
         {
           name: "StaffTerminal",
@@ -31214,7 +31714,7 @@ function TerminalPage({ biz, initialMemberId }) {
     ] })
   ] });
 }
-var import_jsx_runtime32;
+var import_jsx_runtime35;
 var init_TerminalPage = __esm({
   "src/ui/pages/TerminalPage.tsx"() {
     "use strict";
@@ -31224,7 +31724,7 @@ var init_TerminalPage = __esm({
     init_brand();
     init_ui();
     init_guards();
-    import_jsx_runtime32 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime35 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -31281,7 +31781,7 @@ function terminalRoutes(r2) {
       const ok = await maybeOne(db, "select 1 from loyalty_memberships where id = $1 and business_id = $2", [m, b.id]);
       if (ok) initial = m;
     }
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(TerminalPage, { biz: b, initialMemberId: initial }), { title: ctx.t.terminal.title, noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(TerminalPage, { biz: b, initialMemberId: initial }), { title: ctx.t.terminal.title, noindex: true });
   });
   r2.get("/t/m/:token", async (ctx) => {
     const b = await requireBusiness(ctx);
@@ -31394,7 +31894,7 @@ function terminalRoutes(r2) {
     });
   });
 }
-var import_jsx_runtime33, awardSchema, redeemSchema;
+var import_jsx_runtime36, awardSchema, redeemSchema;
 var init_terminal = __esm({
   "src/server/routes/terminal.tsx"() {
     "use strict";
@@ -31412,7 +31912,7 @@ var init_terminal = __esm({
     init_i18n();
     init_time();
     init_TerminalPage();
-    import_jsx_runtime33 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime36 = __toESM(require_jsx_runtime(), 1);
     awardSchema = external_exports.object({
       membershipId: external_exports.string().uuid(),
       programmeId: external_exports.string().uuid(),
@@ -31712,7 +32212,7 @@ function DashboardLayout({ biz, active, children, wide }) {
   const { user } = usePage();
   const nav = dashboardNav(biz);
   const logo = biz.logoUploadId ? `/media/${biz.logoUploadId}` : null;
-  const navList = /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("ul", { className: "space-y-0.5", children: nav.map(({ key, href, label, Icon }) => /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
+  const navList = /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("ul", { className: "space-y-0.5", children: nav.map(({ key, href, label, Icon }) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(
     "a",
     {
       href,
@@ -31723,76 +32223,76 @@ function DashboardLayout({ biz, active, children, wide }) {
         active === key ? "bg-espresso text-cream" : "text-ink/80 hover:bg-sand hover:text-ink"
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Icon, { className: "h-[18px] w-[18px] shrink-0", "aria-hidden": "true" }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "dash-label truncate", children: label })
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Icon, { className: "h-[18px] w-[18px] shrink-0", "aria-hidden": "true" }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "dash-label truncate", children: label })
       ]
     }
   ) }, key)) });
-  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "min-h-screen bg-cream", children: [
-    biz.isDemo && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(DemoBanner, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("aside", { className: "dash-sidebar sticky top-0 hidden h-screen w-[252px] shrink-0 flex-col border-r border-beige bg-paper lg:flex", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center gap-3 px-4 pb-3 pt-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CafeMark, { name: biz.name, logoUrl: logo, colour: biz.primaryColour, size: 38 }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "dash-label min-w-0", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "truncate text-[15px] font-semibold leading-tight", children: biz.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "min-h-screen bg-cream", children: [
+    biz.isDemo && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(DemoBanner, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "flex", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("aside", { className: "dash-sidebar sticky top-0 hidden h-screen w-[252px] shrink-0 flex-col border-r border-beige bg-paper lg:flex", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "flex items-center gap-3 px-4 pb-3 pt-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(CafeMark, { name: biz.name, logoUrl: logo, colour: biz.primaryColour, size: 38 }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "dash-label min-w-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { className: "truncate text-[15px] font-semibold leading-tight", children: biz.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
               biz.plan.name,
               " plan"
             ] })
           ] })
         ] }),
-        biz.memberships.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CafeSwitcher, { biz }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "px-3 pb-3", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("a", { href: "/terminal", className: "dash-link btn btn-accent btn-sm w-full", title: "Counter terminal", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(LuScanLine, { className: "h-4 w-4 shrink-0", "aria-hidden": "true" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "dash-label", children: "Counter terminal" })
+        biz.memberships.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(CafeSwitcher, { biz }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "px-3 pb-3", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("a", { href: "/terminal", className: "dash-link btn btn-accent btn-sm w-full", title: "Counter terminal", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LuScanLine, { className: "h-4 w-4 shrink-0", "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "dash-label", children: "Counter terminal" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("nav", { className: "flex-1 overflow-y-auto px-3", "aria-label": "Dashboard", children: navList }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "border-t border-beige p-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("details", { className: "group relative", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("summary", { className: "flex cursor-pointer list-none items-center gap-2.5 rounded-[10px] px-2 py-2 hover:bg-sand", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sand text-[13px] font-semibold", children: (user?.name ?? "?").slice(0, 1).toUpperCase() }),
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("span", { className: "dash-label min-w-0 flex-1", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "block truncate text-[13.5px] font-medium", children: user?.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "block truncate text-[12px] text-muted-ink", children: biz.role === "owner" ? "Owner" : "Staff" })
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("nav", { className: "flex-1 overflow-y-auto px-3", "aria-label": "Dashboard", children: navList }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "border-t border-beige p-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("details", { className: "group relative", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("summary", { className: "flex cursor-pointer list-none items-center gap-2.5 rounded-[10px] px-2 py-2 hover:bg-sand", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sand text-[13px] font-semibold", children: (user?.name ?? "?").slice(0, 1).toUpperCase() }),
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("span", { className: "dash-label min-w-0 flex-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "block truncate text-[13.5px] font-medium", children: user?.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "block truncate text-[12px] text-muted-ink", children: biz.role === "owner" ? "Owner" : "Staff" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(LuChevronDown, { className: "dash-label h-4 w-4 text-muted-ink", "aria-hidden": "true" })
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LuChevronDown, { className: "dash-label h-4 w-4 text-muted-ink", "aria-hidden": "true" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "absolute bottom-full left-0 mb-2 w-56 rounded-[12px] border border-beige bg-paper p-1.5 shadow-lg", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "/account", className: "block rounded-lg px-3 py-2 text-[14px] hover:bg-sand", children: "Account settings" }),
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "/wallet", className: "block rounded-lg px-3 py-2 text-[14px] hover:bg-sand", children: "My loyalty cards" }),
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Form, { action: "/sign-out", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("button", { className: "block w-full rounded-lg px-3 py-2 text-left text-[14px] hover:bg-sand", type: "submit", children: "Sign out" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "absolute bottom-full left-0 mb-2 w-56 rounded-[12px] border border-beige bg-paper p-1.5 shadow-lg", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("a", { href: "/account", className: "block rounded-lg px-3 py-2 text-[14px] hover:bg-sand", children: "Account settings" }),
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("a", { href: "/wallet", className: "block rounded-lg px-3 py-2 text-[14px] hover:bg-sand", children: "My loyalty cards" }),
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Form, { action: "/sign-out", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("button", { className: "block w-full rounded-lg px-3 py-2 text-left text-[14px] hover:bg-sand", type: "submit", children: "Sign out" }) })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "mt-2 flex items-center justify-between px-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("a", { href: "/", className: "flex items-center gap-1.5 text-[12px] text-muted-ink", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(LogoMark, { className: "h-4 w-4" }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "mt-2 flex items-center justify-between px-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("a", { href: "/", className: "flex items-center gap-1.5 text-[12px] text-muted-ink", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LogoMark, { className: "h-4 w-4" }),
               " ",
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "dash-label", children: "Perkora" })
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "dash-label", children: "Perkora" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Island, { name: "SidebarToggle", props: {} })
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Island, { name: "SidebarToggle", props: {} })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("header", { className: "sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-beige bg-paper/95 px-4 backdrop-blur lg:hidden", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CafeMark, { name: biz.name, logoUrl: logo, colour: biz.primaryColour, size: 30 }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "min-w-0 flex-1 truncate text-[15px] font-semibold", children: biz.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "/terminal", className: "btn btn-accent btn-sm", "aria-label": "Counter terminal", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(LuScanLine, { className: "h-4 w-4", "aria-hidden": "true" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("details", { className: "relative", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("summary", { className: "btn btn-ghost btn-sm list-none", "aria-label": "Menu", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(LuMenu, { className: "h-5 w-5", "aria-hidden": "true" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "absolute right-0 top-full mt-2 w-64 rounded-[14px] border border-beige bg-paper p-2 shadow-xl", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("header", { className: "sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-beige bg-paper/95 px-4 backdrop-blur lg:hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(CafeMark, { name: biz.name, logoUrl: logo, colour: biz.primaryColour, size: 30 }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { className: "min-w-0 flex-1 truncate text-[15px] font-semibold", children: biz.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("a", { href: "/terminal", className: "btn btn-accent btn-sm", "aria-label": "Counter terminal", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LuScanLine, { className: "h-4 w-4", "aria-hidden": "true" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("details", { className: "relative", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("summary", { className: "btn btn-ghost btn-sm list-none", "aria-label": "Menu", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LuMenu, { className: "h-5 w-5", "aria-hidden": "true" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "absolute right-0 top-full mt-2 w-64 rounded-[14px] border border-beige bg-paper p-2 shadow-xl", children: [
               navList,
-              /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "mt-2 border-t border-beige pt-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "/account", className: "block rounded-lg px-3 py-2 text-[14px] hover:bg-sand", children: "Account settings" }),
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Form, { action: "/sign-out", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("button", { className: "block w-full rounded-lg px-3 py-2 text-left text-[14px] hover:bg-sand", type: "submit", children: "Sign out" }) })
+              /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "mt-2 border-t border-beige pt-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("a", { href: "/account", className: "block rounded-lg px-3 py-2 text-[14px] hover:bg-sand", children: "Account settings" }),
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Form, { action: "/sign-out", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("button", { className: "block w-full rounded-lg px-3 py-2 text-left text-[14px] hover:bg-sand", type: "submit", children: "Sign out" }) })
               ] })
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("main", { className: cn("mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8", wide ? "max-w-[1320px]" : "max-w-[1180px]"), children: [
-          biz.status === "suspended" && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "mb-5", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Alert, { tone: "error", title: "This caf\xE9 account is suspended", children: "Customers can\u2019t join or collect rewards and the counter terminal is disabled. Contact Perkora support to restore access." }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(FlashMessage, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("main", { className: cn("mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8", wide ? "max-w-[1320px]" : "max-w-[1180px]"), children: [
+          biz.status === "suspended" && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "mb-5", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Alert, { tone: "error", title: "This caf\xE9 account is suspended", children: "Customers can\u2019t join or collect rewards and the counter terminal is disabled. Contact Perkora support to restore access." }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FlashMessage, {}),
           children
         ] })
       ] })
@@ -31800,18 +32300,18 @@ function DashboardLayout({ biz, active, children, wide }) {
   ] });
 }
 function CafeSwitcher({ biz }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(Form, { action: "/dashboard/switch", className: "px-3 pb-3", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("label", { className: "sr-only", htmlFor: "switch-cafe", children: "Switch caf\xE9" }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("select", { id: "switch-cafe", name: "business_id", className: "select dash-label text-[14px]", defaultValue: biz.id, "data-autosubmit": "1", children: biz.memberships.map((m) => /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("option", { value: m.id, children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(Form, { action: "/dashboard/switch", className: "px-3 pb-3", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { className: "sr-only", htmlFor: "switch-cafe", children: "Switch caf\xE9" }),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("select", { id: "switch-cafe", name: "business_id", className: "select dash-label text-[14px]", defaultValue: biz.id, "data-autosubmit": "1", children: biz.memberships.map((m) => /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("option", { value: m.id, children: [
       m.name,
       " (",
       m.role,
       ")"
     ] }, m.id)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("button", { className: "btn btn-secondary btn-sm dash-label mt-2 w-full", type: "submit", children: "Switch caf\xE9" })
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("button", { className: "btn btn-secondary btn-sm dash-label mt-2 w-full", type: "submit", children: "Switch caf\xE9" })
   ] });
 }
-var import_jsx_runtime34;
+var import_jsx_runtime37;
 var init_DashboardLayout = __esm({
   "src/ui/layouts/DashboardLayout.tsx"() {
     "use strict";
@@ -31822,7 +32322,7 @@ var init_DashboardLayout = __esm({
     init_Island();
     init_guards();
     init_cn();
-    import_jsx_runtime34 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime37 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -31833,21 +32333,21 @@ function RangeFilter({ range: range2, base }) {
     ["30", "Last 30 days"],
     ["90", "Last 90 days"]
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "flex flex-wrap items-center gap-2", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "inline-flex rounded-[10px] border border-beige-strong bg-paper p-0.5", role: "group", "aria-label": "Date range", children: opts.map(([k, label]) => /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("a", { href: `${base}?range=${k}`, "aria-current": range2.key === k ? "true" : void 0, className: cn("rounded-[8px] px-3 py-1.5 text-[13.5px] font-medium", range2.key === k ? "bg-espresso text-cream" : "text-muted-ink hover:text-ink"), children: label }, k)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("details", { className: "relative", open: range2.key === "custom" ? true : void 0, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("summary", { className: cn("btn btn-sm list-none", range2.key === "custom" ? "btn-primary" : "btn-secondary"), children: "Custom range" }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("form", { method: "get", action: base, className: "absolute right-0 z-20 mt-2 flex w-[290px] flex-col gap-3 rounded-[14px] border border-beige bg-paper p-4 shadow-xl sm:left-0 sm:right-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("input", { type: "hidden", name: "range", value: "custom" }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("label", { className: "text-[13px] font-medium", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex flex-wrap items-center gap-2", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "inline-flex rounded-[10px] border border-beige-strong bg-paper p-0.5", role: "group", "aria-label": "Date range", children: opts.map(([k, label]) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: `${base}?range=${k}`, "aria-current": range2.key === k ? "true" : void 0, className: cn("rounded-[8px] px-3 py-1.5 text-[13.5px] font-medium", range2.key === k ? "bg-espresso text-cream" : "text-muted-ink hover:text-ink"), children: label }, k)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("details", { className: "relative", open: range2.key === "custom" ? true : void 0, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("summary", { className: cn("btn btn-sm list-none", range2.key === "custom" ? "btn-primary" : "btn-secondary"), children: "Custom range" }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("form", { method: "get", action: base, className: "absolute right-0 z-20 mt-2 flex w-[290px] flex-col gap-3 rounded-[14px] border border-beige bg-paper p-4 shadow-xl sm:left-0 sm:right-auto", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "hidden", name: "range", value: "custom" }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "text-[13px] font-medium", children: [
           "From",
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("input", { type: "date", name: "from", defaultValue: range2.from, className: "input mt-1", required: true })
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "date", name: "from", defaultValue: range2.from, className: "input mt-1", required: true })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("label", { className: "text-[13px] font-medium", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "text-[13px] font-medium", children: [
           "To",
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("input", { type: "date", name: "to", defaultValue: range2.to, className: "input mt-1", required: true })
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "date", name: "to", defaultValue: range2.to, className: "input mt-1", required: true })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("button", { className: "btn btn-primary btn-sm", type: "submit", children: "Apply" })
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { className: "btn btn-primary btn-sm", type: "submit", children: "Apply" })
       ] })
     ] })
   ] });
@@ -31867,19 +32367,19 @@ function seriesPoints(series, key, tz) {
 function MetricHelp({ k }) {
   const def = METRIC_DEFINITIONS[k];
   if (!def) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("span", { className: "group relative ml-1 inline-flex align-middle", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("button", { type: "button", className: "text-muted hover:text-ink", "aria-label": `How this is calculated: ${def}`, children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuInfo, { className: "h-3.5 w-3.5", "aria-hidden": "true" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { role: "tooltip", className: "pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-64 -translate-x-1/2 rounded-[10px] bg-coffee px-3 py-2 text-[12.5px] leading-snug text-cream shadow-lg group-hover:block group-focus-within:block", children: def })
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { className: "group relative ml-1 inline-flex align-middle", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { type: "button", className: "text-muted hover:text-ink", "aria-label": `How this is calculated: ${def}`, children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(LuInfo, { className: "h-3.5 w-3.5", "aria-hidden": "true" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { role: "tooltip", className: "pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-64 -translate-x-1/2 rounded-[10px] bg-coffee px-3 py-2 text-[12.5px] leading-snug text-cream shadow-lg group-hover:block group-focus-within:block", children: def })
   ] });
 }
 function MetricTile({ label, k, value, hint }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "card px-5 py-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("p", { className: "text-[13px] text-muted-ink", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "card px-5 py-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("p", { className: "text-[13px] text-muted-ink", children: [
       label,
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricHelp, { k })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricHelp, { k })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "mt-1 font-display text-[28px] font-semibold leading-tight tnum", children: value }),
-    hint && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "mt-0.5 text-[12.5px] text-muted-ink", children: hint })
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "mt-1 font-display text-[28px] font-semibold leading-tight tnum", children: value }),
+    hint && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "mt-0.5 text-[12.5px] text-muted-ink", children: hint })
   ] });
 }
 function OverviewPage({ biz, range: range2, m, series, activity, insights: insights2, hasMembers }) {
@@ -31892,31 +32392,31 @@ function OverviewPage({ biz, range: range2, m, series, activity, insights: insig
     { href: "/dashboard/campaigns/new", label: "Create campaign", Icon: LuMegaphone },
     { href: "/dashboard/settings/qr", label: "Download QR code", Icon: LuQrCode }
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(DashboardLayout, { biz, active: "overview", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(PageHeader, { title: "Overview", description: `How ${biz.name}\u2019s loyalty programme is doing.`, actions: hasMembers ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(RangeFilter, { range: range2, base: "/dashboard" }) : void 0 }),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "mb-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5", children: quick.map(({ href, label: label2, Icon }) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("a", { href, className: "card flex items-center gap-2.5 px-3.5 py-3 text-[14px] font-medium hover:border-beige-strong", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Icon, { className: "h-4 w-4", "aria-hidden": "true" }) }),
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(DashboardLayout, { biz, active: "overview", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(PageHeader, { title: "Overview", description: `How ${biz.name}\u2019s loyalty programme is doing.`, actions: hasMembers ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(RangeFilter, { range: range2, base: "/dashboard" }) : void 0 }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "mb-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5", children: quick.map(({ href, label: label2, Icon }) => /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("a", { href, className: "card flex items-center gap-2.5 px-3.5 py-3 text-[14px] font-medium hover:border-beige-strong", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Icon, { className: "h-4 w-4", "aria-hidden": "true" }) }),
       label2
     ] }, href)) }),
-    !hasMembers ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+    !hasMembers ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       EmptyState,
       {
-        icon: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuQrCode, { className: "h-6 w-6", "aria-hidden": "true" }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(LuQrCode, { className: "h-6 w-6", "aria-hidden": "true" }),
         title: "Your loyalty programme is ready.",
         body: "Invite your first customers to start seeing activity here. Print your QR code and place it by the till; customers scan it to join.",
-        action: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("a", { href: "/dashboard/settings/qr", className: "btn btn-primary", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+        action: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("a", { href: "/dashboard/settings/qr", className: "btn btn-primary", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
           " Download QR code"
         ] })
       }
-    ) }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Loyalty members", k: "totalMembers", value: num2(m.totalMembers), hint: "today" }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Active members", k: "activeMembers", value: num2(m.activeMembers), hint: `visited in ${biz.settings.inactivityDays} days` }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Verified visits", k: "visits", value: num2(m.visits), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Rewards redeemed", k: "rewardsRedeemed", value: num2(m.rewardsRedeemed), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "New members", k: "newMembers", value: num2(m.newMembers), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+    ) }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Loyalty members", k: "totalMembers", value: num2(m.totalMembers), hint: "today" }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Active members", k: "activeMembers", value: num2(m.activeMembers), hint: `visited in ${biz.settings.inactivityDays} days` }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Verified visits", k: "visits", value: num2(m.visits), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Rewards redeemed", k: "rewardsRedeemed", value: num2(m.rewardsRedeemed), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "New members", k: "newMembers", value: num2(m.newMembers), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
           MetricTile,
           {
             label: "Returning members",
@@ -31926,39 +32426,39 @@ function OverviewPage({ biz, range: range2, m, series, activity, insights: insig
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mt-5 grid gap-4 xl:grid-cols-[1.4fr_1fr]", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Customer activity", description: "Verified visits per day" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(BarChart, { ariaLabel: "Verified visits over time", data: seriesPoints(series, "visits", tz), color: "#3B2925" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-5 grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_1fr]", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Customer activity", description: "Verified visits per day" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(BarChart, { ariaLabel: "Verified visits over time", data: seriesPoints(series, "visits", tz), color: "#3B2925" }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Insights", description: "Written from your own data." }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("ul", { className: "divide-y divide-beige px-5 pb-3", children: [
-            insights2.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("li", { className: "py-3 text-[14px] text-muted-ink", children: "Insights appear once there is more activity." }),
-            insights2.slice(0, 5).map((i, n) => /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("li", { className: "py-3 text-[14.5px]", children: i.href ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("a", { href: i.href, className: "hover:underline", children: i.text }) : i.text }, n))
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Insights", description: "Written from your own data." }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("ul", { className: "divide-y divide-beige px-5 pb-3", children: [
+            insights2.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { className: "py-3 text-[14px] text-muted-ink", children: "Insights appear once there is more activity." }),
+            insights2.slice(0, 5).map((i, n) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { className: "py-3 text-[14.5px]", children: i.href ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: i.href, className: "hover:underline", children: i.text }) : i.text }, n))
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mt-4 grid gap-4 lg:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "New members", description: "Loyalty enrolments per day" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(AreaChart, { ariaLabel: "New members over time", data: seriesPoints(series, "joins", tz), color: "#87947A" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "New members", description: "Loyalty enrolments per day" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(AreaChart, { ariaLabel: "New members over time", data: seriesPoints(series, "joins", tz), color: "#87947A" }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Rewards redeemed", description: "Redemptions per day" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(BarChart, { ariaLabel: "Rewards redeemed over time", data: seriesPoints(series, "redemptions", tz), color: "#B86F52" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Rewards redeemed", description: "Redemptions per day" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(BarChart, { ariaLabel: "Rewards redeemed over time", data: seriesPoints(series, "redemptions", tz), color: "#B86F52" }) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { className: "mt-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Recent activity", action: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("a", { href: "/dashboard/transactions", className: "text-[13.5px] link", children: "All transactions" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: activity.map((a, i) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("li", { className: "flex items-center gap-3 py-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: cn("h-2 w-2 shrink-0 rounded-full", a.kind === "joined" ? "bg-sage" : a.kind === "redeemed" ? "bg-terracotta" : a.kind === "reward" ? "bg-warning" : a.kind === "reversal" ? "bg-error" : "bg-espresso"), "aria-hidden": "true" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("p", { className: "min-w-0 flex-1 truncate text-[14.5px]", children: [
-            a.who && (a.membershipId ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("a", { href: `/dashboard/customers/${a.membershipId}`, className: "font-medium hover:underline", children: shortName(a.who) }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "font-medium", children: shortName(a.who) })),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { className: "mt-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Recent activity", action: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: "/dashboard/transactions", className: "text-[13.5px] link", children: "All transactions" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: activity.map((a, i) => /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: "flex items-center gap-3 py-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: cn("h-2 w-2 shrink-0 rounded-full", a.kind === "joined" ? "bg-sage" : a.kind === "redeemed" ? "bg-terracotta" : a.kind === "reward" ? "bg-warning" : a.kind === "reversal" ? "bg-error" : "bg-espresso"), "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("p", { className: "min-w-0 flex-1 truncate text-[14.5px]", children: [
+            a.who && (a.membershipId ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: `/dashboard/customers/${a.membershipId}`, className: "font-medium hover:underline", children: shortName(a.who) }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-medium", children: shortName(a.who) })),
             a.who ? " \u2014 " : "",
             a.text
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("time", { className: "shrink-0 text-[12.5px] text-muted-ink", dateTime: new Date(a.at).toISOString(), children: relative(a.at) })
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("time", { className: "shrink-0 text-[12.5px] text-muted-ink", dateTime: new Date(a.at).toISOString(), children: relative(a.at) })
         ] }, i)) })
       ] })
     ] })
@@ -31968,59 +32468,59 @@ function AnalyticsPage({ biz, range: range2, m, d, series, segments, top, campai
   const tz = biz.timezone;
   const label = range2.key === "custom" ? "in range" : `last ${range2.days} days`;
   const hasData = m.totalMembers > 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(DashboardLayout, { biz, active: "analytics", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(DashboardLayout, { biz, active: "analytics", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       PageHeader,
       {
         title: "Analytics",
         description: "Loyalty programme activity from your own records. Hover the \u24D8 icons for each definition.",
-        actions: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(RangeFilter, { range: range2, base: "/dashboard/analytics" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/analytics/export.csv?range=${range2.key}&from=${range2.from}&to=${range2.to}`, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+        actions: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(RangeFilter, { range: range2, base: "/dashboard/analytics" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/analytics/export.csv?range=${range2.key}&from=${range2.from}&to=${range2.to}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Export CSV"
           ] })
         ] })
       }
     ),
-    !hasData ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(LuQrCode, { className: "h-6 w-6" }), title: "No data yet", body: "Analytics appear once customers join and staff record visits." }) }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "grid grid-cols-2 gap-3 lg:grid-cols-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Enrolled members", k: "totalMembers", value: num2(m.totalMembers), hint: "today" }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "New members", k: "newMembers", value: num2(m.newMembers), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Active members", k: "activeMembers", value: num2(m.activeMembers), hint: `last ${biz.settings.inactivityDays} days` }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Verified visits", k: "visits", value: num2(m.visits), hint: `${num2(m.uniqueVisitors)} unique members` }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Stamps issued", k: "stampsIssued", value: num2(d.stampsIssued), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Points issued", k: "pointsIssued", value: num2(d.pointsIssued), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Rewards unlocked", k: "rewardsIssued", value: num2(d.rewardsIssued), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Rewards redeemed", k: "rewardsRedeemed", value: num2(m.rewardsRedeemed), hint: label }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Redemption rate", k: "redemptionRate", value: d.redemptionRate === null ? "\u2014" : pct(d.redemptionRate), hint: d.redemptionRate === null ? "no rewards issued yet" : `${d.rewardsIssuedRedeemed} of ${d.rewardsIssued} used` }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Returning members", k: "returningRate", value: m.returningRate === null ? "\u2014" : pct(m.returningRate), hint: m.returningRate === null ? "needs 5+ visiting members" : `of ${m.returningDenominator} who visited` }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(MetricTile, { label: "Visits per visiting member", k: "visits", value: d.avgVisitsPerVisitor === null ? "\u2014" : d.avgVisitsPerVisitor.toFixed(1), hint: label })
+    !hasData ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(LuQrCode, { className: "h-6 w-6" }), title: "No data yet", body: "Analytics appear once customers join and staff record visits." }) }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-2 gap-3 lg:grid-cols-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Enrolled members", k: "totalMembers", value: num2(m.totalMembers), hint: "today" }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "New members", k: "newMembers", value: num2(m.newMembers), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Active members", k: "activeMembers", value: num2(m.activeMembers), hint: `last ${biz.settings.inactivityDays} days` }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Verified visits", k: "visits", value: num2(m.visits), hint: `${num2(m.uniqueVisitors)} unique members` }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Stamps issued", k: "stampsIssued", value: num2(d.stampsIssued), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Points issued", k: "pointsIssued", value: num2(d.pointsIssued), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Rewards unlocked", k: "rewardsIssued", value: num2(d.rewardsIssued), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Rewards redeemed", k: "rewardsRedeemed", value: num2(m.rewardsRedeemed), hint: label }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Redemption rate", k: "redemptionRate", value: d.redemptionRate === null ? "\u2014" : pct(d.redemptionRate), hint: d.redemptionRate === null ? "no rewards issued yet" : `${d.rewardsIssuedRedeemed} of ${d.rewardsIssued} used` }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Returning members", k: "returningRate", value: m.returningRate === null ? "\u2014" : pct(m.returningRate), hint: m.returningRate === null ? "needs 5+ visiting members" : `of ${m.returningDenominator} who visited` }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(MetricTile, { label: "Visits per visiting member", k: "visits", value: d.avgVisitsPerVisitor === null ? "\u2014" : d.avgVisitsPerVisitor.toFixed(1), hint: label })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mt-5 grid gap-4 lg:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Verified visits" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(BarChart, { ariaLabel: "Verified visits over time", data: seriesPoints(series, "visits", tz) }) })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Verified visits" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "px-4 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(BarChart, { ariaLabel: "Verified visits over time", data: seriesPoints(series, "visits", tz) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Rewards unlocked vs redeemed" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "grid gap-2 px-4 pb-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(AreaChart, { ariaLabel: "Rewards unlocked over time", data: seriesPoints(series, "issued", tz), color: "#C18A35", height: 120 }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(BarChart, { ariaLabel: "Rewards redeemed over time", data: seriesPoints(series, "redemptions", tz), color: "#B86F52", height: 120 })
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Rewards unlocked vs redeemed" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid gap-2 px-4 pb-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(AreaChart, { ariaLabel: "Rewards unlocked over time", data: seriesPoints(series, "issued", tz), color: "#C18A35", height: 120 }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(BarChart, { ariaLabel: "Rewards redeemed over time", data: seriesPoints(series, "redemptions", tz), color: "#B86F52", height: 120 })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mt-4 grid gap-4 lg:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Most redeemed rewards", description: label }),
-          top.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No redemptions in this period." }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: top.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("li", { className: "flex justify-between py-3 text-[14.5px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { children: r2.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "font-semibold tnum", children: r2.redeemed })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Most redeemed rewards", description: label }),
+          top.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No redemptions in this period." }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: top.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: "flex justify-between py-3 text-[14.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: r2.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-semibold tnum", children: r2.redeemed })
           ] }, r2.name)) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Customer segments", description: "Current counts" }),
-          segments ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Customer segments", description: "Current counts" }),
+          segments ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: [
             ["new", "New members"],
             ["active", "Active"],
             ["frequent", "Frequent visitors"],
@@ -32028,38 +32528,38 @@ function AnalyticsPage({ biz, range: range2, m, d, series, segments, top, campai
             ["unused_rewards", "Holding unused rewards"],
             ["inactive", "Not visited recently"],
             ["no_visits", "Joined, no visit yet"]
-          ].map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("li", { className: "flex justify-between py-2.5 text-[14.5px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("a", { href: `/dashboard/customers?segment=${k}`, className: "hover:underline", children: l }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "font-semibold tnum", children: segments[k] })
-          ] }, k)) }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "Customer segmentation is included in the Premium plan." })
+          ].map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: "flex justify-between py-2.5 text-[14.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: `/dashboard/customers?segment=${k}`, className: "hover:underline", children: l }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-semibold tnum", children: segments[k] })
+          ] }, k)) }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "Customer segmentation is included in the Premium plan." })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(Card, { className: "mt-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CardHeader, { title: "Campaign performance", description: "Only events Perkora records are shown: views inside the card, rewards issued, bonuses and redemptions." }),
-        campaigns.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No campaigns yet." }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("table", { className: "table", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("tr", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("th", { children: "Campaign" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("th", { children: "Status" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("th", { className: "text-right", children: "Viewed by" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("th", { className: "text-right", children: "Rewards issued" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("th", { className: "text-right", children: "Bonuses" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("th", { className: "text-right", children: "Redeemed" })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Card, { className: "mt-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CardHeader, { title: "Campaign performance", description: "Only events Perkora records are shown: views inside the card, rewards issued, bonuses and redemptions." }),
+        campaigns.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No campaigns yet." }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("table", { className: "table", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("th", { children: "Campaign" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("th", { children: "Status" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("th", { className: "text-right", children: "Viewed by" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("th", { className: "text-right", children: "Rewards issued" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("th", { className: "text-right", children: "Bonuses" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("th", { className: "text-right", children: "Redeemed" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("tbody", { children: campaigns.map((c) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("tr", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("a", { href: `/dashboard/campaigns/${c.id}`, className: "font-medium hover:underline", children: c.name }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("td", { className: "capitalize", children: c.status }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("td", { className: "text-right tnum", children: c.viewers }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("td", { className: "text-right tnum", children: c.vouchers_issued + c.referrals_qualified }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("td", { className: "text-right tnum", children: c.bonuses }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("td", { className: "text-right tnum", children: c.redeemed })
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("tbody", { children: campaigns.map((c) => /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: `/dashboard/campaigns/${c.id}`, className: "font-medium hover:underline", children: c.name }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("td", { className: "capitalize", children: c.status }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("td", { className: "text-right tnum", children: c.viewers }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("td", { className: "text-right tnum", children: c.vouchers_issued + c.referrals_qualified }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("td", { className: "text-right tnum", children: c.bonuses }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("td", { className: "text-right tnum", children: c.redeemed })
           ] }, c.id)) })
         ] }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: "Perkora does not see your till, so it cannot measure revenue. These figures describe loyalty members only, not every customer who visits your caf\xE9." })
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: "Perkora does not see your till, so it cannot measure revenue. These figures describe loyalty members only, not every customer who visits your caf\xE9." })
     ] })
   ] });
 }
-var import_jsx_runtime35;
+var import_jsx_runtime38;
 var init_Overview = __esm({
   "src/ui/pages/dashboard/Overview.tsx"() {
     "use strict";
@@ -32070,7 +32570,7 @@ var init_Overview = __esm({
     init_analytics();
     init_format();
     init_cn();
-    import_jsx_runtime35 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime38 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -32083,87 +32583,88 @@ function CustomersPage({ biz, rows, total, page, pageSize, q, segment, sort, seg
     const s = p.toString();
     return `/dashboard/customers${s ? "?" + s : ""}`;
   };
-  const sortLink = (key, label) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("a", { href: qs({ sort: key, page: 1 }), className: cn("hover:text-ink", sort === key && "text-ink underline underline-offset-4"), children: label });
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(DashboardLayout, { biz, active: "customers", wide: true, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+  const sortLink = (key, label) => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("a", { href: qs({ sort: key, page: 1 }), className: cn("hover:text-ink", sort === key && "text-ink underline underline-offset-4"), children: label });
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(DashboardLayout, { biz, active: "customers", wide: true, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
       PageHeader,
       {
         title: "Customers",
         description: `${num2(total)} ${segment === "all" && !q ? "loyalty members" : "matching members"}`,
-        actions: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(import_jsx_runtime36.Fragment, { children: [
-          biz.role === "owner" && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/customers/export.csv?${new URLSearchParams({ q, segment }).toString()}`, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+        actions: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
+          biz.role === "owner" && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/customers/export.csv?${new URLSearchParams({ q, segment }).toString()}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Export CSV"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("a", { className: "btn btn-primary btn-sm", href: "/dashboard/customers/new", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(LuUserPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("a", { className: "btn btn-primary btn-sm", href: "/dashboard/customers/new", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LuUserPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Add customer"
           ] })
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("form", { method: "get", action: "/dashboard/customers", className: "flex flex-col gap-3 border-b border-beige p-4 sm:flex-row sm:items-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "relative flex-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(LuSearch, { className: "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted", "aria-hidden": "true" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("input", { name: "q", defaultValue: q, placeholder: showContacts ? "Search name, email, phone or member code" : "Search name or member code", className: "input pl-9", "aria-label": "Search customers" })
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("form", { method: "get", action: "/dashboard/customers", className: "flex flex-col gap-3 border-b border-beige p-4 sm:flex-row sm:items-center", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "relative flex-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LuSearch, { className: "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted", "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { name: "q", defaultValue: q, placeholder: showContacts ? "Search name, email, phone or member code" : "Search name or member code", className: "input pl-9", "aria-label": "Search customers" })
         ] }),
-        segmentsAllowed ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("select", { name: "segment", defaultValue: segment, className: "select sm:w-56", "aria-label": "Segment", children: SEGMENT_OPTIONS.map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("option", { value: k, children: l }, k)) }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("select", { name: "segment", defaultValue: segment, className: "select sm:w-56", "aria-label": "Segment", children: SEGMENT_OPTIONS.filter(([k]) => ["all", "new", "no_visits"].includes(k)).map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("option", { value: k, children: l }, k)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("input", { type: "hidden", name: "sort", value: sort }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Button, { variant: "secondary", size: "sm", children: "Apply" })
+        segmentsAllowed ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("select", { name: "segment", defaultValue: segment, className: "select sm:w-56", "aria-label": "Segment", children: SEGMENT_OPTIONS.map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("option", { value: k, children: l }, k)) }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("select", { name: "segment", defaultValue: segment, className: "select sm:w-56", "aria-label": "Segment", children: SEGMENT_OPTIONS.filter(([k]) => ["all", "new", "no_visits"].includes(k)).map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("option", { value: k, children: l }, k)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { type: "hidden", name: "sort", value: sort }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Button, { variant: "secondary", size: "sm", children: "Apply" })
       ] }),
-      segment !== "all" && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "border-b border-beige bg-sand/50 px-4 py-2 text-[13px] text-muted-ink", children: segmentHelp }),
-      rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+      segment !== "all" && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "border-b border-beige bg-sand/50 px-4 py-2 text-[13px] text-muted-ink", children: segmentHelp }),
+      rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
         EmptyState,
         {
-          icon: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(LuUsers, { className: "h-6 w-6" }),
+          icon: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LuUsers, { className: "h-6 w-6" }),
           title: q || segment !== "all" ? "No members match" : "No members yet",
           body: q || segment !== "all" ? "Try a different search or segment." : "Customers appear here when they join with your QR code or you add them."
         }
-      ) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("table", { className: "table", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { children: sortLink("name", "Customer") }),
-          showContacts && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { children: "Contact" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { children: sortLink("joined", "Joined") }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { children: "Balance" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { children: sortLink("recent", "Last visit") }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { className: "text-right", children: sortLink("visits", "Visits") }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { className: "text-right", children: "Rewards" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("th", { children: "Status" })
+      ) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("table", { className: "table", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { children: sortLink("name", "Customer") }),
+          showContacts && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { className: "col-wide", children: "Contact" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { className: "col-wide", children: sortLink("joined", "Joined") }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { children: "Balance" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { className: "col-wide", children: sortLink("recent", "Last visit") }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { className: "text-right", children: sortLink("visits", "Visits") }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { className: "col-wide text-right", children: "Rewards" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("th", { className: "col-wide", children: "Status" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("tbody", { children: rows.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("td", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("a", { href: `/dashboard/customers/${r2.id}`, className: "font-medium hover:underline", children: r2.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "text-[12px] text-muted-ink tnum", children: formatMemberCode(r2.member_code) })
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("tbody", { children: rows.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("td", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("a", { href: `/dashboard/customers/${r2.id}`, className: "font-medium hover:underline", children: r2.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-[12px] text-muted-ink tnum", children: formatMemberCode(r2.member_code) }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-[12px] text-muted-ink md:hidden", children: r2.last_visit_at ? relative(r2.last_visit_at) : "No visit yet" })
           ] }),
-          showContacts && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("td", { className: "text-[13.5px] text-muted-ink", children: [
-            r2.email && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "max-w-[220px] truncate", children: r2.email }),
-            r2.phone && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { children: r2.phone }),
+          showContacts && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("td", { className: "col-wide text-[13.5px] text-muted-ink", children: [
+            r2.email && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "max-w-[220px] truncate", children: r2.email }),
+            r2.phone && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { children: r2.phone }),
             !r2.email && !r2.phone && "\u2014"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("td", { className: "whitespace-nowrap text-muted-ink", children: dateShort(r2.joined_at, tz) }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("td", { className: "whitespace-nowrap tnum", children: r2.balances ?? "\u2014" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("td", { className: "whitespace-nowrap text-muted-ink", children: r2.last_visit_at ? relative(r2.last_visit_at) : "No visit yet" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("td", { className: "text-right tnum", children: r2.visit_count }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("td", { className: "text-right", children: r2.rewards > 0 ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Badge, { tone: "accent", children: r2.rewards }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text-muted", children: "0" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Badge, { tone: r2.status === "active" ? "success" : "neutral", children: r2.status }) })
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("td", { className: "col-wide whitespace-nowrap text-muted-ink", children: dateShort(r2.joined_at, tz) }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("td", { className: "whitespace-nowrap tnum", children: r2.balances ?? "\u2014" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("td", { className: "col-wide whitespace-nowrap text-muted-ink", children: r2.last_visit_at ? relative(r2.last_visit_at) : "No visit yet" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("td", { className: "text-right tnum", children: r2.visit_count }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("td", { className: "col-wide text-right", children: r2.rewards > 0 ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Badge, { tone: "accent", children: r2.rewards }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "text-muted", children: "0" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("td", { className: "col-wide", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Badge, { tone: r2.status === "active" ? "success" : "neutral", children: r2.status }) })
         ] }, r2.id)) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Pagination, { page, pageSize, total, hrefFor: (p) => qs({ page: p }) })
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Pagination, { page, pageSize, total, hrefFor: (p) => qs({ page: p }) })
     ] })
   ] });
 }
 function CustomerNewPage({ biz, values = {}, errors = {} }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(DashboardLayout, { biz, active: "customers", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(PageHeader, { title: "Add customer", back: { href: "/dashboard/customers", label: "Customers" }, description: "Register a customer at the counter. They can attach this membership to their own account later with a claim link." }),
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Card, { className: "max-w-2xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Form, { action: "/dashboard/customers/new", className: "grid gap-5", noValidate: true, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Field, { label: "Name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Input, { name: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Field, { label: "Email", name: "email", optional: true, error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Input, { name: "email", type: "email", maxLength: 254, defaultValue: values.email, error: errors.email }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Field, { label: "Phone", name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Input, { name: "phone", type: "tel", maxLength: 40, defaultValue: values.phone, error: errors.phone }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(DashboardLayout, { biz, active: "customers", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(PageHeader, { title: "Add customer", back: { href: "/dashboard/customers", label: "Customers" }, description: "Register a customer at the counter. They can attach this membership to their own account later with a claim link." }),
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Card, { className: "max-w-2xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Form, { action: "/dashboard/customers/new", className: "grid gap-5", noValidate: true, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Input, { name: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Email", name: "email", optional: true, error: errors.email, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Input, { name: "email", type: "email", maxLength: 254, defaultValue: values.email, error: errors.email }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Phone", name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Input, { name: "phone", type: "tel", maxLength: 40, defaultValue: values.phone, error: errors.phone }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Checkbox, { name: "marketing", value: "1", defaultChecked: values.marketing === "1", label: "The customer agreed to receive offers from us", hint: "Only tick this if the customer said yes. It is optional and does not affect their stamps or rewards." }),
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Button, { children: "Add customer" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Checkbox, { name: "marketing", value: "1", defaultChecked: values.marketing === "1", label: "The customer agreed to receive offers from us", hint: "Only tick this if the customer said yes. It is optional and does not affect their stamps or rewards." }),
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Button, { children: "Add customer" }) })
     ] }) })
   ] });
 }
@@ -32172,38 +32673,38 @@ function CustomerDetailPage({ biz, view, visits, referral, campaigns, claimLink,
   const m = view.membership;
   const canAdjust = can(biz, "adjust_balances");
   const available = view.vouchers.filter((v) => v.status === "available");
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(DashboardLayout, { biz, active: "customers", wide: true, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(DashboardLayout, { biz, active: "customers", wide: true, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
       PageHeader,
       {
         title: view.customer.name,
         back: { href: "/dashboard/customers", label: "Customers" },
         description: `Member ${formatMemberCode(m.memberCode)} \xB7 joined ${dateShort(m.joinedAt, tz)} \xB7 ${m.visitCount} verified visit${m.visitCount === 1 ? "" : "s"}`,
-        actions: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("a", { href: `/terminal?m=${m.id}`, className: "btn btn-primary btn-sm", children: "Open in terminal" })
+        actions: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("a", { href: `/terminal?m=${m.id}`, className: "btn btn-primary btn-sm", children: "Open in terminal" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "grid gap-4 xl:grid-cols-[1fr_380px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "grid gap-3 sm:grid-cols-2", children: view.programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-[13px] text-muted-ink", children: p.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("p", { className: "mt-1 font-display text-[30px] font-semibold tnum", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-2", children: view.programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "text-[13px] text-muted-ink", children: p.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("p", { className: "mt-1 font-display text-[30px] font-semibold tnum", children: [
             num2(p.balance),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "ml-1 text-[15px] font-normal text-muted-ink", children: p.type === "stamps" ? `/ ${p.config?.stampsRequired} stamps` : "points" })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "ml-1 text-[15px] font-normal text-muted-ink", children: p.type === "stamps" ? `/ ${p.config?.stampsRequired} stamps` : "points" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
             "Earned ",
             num2(p.lifetimeEarned),
             " \xB7 used ",
             num2(p.lifetimeSpent)
           ] })
         ] }, p.id)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(CardHeader, { title: "Rewards", description: `${available.length} ready to use` }),
-          view.vouchers.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No rewards earned yet." }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: view.vouchers.map((v) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("li", { className: "flex flex-wrap items-center gap-3 py-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(LuGift, { className: cn("h-5 w-5", v.status === "available" ? "text-terracotta-ink" : "text-muted"), "aria-hidden": "true" }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "min-w-0 flex-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-[14.5px] font-medium", children: v.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(CardHeader, { title: "Rewards", description: `${available.length} ready to use` }),
+          view.vouchers.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No rewards earned yet." }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("ul", { className: "divide-y divide-beige px-5 pb-2", children: view.vouchers.map((v) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("li", { className: "flex flex-wrap items-center gap-3 py-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LuGift, { className: cn("h-5 w-5", v.status === "available" ? "text-terracotta-ink" : "text-muted"), "aria-hidden": "true" }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "min-w-0 flex-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "text-[14.5px] font-medium", children: v.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
                 v.source.replace("_", " "),
                 " \xB7 issued ",
                 dateShort(v.issuedAt, tz),
@@ -32211,70 +32712,70 @@ function CustomerDetailPage({ biz, view, visits, referral, campaigns, claimLink,
                 v.redeemedAt && ` \xB7 redeemed ${dateShort(v.redeemedAt, tz)}`
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Badge, { tone: v.status === "available" ? "accent" : v.status === "redeemed" ? "success" : "neutral", children: v.status }),
-            v.status === "available" && canAdjust && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Form, { action: `/dashboard/customers/${m.id}/void`, className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("input", { type: "hidden", name: "voucher_id", value: v.id }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("input", { type: "hidden", name: "idempotency_key", value: `void-${v.id}` }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("input", { name: "reason", className: "input h-9 min-h-0 w-40 text-[13px]", placeholder: "Reason", required: true, minLength: 3, "aria-label": "Reason for cancelling" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Button, { variant: "danger-ghost", size: "sm", children: "Cancel reward" })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Badge, { tone: v.status === "available" ? "accent" : v.status === "redeemed" ? "success" : "neutral", children: v.status }),
+            v.status === "available" && canAdjust && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Form, { action: `/dashboard/customers/${m.id}/void`, className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { type: "hidden", name: "voucher_id", value: v.id }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { type: "hidden", name: "idempotency_key", value: `void-${v.id}` }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { name: "reason", className: "input h-9 min-h-0 w-40 text-[13px]", placeholder: "Reason", required: true, minLength: 3, "aria-label": "Reason for cancelling" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Button, { variant: "danger-ghost", size: "sm", children: "Cancel reward" })
             ] })
           ] }, v.id)) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(CardHeader, { title: "Recent transactions", action: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("a", { className: "text-[13.5px] link", href: `/dashboard/transactions?member=${m.id}`, children: "All" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("ul", { className: "divide-y divide-beige px-5 pb-2", children: [
-            view.activity.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("li", { className: "py-3 text-[14px] text-muted-ink", children: "No transactions yet." }),
-            view.activity.map((a) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("li", { className: "flex items-center gap-3 py-2.5", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "min-w-0 flex-1", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "truncate text-[14px]", children: a.description }),
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("p", { className: "text-[12px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(CardHeader, { title: "Recent transactions", action: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("a", { className: "text-[13.5px] link", href: `/dashboard/transactions?member=${m.id}`, children: "All" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("ul", { className: "divide-y divide-beige px-5 pb-2", children: [
+            view.activity.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("li", { className: "py-3 text-[14px] text-muted-ink", children: "No transactions yet." }),
+            view.activity.map((a) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("li", { className: "flex items-center gap-3 py-2.5", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "min-w-0 flex-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "truncate text-[14px]", children: a.description }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("p", { className: "text-[12px] text-muted-ink", children: [
                   a.programmeName ?? "Reward",
                   " \xB7 ",
                   dateTime(a.createdAt, tz)
                 ] })
               ] }),
-              a.delta !== 0 && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: cn("text-[14px] font-semibold tnum", a.delta > 0 ? "text-success" : "text-terracotta-ink"), children: a.delta > 0 ? `+${a.delta}` : a.delta })
+              a.delta !== 0 && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: cn("text-[14px] font-semibold tnum", a.delta > 0 ? "text-success" : "text-terracotta-ink"), children: a.delta > 0 ? `+${a.delta}` : a.delta })
             ] }, a.id))
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h2", { className: "text-[16px] font-semibold", children: "Details" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("dl", { className: "mt-3 space-y-2 text-[14px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Status" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Badge, { tone: m.status === "active" ? "success" : "neutral", children: m.status }) })
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("h2", { className: "text-[16px] font-semibold", children: "Details" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("dl", { className: "mt-3 space-y-2 text-[14px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Status" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Badge, { tone: m.status === "active" ? "success" : "neutral", children: m.status }) })
             ] }),
-            can(biz, "view_customers") && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(import_jsx_runtime36.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { className: "truncate", children: view.customer.email ?? "\u2014" })
+            can(biz, "view_customers") && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { className: "truncate", children: view.customer.email ?? "\u2014" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Phone" }),
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { children: view.customer.phone ?? "\u2014" })
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Phone" }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { children: view.customer.phone ?? "\u2014" })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Marketing" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { children: m.marketingConsent ? "Opted in" : "Not opted in" })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Marketing" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { children: m.marketingConsent ? "Opted in" : "Not opted in" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Account" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { children: hasAccount ? "Self-service account" : "Added at the counter" })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Account" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { children: hasAccount ? "Self-service account" : "Added at the counter" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Last visit" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { children: m.lastVisitAt ? relative(m.lastVisitAt) : "No visit yet" })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Last visit" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { children: m.lastVisitAt ? relative(m.lastVisitAt) : "No visit yet" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Referred by" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dd", { children: referral.referredBy ?? "\u2014" })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Referred by" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dd", { children: referral.referredBy ?? "\u2014" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex justify-between gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("dt", { className: "text-muted-ink", children: "Referrals" }),
-              /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("dd", { className: "tnum", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex justify-between gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("dt", { className: "text-muted-ink", children: "Referrals" }),
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("dd", { className: "tnum", children: [
                 referral.qualified,
                 " qualified / ",
                 referral.referred
@@ -32282,39 +32783,39 @@ function CustomerDetailPage({ biz, view, visits, referral, campaigns, claimLink,
             ] })
           ] })
         ] }),
-        !hasAccount && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h2", { className: "text-[16px] font-semibold", children: "Claim link" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "Let the customer attach this membership to their own Perkora account so they can see their card on their phone. Each link works once and expires after 7 days." }),
-          claimLink ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Island, { name: "CopyField", props: { value: claimLink, copyLabel: "Copy", copiedLabel: "Copied" } }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Form, { action: `/dashboard/customers/${m.id}/claim`, className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Button, { variant: "secondary", size: "sm", children: "Create claim link" }) })
+        !hasAccount && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("h2", { className: "text-[16px] font-semibold", children: "Claim link" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "Let the customer attach this membership to their own Perkora account so they can see their card on their phone. Each link works once and expires after 7 days." }),
+          claimLink ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Island, { name: "CopyField", props: { value: claimLink, copyLabel: "Copy", copiedLabel: "Copied" } }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Form, { action: `/dashboard/customers/${m.id}/claim`, className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Button, { variant: "secondary", size: "sm", children: "Create claim link" }) })
         ] }),
-        canAdjust && view.programmes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h2", { className: "text-[16px] font-semibold", children: "Correct balance" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "For mistakes or moving a paper card across. The change is recorded with your name and reason; nothing is deleted." }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Form, { action: `/dashboard/customers/${m.id}/adjust`, className: "mt-4 grid gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("input", { type: "hidden", name: "idempotency_key", value: `adj-${m.id}-${Date.now()}` }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Field, { label: "Programme", name: "programme_id", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Select, { name: "programme_id", children: view.programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("option", { value: p.id, children: [
+        canAdjust && view.programmes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("h2", { className: "text-[16px] font-semibold", children: "Correct balance" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "For mistakes or moving a paper card across. The change is recorded with your name and reason; nothing is deleted." }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Form, { action: `/dashboard/customers/${m.id}/adjust`, className: "mt-4 grid gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { type: "hidden", name: "idempotency_key", value: `adj-${m.id}-${Date.now()}` }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Programme", name: "programme_id", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Select, { name: "programme_id", children: view.programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("option", { value: p.id, children: [
               p.name,
               " (",
               p.type,
               ")"
             ] }, p.id)) }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Field, { label: "Change", name: "delta", hint: "Use a minus sign to remove, e.g. -2", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Input, { name: "delta", type: "number", step: "1", required: true }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Field, { label: "Reason", name: "reason", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Textarea, { name: "reason", rows: 2, required: true, minLength: 3, maxLength: 200, className: "min-h-[64px]" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Button, { variant: "secondary", size: "sm", children: "Save correction" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Change", name: "delta", hint: "Use a minus sign to remove, e.g. -2", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Input, { name: "delta", type: "number", step: "1", required: true }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Reason", name: "reason", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Textarea, { name: "reason", rows: 2, required: true, minLength: 3, maxLength: 200, className: "min-h-[64px]" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Button, { variant: "secondary", size: "sm", children: "Save correction" }) })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h2", { className: "text-[16px] font-semibold", children: "Visit history" }),
-          visits.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: "No verified visits yet." }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("ul", { className: "mt-2 divide-y divide-beige", children: visits.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("li", { className: "flex justify-between gap-3 py-2 text-[13.5px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { children: dateTime(v.occurred_at, tz) }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text-muted-ink", children: v.staff ?? v.source })
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("h2", { className: "text-[16px] font-semibold", children: "Visit history" }),
+          visits.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: "No verified visits yet." }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("ul", { className: "mt-2 divide-y divide-beige", children: visits.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("li", { className: "flex justify-between gap-3 py-2 text-[13.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { children: dateTime(v.occurred_at, tz) }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "text-muted-ink", children: v.staff ?? v.source })
           ] }, i)) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h2", { className: "text-[16px] font-semibold", children: "Campaign participation" }),
-          campaigns.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: "No recorded campaign activity." }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("ul", { className: "mt-2 divide-y divide-beige", children: campaigns.map((c, i) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("li", { className: "flex justify-between gap-3 py-2 text-[13.5px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "truncate", children: c.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("span", { className: "shrink-0 text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("h2", { className: "text-[16px] font-semibold", children: "Campaign participation" }),
+          campaigns.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: "No recorded campaign activity." }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("ul", { className: "mt-2 divide-y divide-beige", children: campaigns.map((c, i) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("li", { className: "flex justify-between gap-3 py-2 text-[13.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "truncate", children: c.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("span", { className: "shrink-0 text-muted-ink", children: [
               c.event_type.replace("_", " "),
               " \xB7 ",
               dateShort(c.created_at, tz)
@@ -32323,10 +32824,10 @@ function CustomerDetailPage({ biz, view, visits, referral, campaigns, claimLink,
         ] })
       ] })
     ] }),
-    csrfOk === false && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(Alert, { tone: "error", children: "Session expired." })
+    csrfOk === false && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Alert, { tone: "error", children: "Session expired." })
   ] });
 }
-var import_jsx_runtime36, SEGMENT_OPTIONS;
+var import_jsx_runtime39, SEGMENT_OPTIONS;
 var init_Customers = __esm({
   "src/ui/pages/dashboard/Customers.tsx"() {
     "use strict";
@@ -32337,7 +32838,7 @@ var init_Customers = __esm({
     init_guards();
     init_format();
     init_cn();
-    import_jsx_runtime36 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime39 = __toESM(require_jsx_runtime(), 1);
     SEGMENT_OPTIONS = [
       ["all", "All members"],
       ["new", "New members"],
@@ -32360,91 +32861,94 @@ function TransactionsPage({ biz, rows, total, page, pageSize, filters, memberNam
     for (const [k, v] of [...s.entries()]) if (!v || k === "page" && v === "1") s.delete(k);
     return `/dashboard/transactions${s.toString() ? "?" + s : ""}`;
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(DashboardLayout, { biz, active: "transactions", wide: true, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "transactions", wide: true, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
       PageHeader,
       {
         title: "Transactions",
         description: memberName ? `History for ${memberName}` : "Every change to a loyalty balance, newest first. Corrections are added as new rows; nothing is deleted.",
-        actions: can(biz, "view_reports") ? /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/transactions/export.csv?${new URLSearchParams(filters).toString()}`, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+        actions: can(biz, "view_reports") ? /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/transactions/export.csv?${new URLSearchParams(filters).toString()}`, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
           " Export CSV"
         ] }) : void 0
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(Card, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("form", { method: "get", className: "grid gap-3 border-b border-beige p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]", children: [
-        filters.member && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { type: "hidden", name: "member", value: filters.member }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("select", { name: "type", defaultValue: filters.type, className: "select", "aria-label": "Type", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "", children: "All types" }),
-          Object.entries(TYPE_LABEL).map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: k, children: l }, k))
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("form", { method: "get", className: "grid grid-cols-1 gap-3 border-b border-beige p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]", children: [
+        filters.member && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "hidden", name: "member", value: filters.member }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("select", { name: "type", defaultValue: filters.type, className: "select", "aria-label": "Type", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: "", children: "All types" }),
+          Object.entries(TYPE_LABEL).map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: k, children: l }, k))
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { name: "ref", defaultValue: filters.ref, className: "input", placeholder: "Receipt number", "aria-label": "Receipt number" }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { type: "date", name: "from", defaultValue: filters.from, className: "input", "aria-label": "From" }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { type: "date", name: "to", defaultValue: filters.to, className: "input", "aria-label": "To" }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Button, { variant: "secondary", size: "sm", className: "self-center", children: "Filter" })
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { name: "ref", defaultValue: filters.ref, className: "input", placeholder: "Receipt number", "aria-label": "Receipt number" }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "date", name: "from", defaultValue: filters.from, className: "input", "aria-label": "From" }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "date", name: "to", defaultValue: filters.to, className: "input", "aria-label": "To" }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: "secondary", size: "sm", className: "self-center", children: "Filter" })
       ] }),
-      rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LuReceiptText, { className: "h-6 w-6" }), title: "No transactions", body: "Stamps, points and redemptions recorded at the counter appear here." }) : /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("table", { className: "table", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { children: "When" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { children: "Member" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { children: "Type" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { children: "Details" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { className: "text-right", children: "Change" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { className: "text-right", children: "Balance" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { children: "By" }),
-          canFix && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("th", { className: "sr-only", children: "Actions" })
+      rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LuReceiptText, { className: "h-6 w-6" }), title: "No transactions", body: "Stamps, points and redemptions recorded at the counter appear here." }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "relative overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("table", { className: "table", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { className: "col-wide", children: "When" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { children: "Member" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { className: "col-wide", children: "Type" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { children: "Details" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { className: "text-right", children: "Change" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { className: "col-wide text-right", children: "Balance" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { className: "col-wide", children: "By" }),
+          canFix && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { className: "sr-only", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("tbody", { children: rows.map((r2) => {
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("tbody", { children: rows.map((r2) => {
           const delta = r2.stamps_delta || r2.points_delta;
-          return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("tr", { className: cn(r2.reversed && "opacity-60"), children: [
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("td", { className: "whitespace-nowrap text-muted-ink", children: dateTime(r2.created_at, tz) }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("a", { href: `/dashboard/customers/${r2.membership_id}`, className: "font-medium hover:underline", children: r2.customer_name }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("td", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Badge, { tone: r2.transaction_type === "reversal" || r2.transaction_type === "voucher_void" ? "error" : r2.transaction_type === "redeem" ? "accent" : r2.transaction_type === "earn" ? "neutral" : "sage", children: TYPE_LABEL[r2.transaction_type] ?? r2.transaction_type }),
-              r2.reversed && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "ml-1.5 text-[12px] text-error", children: "reversed" }),
-              r2.redemption_status === "reversed" && r2.transaction_type === "redeem" && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "ml-1.5 text-[12px] text-error", children: "reversed" })
+          return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("tr", { className: cn(r2.reversed && "opacity-60"), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { className: "col-wide whitespace-nowrap text-muted-ink", children: dateTime(r2.created_at, tz) }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("td", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: `/dashboard/customers/${r2.membership_id}`, className: "font-medium hover:underline", children: r2.customer_name }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "text-[12px] text-muted-ink md:hidden", children: dateTime(r2.created_at, tz) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("td", { className: "min-w-[220px]", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-[13.5px]", children: r2.description }),
-              /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-[12px] text-muted-ink", children: [r2.programme_name, r2.reference_id && `Receipt ${r2.reference_id}`, r2.purchase_amount_minor !== null && r2.currency && money(r2.purchase_amount_minor, r2.currency), r2.source === "seed" && "demo data"].filter(Boolean).join(" \xB7 ") })
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("td", { className: "col-wide", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Badge, { tone: r2.transaction_type === "reversal" || r2.transaction_type === "voucher_void" ? "error" : r2.transaction_type === "redeem" ? "accent" : r2.transaction_type === "earn" ? "neutral" : "sage", children: TYPE_LABEL[r2.transaction_type] ?? r2.transaction_type }),
+              r2.reversed && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "ml-1.5 text-[12px] text-error", children: "reversed" }),
+              r2.redemption_status === "reversed" && r2.transaction_type === "redeem" && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "ml-1.5 text-[12px] text-error", children: "reversed" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("td", { className: cn("text-right font-semibold tnum", delta > 0 ? "text-success" : delta < 0 ? "text-terracotta-ink" : "text-muted"), children: delta === 0 ? "\u2014" : delta > 0 ? `+${delta}` : delta }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("td", { className: "text-right tnum text-muted-ink", children: r2.balance_after ?? "\u2014" }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("td", { className: "whitespace-nowrap text-[13px] text-muted-ink", children: r2.actor_name ?? (r2.source === "campaign" || r2.source === "system" ? "Automatic" : "\u2014") }),
-            canFix && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("td", { className: "whitespace-nowrap", children: [
-              REVERSIBLE2.includes(r2.transaction_type) && !r2.reversed && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("details", { className: "relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("summary", { className: "btn btn-ghost btn-sm list-none text-[13px]", children: "Reverse\u2026" }),
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(Form, { action: `/dashboard/transactions/${r2.id}/reverse`, className: "absolute right-0 z-20 mt-1 w-72 rounded-[12px] border border-beige bg-paper p-3 shadow-xl", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { type: "hidden", name: "idempotency_key", value: `rev-${r2.id}` }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { className: "label text-[13px]", htmlFor: `reason-${r2.id}`, children: "Reason" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { id: `reason-${r2.id}`, name: "reason", className: "input", required: true, minLength: 3, maxLength: 200, placeholder: "e.g. order refunded" }),
-                  r2.transaction_type === "earn" && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("label", { className: "mt-2 flex items-center gap-2 text-[13px]", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { type: "checkbox", name: "whole", value: "1", className: "checkbox", defaultChecked: true }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("td", { className: "min-w-[150px] md:min-w-[220px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "text-[13.5px]", children: r2.description }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "text-[12px] text-muted-ink", children: [r2.programme_name, r2.reference_id && `Receipt ${r2.reference_id}`, r2.purchase_amount_minor !== null && r2.currency && money(r2.purchase_amount_minor, r2.currency), r2.source === "seed" && "demo data"].filter(Boolean).join(" \xB7 ") })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { className: cn("text-right font-semibold tnum", delta > 0 ? "text-success" : delta < 0 ? "text-terracotta-ink" : "text-muted"), children: delta === 0 ? "\u2014" : delta > 0 ? `+${delta}` : delta }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { className: "col-wide text-right tnum text-muted-ink", children: r2.balance_after ?? "\u2014" }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { className: "col-wide whitespace-nowrap text-[13px] text-muted-ink", children: r2.actor_name ?? (r2.source === "campaign" || r2.source === "system" ? "Automatic" : "\u2014") }),
+            canFix && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("td", { className: "whitespace-nowrap", children: [
+              REVERSIBLE2.includes(r2.transaction_type) && !r2.reversed && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("details", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("summary", { className: "btn btn-ghost btn-sm list-none text-[13px]", children: "Reverse\u2026" }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: `/dashboard/transactions/${r2.id}/reverse`, className: "absolute right-0 z-20 mt-1 w-72 rounded-[12px] border border-beige bg-paper p-3 shadow-xl", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "hidden", name: "idempotency_key", value: `rev-${r2.id}` }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("label", { className: "label text-[13px]", htmlFor: `reason-${r2.id}`, children: "Reason" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { id: `reason-${r2.id}`, name: "reason", className: "input", required: true, minLength: 3, maxLength: 200, placeholder: "e.g. order refunded" }),
+                  r2.transaction_type === "earn" && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "mt-2 flex items-center gap-2 text-[13px]", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "checkbox", name: "whole", value: "1", className: "checkbox", defaultChecked: true }),
                     " Include bonuses from the same purchase"
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Button, { variant: "danger", size: "sm", className: "mt-3 w-full", children: "Reverse" })
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: "danger", size: "sm", className: "mt-3 w-full", children: "Reverse" })
                 ] })
               ] }),
-              r2.transaction_type === "redeem" && r2.redemption_id && r2.redemption_status === "completed" && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("details", { className: "relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("summary", { className: "btn btn-ghost btn-sm list-none text-[13px]", children: "Undo\u2026" }),
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(Form, { action: `/dashboard/redemptions/${r2.redemption_id}/reverse`, className: "absolute right-0 z-20 mt-1 w-72 rounded-[12px] border border-beige bg-paper p-3 shadow-xl", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { type: "hidden", name: "idempotency_key", value: `revred-${r2.redemption_id}` }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { className: "label text-[13px]", htmlFor: `reason-${r2.id}`, children: "Reason" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("input", { id: `reason-${r2.id}`, name: "reason", className: "input", required: true, minLength: 3, maxLength: 200, placeholder: "e.g. redeemed by mistake" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { className: "mt-2 text-[12.5px] text-muted-ink", children: "The reward (or points) go back to the member." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Button, { variant: "danger", size: "sm", className: "mt-3 w-full", children: "Undo redemption" })
+              r2.transaction_type === "redeem" && r2.redemption_id && r2.redemption_status === "completed" && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("details", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("summary", { className: "btn btn-ghost btn-sm list-none text-[13px]", children: "Undo\u2026" }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: `/dashboard/redemptions/${r2.redemption_id}/reverse`, className: "absolute right-0 z-20 mt-1 w-72 rounded-[12px] border border-beige bg-paper p-3 shadow-xl", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "hidden", name: "idempotency_key", value: `revred-${r2.redemption_id}` }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("label", { className: "label text-[13px]", htmlFor: `reason-${r2.id}`, children: "Reason" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { id: `reason-${r2.id}`, name: "reason", className: "input", required: true, minLength: 3, maxLength: 200, placeholder: "e.g. redeemed by mistake" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 text-[12.5px] text-muted-ink", children: "The reward (or points) go back to the member." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: "danger", size: "sm", className: "mt-3 w-full", children: "Undo redemption" })
                 ] })
               ] })
             ] })
           ] }, r2.id);
         }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Pagination, { page, pageSize, total, hrefFor: qs })
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Pagination, { page, pageSize, total, hrefFor: qs })
     ] })
   ] });
 }
-var import_jsx_runtime37, TYPE_LABEL, REVERSIBLE2;
+var import_jsx_runtime40, TYPE_LABEL, REVERSIBLE2;
 var init_Transactions = __esm({
   "src/ui/pages/dashboard/Transactions.tsx"() {
     "use strict";
@@ -32454,7 +32958,7 @@ var init_Transactions = __esm({
     init_guards();
     init_format();
     init_cn();
-    import_jsx_runtime37 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime40 = __toESM(require_jsx_runtime(), 1);
     TYPE_LABEL = {
       earn: "Purchase",
       bonus: "Bonus",
@@ -32554,7 +33058,7 @@ function dashboardCoreRoutes(r2) {
         insights(db, biz.id, biz.timezone, biz.settings)
       ]);
       const any = await maybeOne(db, "select 1 from loyalty_memberships where business_id = $1 limit 1", [biz.id]);
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(OverviewPage, { biz, range: range2, m, series, activity, insights: hasFeature(biz, "segments") ? ins : ins.filter((i) => !i.href?.includes("segment=inactive") && !i.href?.includes("approaching")), hasMembers: Boolean(any) }), {
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(OverviewPage, { biz, range: range2, m, series, activity, insights: hasFeature(biz, "segments") ? ins : ins.filter((i) => !i.href?.includes("segment=inactive") && !i.href?.includes("approaching")), hasMembers: Boolean(any) }), {
         title: "Overview",
         noindex: true
       });
@@ -32576,7 +33080,7 @@ function dashboardCoreRoutes(r2) {
       for (const c of campaigns) {
         c.status = c.status !== "published" ? c.status : c.start_date > today ? "scheduled" : c.end_date && c.end_date < today ? "completed" : "active";
       }
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(AnalyticsPage, { biz, range: range2, m, d, series, segments, top, campaigns }), { title: "Analytics", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(AnalyticsPage, { biz, range: range2, m, d, series, segments, top, campaigns }), { title: "Analytics", noindex: true });
     })
   );
   r2.get(
@@ -32602,7 +33106,7 @@ function dashboardCoreRoutes(r2) {
       const showContacts = can(biz, "view_customers");
       const { total, rows } = await customerQuery(biz, q, segment, sort, PAGE, (page - 1) * PAGE, showContacts);
       const help = isSegment(segment) ? `${SEGMENT_LABELS[segment].label}: ${SEGMENT_LABELS[segment].describe(biz.settings)}` : "";
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CustomersPage, { biz, rows, total, page, pageSize: PAGE, q, segment, sort, segmentsAllowed, segmentHelp: help, showContacts }), {
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(CustomersPage, { biz, rows, total, page, pageSize: PAGE, q, segment, sort, segmentsAllowed, segmentHelp: help, showContacts }), {
         title: "Customers",
         noindex: true
       });
@@ -32623,7 +33127,7 @@ function dashboardCoreRoutes(r2) {
       );
     })
   );
-  r2.get("/dashboard/customers/new", withBiz({}, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CustomerNewPage, { biz }), { title: "Add customer", noindex: true })));
+  r2.get("/dashboard/customers/new", withBiz({}, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(CustomerNewPage, { biz }), { title: "Add customer", noindex: true })));
   r2.post(
     "/dashboard/customers/new",
     withBiz({}, async (ctx, biz) => {
@@ -32644,7 +33148,7 @@ function dashboardCoreRoutes(r2) {
         const dupe = await maybeOne(db, `select 1 from loyalty_memberships m join customers c on c.id = m.customer_id where m.business_id = $1 and lower(c.email) = $2`, [biz.id, email]);
         if (dupe) errors.email = "A member with this email already exists. Search for them instead.";
       }
-      if (Object.keys(errors).length) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(CustomerNewPage, { biz, values, errors }), { title: "Add customer", status: 422 });
+      if (Object.keys(errors).length) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(CustomerNewPage, { biz, values, errors }), { title: "Add customer", status: 422 });
       const id = await tx(async (q) => {
         const c = await one(q, `insert into customers (name, email, phone, is_demo) values ($1, $2, $3, $4) returning id`, [name.data, email, phone, biz.isDemo]);
         const j = await joinBusiness(q, { businessId: biz.id, customerId: c.id, source: "dashboard", marketingConsent: values.marketing === "1", actorUserId: ctx.user.id });
@@ -32685,7 +33189,7 @@ function dashboardCoreRoutes(r2) {
       const claimLink = claimToken && /^[A-Za-z0-9_-]{30,60}$/.test(claimToken) ? `${config().APP_URL.replace(/\/$/, "")}/claim/${claimToken}` : null;
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           CustomerDetailPage,
           {
             biz,
@@ -32801,7 +33305,7 @@ function dashboardCoreRoutes(r2) {
       const ownOnly = can(biz, "view_reports") || can(biz, "view_customers") ? null : ctx.user.id;
       const { total, rows } = await txnQuery(biz, f, 50, (page - 1) * 50, ownOnly);
       const memberName = f.member ? (await maybeOne(db, "select c.name from loyalty_memberships m join customers c on c.id = m.customer_id where m.id = $1 and m.business_id = $2", [f.member, biz.id]))?.name ?? null : null;
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(TransactionsPage, { biz, rows, total, page, pageSize: 50, filters: f, memberName }), { title: "Transactions", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(TransactionsPage, { biz, rows, total, page, pageSize: 50, filters: f, memberName }), { title: "Transactions", noindex: true });
     })
   );
   r2.get(
@@ -32854,7 +33358,7 @@ function dashboardCoreRoutes(r2) {
     })
   );
 }
-var import_jsx_runtime38, PAGE;
+var import_jsx_runtime41, PAGE;
 var init_dashboard_core = __esm({
   "src/server/routes/dashboard-core.tsx"() {
     "use strict";
@@ -32874,7 +33378,7 @@ var init_dashboard_core = __esm({
     init_Overview();
     init_Customers();
     init_Transactions();
-    import_jsx_runtime38 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime41 = __toESM(require_jsx_runtime(), 1);
     PAGE = 25;
   }
 });
@@ -32882,51 +33386,51 @@ var init_dashboard_core = __esm({
 // src/ui/components/branding-fields.tsx
 function LayoutThumb({ k, primary, secondary }) {
   if (k === "banner")
-    return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("span", { className: "block h-14 overflow-hidden rounded-[8px] border border-beige bg-paper", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "block h-7", style: { background: `linear-gradient(135deg, ${primary}, ${secondary})` } }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "-mt-2.5 ml-2 block h-5 w-5 rounded-[5px] border-2 border-paper", style: { background: secondary } })
+    return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: "block h-14 overflow-hidden rounded-[8px] border border-beige bg-paper", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block h-7", style: { background: `linear-gradient(135deg, ${primary}, ${secondary})` } }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "-mt-2.5 ml-2 block h-5 w-5 rounded-[5px] border-2 border-paper", style: { background: secondary } })
     ] });
   if (k === "minimal")
-    return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("span", { className: "flex h-14 flex-col items-center justify-center gap-1 rounded-[8px] border border-beige bg-paper", style: { borderTop: `4px solid ${primary}` }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "block h-4 w-4 rounded-[4px]", style: { background: primary } }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "block h-1.5 w-10 rounded bg-beige-strong" })
+    return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: "flex h-14 flex-col items-center justify-center gap-1 rounded-[8px] border border-beige bg-paper", style: { borderTop: `4px solid ${primary}` }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block h-4 w-4 rounded-[4px]", style: { background: primary } }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block h-1.5 w-10 rounded bg-beige-strong" })
     ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("span", { className: "flex h-14 items-center gap-1.5 rounded-[8px] px-2", style: { background: primary }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "block h-5 w-5 rounded-[5px] ring-1 ring-white/30", style: { background: secondary } }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "block h-1.5 w-12 rounded bg-white/60" })
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: "flex h-14 items-center gap-1.5 rounded-[8px] px-2", style: { background: primary }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block h-5 w-5 rounded-[5px] ring-1 ring-white/30", style: { background: secondary } }),
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block h-1.5 w-12 rounded bg-white/60" })
   ] });
 }
 function LookFields({ values, errors = {}, primary, secondary, bannerUrl, showRemoveBanner }) {
   const layout = values.page_layout || "classic";
   const icon = values.stamp_icon || "bean";
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("fieldset", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("legend", { className: "label", children: "Page layout" }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "grid gap-2.5 sm:grid-cols-3", children: LAYOUTS.map((l) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("label", { className: "cursor-pointer", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { type: "radio", name: "page_layout", value: l.key, defaultChecked: layout === l.key, className: "peer sr-only" }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("span", { className: "block rounded-[14px] border-2 border-beige p-2.5 peer-checked:border-espresso peer-focus-visible:ring-2 peer-focus-visible:ring-terracotta", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LayoutThumb, { k: l.key, primary, secondary }),
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "mt-2 block text-[14px] font-semibold", children: l.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "block text-[12.5px] text-muted-ink", children: l.body })
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("fieldset", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("legend", { className: "label", children: "Page layout" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "grid grid-cols-1 gap-2.5 sm:grid-cols-3", children: LAYOUTS.map((l) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "cursor-pointer", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "radio", name: "page_layout", value: l.key, defaultChecked: layout === l.key, className: "peer sr-only" }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: "block rounded-[14px] border-2 border-beige p-2.5 peer-checked:border-espresso peer-focus-visible:ring-2 peer-focus-visible:ring-terracotta", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LayoutThumb, { k: l.key, primary, secondary }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "mt-2 block text-[14px] font-semibold", children: l.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block text-[12.5px] text-muted-ink", children: l.body })
         ] })
       ] }, l.key)) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Banner photo", name: "banner", optional: true, hint: "Used by the Photo banner layout. A wide photo of your caf\xE9, counter or coffee works best.", error: errors.banner, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Island, { name: "ImagePicker", props: { name: "banner", label: "Banner photo", current: bannerUrl, maxSide: 1600, shape: "wide", hint: "JPEG, PNG or WebP. Large photos are resized automatically." } }) }),
-    showRemoveBanner && bannerUrl && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Checkbox, { name: "remove_banner", value: "1", label: "Remove the current banner" }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("fieldset", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("legend", { className: "label", children: "Stamp design" }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex flex-wrap gap-2", children: ICONS3.map((i) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("label", { className: "cursor-pointer", title: i.label, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("input", { type: "radio", name: "stamp_icon", value: i.key, defaultChecked: icon === i.key, className: "peer sr-only" }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("span", { className: cn("flex flex-col items-center gap-1 rounded-[12px] border-2 border-beige px-2.5 py-2 peer-checked:border-espresso peer-focus-visible:ring-2 peer-focus-visible:ring-terracotta"), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(StampMark, { index: 0, color: secondary, icon: i.key, size: 34 }),
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "text-[12px] text-muted-ink", children: i.label })
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Banner photo", name: "banner", optional: true, hint: "Used by the Photo banner layout. A wide photo of your caf\xE9, counter or coffee works best.", error: errors.banner, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Island, { name: "ImagePicker", props: { name: "banner", label: "Banner photo", current: bannerUrl, maxSide: 1600, shape: "wide", hint: "JPEG, PNG or WebP. Large photos are resized automatically." } }) }),
+    showRemoveBanner && bannerUrl && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Checkbox, { name: "remove_banner", value: "1", label: "Remove the current banner" }),
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("fieldset", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("legend", { className: "label", children: "Stamp design" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "flex flex-wrap gap-2", children: ICONS3.map((i) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "cursor-pointer", title: i.label, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "radio", name: "stamp_icon", value: i.key, defaultChecked: icon === i.key, className: "peer sr-only" }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: cn("flex flex-col items-center gap-1 rounded-[12px] border-2 border-beige px-2.5 py-2 peer-checked:border-espresso peer-focus-visible:ring-2 peer-focus-visible:ring-terracotta"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(StampMark, { index: 0, color: secondary, icon: i.key, size: 34 }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "text-[12px] text-muted-ink", children: i.label })
         ] })
       ] }, i.key)) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Field, { label: "Welcome message", name: "tagline", optional: true, hint: "A short line under your name, e.g. \u201CFresh coffee by the harbour since 2019\u201D.", error: errors.tagline, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Input, { name: "tagline", maxLength: 140, defaultValue: values.tagline, error: errors.tagline }) })
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Welcome message", name: "tagline", optional: true, hint: "A short line under your name, e.g. \u201CFresh coffee by the harbour since 2019\u201D.", error: errors.tagline, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "tagline", maxLength: 140, defaultValue: values.tagline, error: errors.tagline }) })
   ] });
 }
-var import_jsx_runtime39, LAYOUTS, ICONS3;
+var import_jsx_runtime42, LAYOUTS, ICONS3;
 var init_branding_fields = __esm({
   "src/ui/components/branding-fields.tsx"() {
     "use strict";
@@ -32934,7 +33438,7 @@ var init_branding_fields = __esm({
     init_ui();
     init_Island();
     init_cn();
-    import_jsx_runtime39 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime42 = __toESM(require_jsx_runtime(), 1);
     LAYOUTS = [
       { key: "classic", title: "Classic", body: "Your colour across the top" },
       { key: "banner", title: "Photo banner", body: "A photo of your caf\xE9 on top" },
@@ -32954,84 +33458,84 @@ var init_branding_fields = __esm({
 // src/ui/pages/dashboard/Admin.tsx
 function TeamPage({ biz, members, invitations, seatsUsed: seatsUsed2, inviteLink, errors = {}, values = {} }) {
   const seats = biz.plan.features.limits.staffSeats;
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "team", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Team", description: `Staff accounts for the counter terminal. ${seatsUsed2} of ${seats} staff seats used on the ${biz.plan.name} plan.` }),
-    inviteLink && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Alert, { tone: "success", title: "Invitation created", className: "mb-5", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "team", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Team", description: `Staff accounts for the counter terminal. ${seatsUsed2} of ${seats} staff seats used on the ${biz.plan.name} plan.` }),
+    inviteLink && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Alert, { tone: "success", title: "Invitation created", className: "mb-5", children: [
       "Perkora doesn\u2019t send email yet, so share this one-time link with your staff member directly. It expires in 7 days.",
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Island, { name: "CopyField", props: { value: inviteLink, copyLabel: "Copy link", copiedLabel: "Copied" } })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Island, { name: "CopyField", props: { value: inviteLink, copyLabel: "Copy link", copiedLabel: "Copied" } })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid gap-4 xl:grid-cols-[1fr_380px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("table", { className: "table", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("tr", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { children: "Person" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { children: "Role" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { children: "Permissions" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", { children: "Last sign-in" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("th", {})
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_380px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("table", { className: "table", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("th", { children: "Person" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("th", { children: "Role" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("th", { children: "Permissions" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("th", { className: "col-wide", children: "Last sign-in" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("th", {})
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("tbody", { children: members.map((m) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("tr", { className: m.status !== "active" ? "opacity-60" : "", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("td", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "font-medium", children: m.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "text-[12.5px] text-muted-ink", children: m.email })
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("tbody", { children: members.map((m) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("tr", { className: m.status !== "active" ? "opacity-60" : "", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("td", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "font-medium", children: m.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "text-[12.5px] text-muted-ink", children: m.email })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("td", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Badge, { tone: m.role === "owner" ? "accent" : "neutral", children: m.role }),
-              m.status !== "active" && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Badge, { tone: "error", className: "ml-1", children: "deactivated" })
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("td", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Badge, { tone: m.role === "owner" ? "accent" : "neutral", children: m.role }),
+              m.status !== "active" && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Badge, { tone: "error", className: "ml-1", children: "deactivated" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { className: "min-w-[230px]", children: m.role === "owner" ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[13px] text-muted-ink", children: "Everything" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: `/dashboard/team/${m.id}/permissions`, className: "space-y-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "block text-[12.5px] text-muted-ink", children: "Always: counter terminal" }),
-              STAFF_PERMISSIONS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "flex items-center gap-2 text-[13px]", title: p.help, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "checkbox", name: "perm", value: p.key, defaultChecked: Boolean(m.permissions[p.key]), className: "checkbox h-4 w-4", disabled: m.status !== "active" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("td", { className: "min-w-[200px]", children: m.role === "owner" ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "text-[13px] text-muted-ink", children: "Everything" }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: `/dashboard/team/${m.id}/permissions`, className: "space-y-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "block text-[12.5px] text-muted-ink", children: "Always: counter terminal" }),
+              STAFF_PERMISSIONS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("label", { className: "flex items-center gap-2 text-[13px]", title: p.help, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("input", { type: "checkbox", name: "perm", value: p.key, defaultChecked: Boolean(m.permissions[p.key]), className: "checkbox h-4 w-4", disabled: m.status !== "active" }),
                 p.label
               ] }, p.key)),
-              m.status === "active" && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("button", { className: "btn btn-ghost btn-sm -ml-2 text-[13px]", type: "submit", children: "Save permissions" })
+              m.status === "active" && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("button", { className: "btn btn-ghost btn-sm -ml-2 text-[13px]", type: "submit", children: "Save permissions" })
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { className: "whitespace-nowrap text-[13px] text-muted-ink", children: m.last_sign_in_at ? relative(m.last_sign_in_at) : "Never" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("td", { children: m.role !== "owner" && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: `/dashboard/team/${m.id}/status`, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "hidden", name: "status", value: m.status === "active" ? "deactivated" : "active" }),
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: m.status === "active" ? "danger-ghost" : "secondary", size: "sm", children: m.status === "active" ? "Deactivate" : "Reactivate" })
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("td", { className: "col-wide whitespace-nowrap text-[13px] text-muted-ink", children: m.last_sign_in_at ? relative(m.last_sign_in_at) : "Never" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("td", { children: m.role !== "owner" && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: `/dashboard/team/${m.id}/status`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("input", { type: "hidden", name: "status", value: m.status === "active" ? "deactivated" : "active" }),
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { variant: m.status === "active" ? "danger-ghost" : "secondary", size: "sm", children: m.status === "active" ? "Deactivate" : "Reactivate" })
             ] }) })
           ] }, m.id)) })
         ] }) }),
-        invitations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "border-t border-beige px-5 py-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "text-[14px] font-semibold", children: "Pending invitations" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("ul", { className: "mt-2 divide-y divide-beige", children: invitations.map((i) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("li", { className: "flex items-center justify-between gap-3 py-2 text-[13.5px]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { children: [
+        invitations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "border-t border-beige px-5 py-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h3", { className: "text-[14px] font-semibold", children: "Pending invitations" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("ul", { className: "mt-2 divide-y divide-beige", children: invitations.map((i) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("li", { className: "flex items-center justify-between gap-3 py-2 text-[13.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("span", { children: [
               i.name ? `${i.name} \xB7 ` : "",
               i.email,
               " ",
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { className: "text-muted-ink", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("span", { className: "text-muted-ink", children: [
                 "\xB7 expires ",
                 relative(i.expires_at)
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Form, { action: `/dashboard/team/invitations/${i.id}/revoke`, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: "ghost", size: "sm", children: "Revoke" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Form, { action: `/dashboard/team/invitations/${i.id}/revoke`, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { variant: "ghost", size: "sm", children: "Revoke" }) })
           ] }, i.id)) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[16px] font-semibold", children: "Invite staff" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "Staff can always use the counter terminal. Give extra access only if they need it. Staff can never change your plan or ownership." }),
-        seatsUsed2 >= seats ? /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Alert, { tone: "warning", className: "mt-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[16px] font-semibold", children: "Invite staff" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "Staff can always use the counter terminal. Give extra access only if they need it. Staff can never change your plan or ownership." }),
+        seatsUsed2 >= seats ? /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Alert, { tone: "warning", className: "mt-4", children: [
           "All ",
           seats,
           " staff seats are in use. Deactivate someone or change plan to invite more."
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: "/dashboard/team/invite", className: "mt-4 grid gap-4", noValidate: true, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Name", name: "name", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "name", maxLength: 120, defaultValue: values.name }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Email", name: "email", error: errors.email, hint: "They must sign up or sign in with this email to accept.", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "email", type: "email", required: true, defaultValue: values.email, error: errors.email }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("fieldset", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("legend", { className: "label", children: "Extra access" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "space-y-2", children: STAFF_PERMISSIONS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Checkbox, { name: "perm", value: p.key, label: p.label, hint: p.help }, p.key)) })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: "/dashboard/team/invite", className: "mt-4 grid gap-4", noValidate: true, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Name", name: "name", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "name", maxLength: 120, defaultValue: values.name }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Email", name: "email", error: errors.email, hint: "They must sign up or sign in with this email to accept.", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "email", type: "email", required: true, defaultValue: values.email, error: errors.email }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("fieldset", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("legend", { className: "label", children: "Extra access" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "space-y-2", children: STAFF_PERMISSIONS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Checkbox, { name: "perm", value: p.key, label: p.label, hint: p.help }, p.key)) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { children: "Create invitation link" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { children: "Create invitation link" }) })
         ] })
       ] })
     ] })
   ] });
 }
 function SettingsTabs({ current: current2 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
     Tabs,
     {
       current: current2,
@@ -33046,29 +33550,29 @@ function SettingsTabs({ current: current2 }) {
   );
 }
 function SettingsProfilePage({ biz, values, errors = {}, publicUrl }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "settings", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(SettingsTabs, { current: "profile" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: "/dashboard/settings", className: "grid gap-5", noValidate: true, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Caf\xE9 name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Short description", name: "description", optional: true, hint: "Shown on your public loyalty page.", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Textarea, { name: "description", rows: 2, maxLength: 300, defaultValue: values.description }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "City", name: "city", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "city", maxLength: 80, defaultValue: values.city }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Address", name: "address", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "address", maxLength: 200, defaultValue: values.address }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Business email", name: "business_email", optional: true, error: errors.business_email, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "business_email", type: "email", maxLength: 254, defaultValue: values.business_email, error: errors.business_email }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Phone", name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "phone", type: "tel", maxLength: 40, defaultValue: values.phone, error: errors.phone }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Website", name: "website", optional: true, error: errors.website, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "website", type: "url", maxLength: 200, defaultValue: values.website, placeholder: "https://", error: errors.website }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Timezone", name: "timezone", hint: "Used for visit days, streaks, campaign dates and reports.", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Select, { name: "timezone", defaultValue: values.timezone, children: [.../* @__PURE__ */ new Set([values.timezone, ...TIMEZONES])].map((tz) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: tz, children: tz === "Asia/Famagusta" ? "Asia/Famagusta (Northern Cyprus)" : tz }, tz)) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Currency", name: "default_currency", hint: "Points are calculated in this currency. Perkora never converts currencies.", error: errors.default_currency, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Select, { name: "default_currency", defaultValue: values.default_currency, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: "EUR", children: "Euro (EUR)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: "TRY", children: "Turkish lira (TRY)" })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "settings", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SettingsTabs, { current: "profile" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: "/dashboard/settings", className: "grid gap-5", noValidate: true, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Caf\xE9 name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Short description", name: "description", optional: true, hint: "Shown on your public loyalty page.", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Textarea, { name: "description", rows: 2, maxLength: 300, defaultValue: values.description }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "City", name: "city", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "city", maxLength: 80, defaultValue: values.city }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Address", name: "address", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "address", maxLength: 200, defaultValue: values.address }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Business email", name: "business_email", optional: true, error: errors.business_email, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "business_email", type: "email", maxLength: 254, defaultValue: values.business_email, error: errors.business_email }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Phone", name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "phone", type: "tel", maxLength: 40, defaultValue: values.phone, error: errors.phone }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Website", name: "website", optional: true, error: errors.website, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "website", type: "url", maxLength: 200, defaultValue: values.website, placeholder: "https://", error: errors.website }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Timezone", name: "timezone", hint: "Used for visit days, streaks, campaign dates and reports.", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Select, { name: "timezone", defaultValue: values.timezone, children: [.../* @__PURE__ */ new Set([values.timezone, ...TIMEZONES])].map((tz) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("option", { value: tz, children: tz === "Asia/Famagusta" ? "Asia/Famagusta (Northern Cyprus)" : tz }, tz)) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Currency", name: "default_currency", hint: "Points are calculated in this currency. Perkora never converts currencies.", error: errors.default_currency, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Select, { name: "default_currency", defaultValue: values.default_currency, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("option", { value: "EUR", children: "Euro (EUR)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("option", { value: "TRY", children: "Turkish lira (TRY)" })
         ] }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "label", children: "Public loyalty page" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-[14.5px]", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { className: "link", href: publicUrl, target: "_blank", rel: "noopener", children: publicUrl }) })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "label", children: "Public loyalty page" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "text-[14.5px]", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { className: "link", href: publicUrl, target: "_blank", rel: "noopener", children: publicUrl }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { children: "Save changes" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { children: "Save changes" }) })
     ] }) })
   ] });
 }
@@ -33076,25 +33580,25 @@ function SettingsBrandingPage({ biz, errors = {} }) {
   const logo = biz.logoUploadId ? `/media/${biz.logoUploadId}` : null;
   const banner = biz.bannerUploadId ? `/media/${biz.bannerUploadId}` : null;
   const s = biz.settings;
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "settings", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Caf\xE9 Settings", description: "Choose how your caf\xE9 looks to customers on its join page and loyalty card." }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(SettingsTabs, { current: "branding" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_380px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: "/dashboard/settings/branding", multipart: true, className: "grid gap-6", id: "branding-form", children: [
-        errors.form && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Alert, { tone: "error", children: errors.form }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Logo", name: "logo", optional: true, hint: "Square images look best.", error: errors.logo, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Island, { name: "ImagePicker", props: { name: "logo", label: "Logo", current: logo, maxSide: 600, shape: "square", hint: "PNG, JPEG or WebP. Large images are resized automatically." } }) }),
-        logo && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Checkbox, { name: "remove_logo", value: "1", label: "Remove the current logo" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Main colour", name: "primary_colour", hint: "Header and buttons.", error: errors.primary_colour, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "color", id: "primary_colour", name: "primary_colour", defaultValue: biz.primaryColour, className: "h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[14px] tnum text-muted-ink", children: biz.primaryColour })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "settings", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Caf\xE9 Settings", description: "Choose how your caf\xE9 looks to customers on its join page and loyalty card." }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SettingsTabs, { current: "branding" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid max-w-6xl grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: "/dashboard/settings/branding", multipart: true, className: "grid gap-6", id: "branding-form", children: [
+        errors.form && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Alert, { tone: "error", children: errors.form }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Logo", name: "logo", optional: true, hint: "Square images look best.", error: errors.logo, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Island, { name: "ImagePicker", props: { name: "logo", label: "Logo", current: logo, maxSide: 600, shape: "square", hint: "PNG, JPEG or WebP. Large images are resized automatically." } }) }),
+        logo && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Checkbox, { name: "remove_logo", value: "1", label: "Remove the current logo" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Main colour", name: "primary_colour", hint: "Header and buttons.", error: errors.primary_colour, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("input", { type: "color", id: "primary_colour", name: "primary_colour", defaultValue: biz.primaryColour, className: "h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "text-[14px] tnum text-muted-ink", children: biz.primaryColour })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Stamp colour", name: "secondary_colour", hint: "Stamps, logo background and accents.", error: errors.secondary_colour, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "color", id: "secondary_colour", name: "secondary_colour", defaultValue: biz.secondaryColour, className: "h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[14px] tnum text-muted-ink", children: biz.secondaryColour })
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Stamp colour", name: "secondary_colour", hint: "Stamps, logo background and accents.", error: errors.secondary_colour, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("input", { type: "color", id: "secondary_colour", name: "secondary_colour", defaultValue: biz.secondaryColour, className: "h-11 w-14 cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "text-[14px] tnum text-muted-ink", children: biz.secondaryColour })
           ] }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
           LookFields,
           {
             values: { page_layout: s.pageLayout, stamp_icon: s.stampIcon, tagline: s.tagline },
@@ -33105,7 +33609,7 @@ function SettingsBrandingPage({ biz, errors = {} }) {
             showRemoveBanner: true
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
           Checkbox,
           {
             name: "list_in_directory",
@@ -33115,12 +33619,12 @@ function SettingsBrandingPage({ biz, errors = {} }) {
             hint: "Customers can find you at Find a caf\xE9 and join without scanning your QR code."
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "hidden", name: "directory_seen", value: "1" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { children: "Save look" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("input", { type: "hidden", name: "directory_seen", value: "1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { children: "Save look" }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "lg:sticky lg:top-6 lg:self-start", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mb-2 text-[13px] font-medium text-muted-ink", children: "Live preview of a customer\u2019s card" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "lg:sticky lg:top-6 lg:self-start", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mb-2 text-[13px] font-medium text-muted-ink", children: "Live preview of a customer\u2019s card" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
           Island,
           {
             name: "BrandPreview",
@@ -33133,54 +33637,54 @@ function SettingsBrandingPage({ biz, errors = {} }) {
             }
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: `/c/${biz.slug}`, target: "_blank", rel: "noopener", className: "btn btn-secondary mt-3 w-full", children: "Open your join page" })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { href: `/c/${biz.slug}`, target: "_blank", rel: "noopener", className: "btn btn-secondary mt-3 w-full", children: "Open your join page" })
       ] })
     ] })
   ] });
 }
 function SettingsLoyaltyPage({ biz, errors = {} }) {
   const s = biz.settings;
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "settings", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(SettingsTabs, { current: "loyalty" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "max-w-3xl space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Alert, { tone: "info", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "settings", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SettingsTabs, { current: "loyalty" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "max-w-3xl space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Alert, { tone: "info", children: [
         "Programme type, earning rules, reward costs and expiry are set per programme under",
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: "/dashboard/programmes", className: "link", children: "Loyalty Programmes" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { href: "/dashboard/programmes", className: "link", children: "Loyalty Programmes" }),
         " ",
         "and",
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: "/dashboard/rewards", className: "link", children: "Rewards" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { href: "/dashboard/rewards", className: "link", children: "Rewards" }),
         "."
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: "/dashboard/settings/loyalty", className: "grid gap-5", noValidate: true, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Inactive after (days)", name: "inactivityDays", hint: SEGMENT_LABELS.inactive.describe(s), error: errors.inactivityDays, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "inactivityDays", type: "number", min: 7, max: 365, defaultValue: String(s.inactivityDays), error: errors.inactivityDays }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "\u201CNew member\u201D for (days)", name: "newMemberDays", error: errors.newMemberDays, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "newMemberDays", type: "number", min: 7, max: 120, defaultValue: String(s.newMemberDays) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Frequent visitor: visits in 30 days", name: "frequentVisits", error: errors.frequentVisits, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "frequentVisits", type: "number", min: 2, max: 60, defaultValue: String(s.frequentVisits) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "\u201CClose to a reward\u201D: stamps to go", name: "approachingStamps", error: errors.approachingStamps, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "approachingStamps", type: "number", min: 1, max: 10, defaultValue: String(s.approachingStamps) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "One visit lasts (minutes)", name: "visitWindowMinutes", hint: "Several awards within this window count as one verified visit.", error: errors.visitWindowMinutes, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "visitWindowMinutes", type: "number", min: 15, max: 720, defaultValue: String(s.visitWindowMinutes) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Repeat-award check (seconds)", name: "duplicateGuardSeconds", hint: "Staff confirm when the same member earns again this quickly. 0 turns it off.", error: errors.duplicateGuardSeconds, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Input, { name: "duplicateGuardSeconds", type: "number", min: 0, max: 3600, defaultValue: String(s.duplicateGuardSeconds) }) })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: "/dashboard/settings/loyalty", className: "grid gap-5", noValidate: true, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Inactive after (days)", name: "inactivityDays", hint: SEGMENT_LABELS.inactive.describe(s), error: errors.inactivityDays, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "inactivityDays", type: "number", min: 7, max: 365, defaultValue: String(s.inactivityDays), error: errors.inactivityDays }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "\u201CNew member\u201D for (days)", name: "newMemberDays", error: errors.newMemberDays, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "newMemberDays", type: "number", min: 7, max: 120, defaultValue: String(s.newMemberDays) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Frequent visitor: visits in 30 days", name: "frequentVisits", error: errors.frequentVisits, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "frequentVisits", type: "number", min: 2, max: 60, defaultValue: String(s.frequentVisits) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "\u201CClose to a reward\u201D: stamps to go", name: "approachingStamps", error: errors.approachingStamps, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "approachingStamps", type: "number", min: 1, max: 10, defaultValue: String(s.approachingStamps) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "One visit lasts (minutes)", name: "visitWindowMinutes", hint: "Several awards within this window count as one verified visit.", error: errors.visitWindowMinutes, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "visitWindowMinutes", type: "number", min: 15, max: 720, defaultValue: String(s.visitWindowMinutes) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Repeat-award check (seconds)", name: "duplicateGuardSeconds", hint: "Staff confirm when the same member earns again this quickly. 0 turns it off.", error: errors.duplicateGuardSeconds, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Input, { name: "duplicateGuardSeconds", type: "number", min: 0, max: 3600, defaultValue: String(s.duplicateGuardSeconds) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "When a purchase is refunded", name: "refundPolicy", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Select, { name: "refundPolicy", defaultValue: s.refundPolicy, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: "reverse", children: "Reverse the stamps or points it earned (from Transactions)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: "keep", children: "Let the customer keep them" })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "When a purchase is refunded", name: "refundPolicy", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Select, { name: "refundPolicy", defaultValue: s.refundPolicy, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("option", { value: "reverse", children: "Reverse the stamps or points it earned (from Transactions)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("option", { value: "keep", children: "Let the customer keep them" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Field, { label: "Notes for staff", name: "staffInstructions", optional: true, hint: "Shown on the counter terminal.", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Textarea, { name: "staffInstructions", rows: 3, maxLength: 1e3, defaultValue: s.staffInstructions, placeholder: "One stamp per hot or iced coffee. Ask for the receipt number on orders over \u20AC20." }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { children: "Save settings" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Field, { label: "Notes for staff", name: "staffInstructions", optional: true, hint: "Shown on the counter terminal.", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Textarea, { name: "staffInstructions", rows: 3, maxLength: 1e3, defaultValue: s.staffInstructions, placeholder: "One stamp per hot or iced coffee. Ask for the receipt number on orders over \u20AC20." }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { children: "Save settings" }) })
       ] }) })
     ] })
   ] });
 }
 function SettingsNotificationsPage({ biz, consent }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "settings", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(SettingsTabs, { current: "notifications" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "max-w-3xl space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[16px] font-semibold", children: "Customer communication" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "settings", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SettingsTabs, { current: "notifications" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "max-w-3xl space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[16px] font-semibold", children: "Customer communication" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
           consent.opted,
           " of ",
           consent.total,
@@ -33188,58 +33692,58 @@ function SettingsNotificationsPage({ biz, consent }) {
           biz.name,
           ". Customers manage this themselves in their account; joining never depends on it."
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mt-4 rounded-[12px] border border-beige bg-cream p-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-[14.5px] font-medium", children: "Email and SMS delivery: not configured" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "Perkora shows offers inside customers\u2019 cards. It does not send email or SMS yet, so automated win-back messages are unavailable. Campaign pages give you a contact list of members who opted in." })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "mt-4 rounded-[12px] border border-beige bg-cream p-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "text-[14.5px] font-medium", children: "Email and SMS delivery: not configured" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: "Perkora shows offers inside customers\u2019 cards. It does not send email or SMS yet, so automated win-back messages are unavailable. Campaign pages give you a contact list of members who opted in." })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: "/dashboard/settings/notifications", className: "grid gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[16px] font-semibold", children: "Display and alerts" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Checkbox, { name: "showOffersPublicly", value: "1", defaultChecked: biz.settings.showOffersPublicly, label: "Show offers open to everyone on the public join page" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Checkbox, { name: "operationalAlerts", value: "1", defaultChecked: biz.settings.operationalAlerts, label: "Show operational alerts on the dashboard", hint: "For example, a reward that can\u2019t be issued because it is inactive." }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { children: "Save" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: "/dashboard/settings/notifications", className: "grid gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[16px] font-semibold", children: "Display and alerts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Checkbox, { name: "showOffersPublicly", value: "1", defaultChecked: biz.settings.showOffersPublicly, label: "Show offers open to everyone on the public join page" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Checkbox, { name: "operationalAlerts", value: "1", defaultChecked: biz.settings.operationalAlerts, label: "Show operational alerts on the dashboard", hint: "For example, a reward that can\u2019t be issued because it is inactive." }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { children: "Save" }) })
       ] }) })
     ] })
   ] });
 }
 function SettingsQrPage({ biz, svg, url }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "settings", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(SettingsTabs, { current: "qr" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid max-w-4xl gap-5 md:grid-cols-[300px_1fr]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "aspect-square w-full rounded-[12px] border border-beige bg-white p-2 [&>svg]:h-full [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-3 break-all text-center text-[12.5px] text-muted-ink", children: url })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "settings", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Caf\xE9 Settings" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SettingsTabs, { current: "qr" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 max-w-4xl gap-5 md:grid-cols-[300px_1fr]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "aspect-square w-full rounded-[12px] border border-beige bg-white p-2 [&>svg]:h-full [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-3 break-all text-center text-[12.5px] text-muted-ink", children: url })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[17px] font-semibold", children: "Your enrolment QR code" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-1 text-[14.5px] text-muted-ink", children: "Customers scan this to open your loyalty page and join. Place it by the till, on tables or on receipts." }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mt-5 flex flex-wrap gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("a", { href: `/c/${biz.slug}/qr.svg?download=1`, className: "btn btn-primary", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[17px] font-semibold", children: "Your enrolment QR code" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-1 text-[14.5px] text-muted-ink", children: "Customers scan this to open your loyalty page and join. Place it by the till, on tables or on receipts." }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "mt-5 flex flex-wrap gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("a", { href: `/c/${biz.slug}/qr.svg?download=1`, className: "btn btn-primary", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Download SVG"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("a", { href: "/dashboard/settings/qr/poster", target: "_blank", className: "btn btn-secondary", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LuPrinter, { className: "h-4 w-4", "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("a", { href: "/dashboard/settings/qr/poster", target: "_blank", className: "btn btn-secondary", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(LuPrinter, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Print-ready poster"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: "SVG files scale to any size without losing quality, so they print sharply on stickers and table cards." })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: "SVG files scale to any size without losing quality, so they print sharply on stickers and table cards." })
       ] })
     ] })
   ] });
 }
 function QrPosterPage({ biz, svg, rule }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mx-auto flex min-h-screen max-w-[720px] flex-col items-center justify-center bg-white px-10 py-12 text-center print:min-h-0", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(CafeMark, { name: biz.name, logoUrl: biz.logoUploadId ? `/media/${biz.logoUploadId}` : null, colour: biz.primaryColour, size: 72 }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h1", { className: "mt-5 text-[40px] font-semibold leading-tight", children: biz.name }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 text-[22px] text-muted-ink", children: "Join our loyalty programme \xB7 Sadakat program\u0131m\u0131za kat\u0131l\u0131n" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-8 w-[360px] max-w-full [&>svg]:h-auto [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-6 text-[24px] font-semibold", children: "Scan to join \xB7 Kat\u0131lmak i\xE7in okutun" }),
-    rule && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 max-w-md text-[18px] text-muted-ink", children: rule }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-3 text-[15px] text-muted-ink", children: "No app needed \xB7 Uygulama gerekmez" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-10 opacity-70", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Logo, { href: null }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-8 print:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Island, { name: "PrintButton", props: { label: "Print" } }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "mx-auto flex min-h-screen max-w-[720px] flex-col items-center justify-center bg-white px-10 py-12 text-center print:min-h-0", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(CafeMark, { name: biz.name, logoUrl: biz.logoUploadId ? `/media/${biz.logoUploadId}` : null, colour: biz.primaryColour, size: 72 }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h1", { className: "mt-5 text-[40px] font-semibold leading-tight", children: biz.name }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-2 text-[22px] text-muted-ink", children: "Join our loyalty programme \xB7 Sadakat program\u0131m\u0131za kat\u0131l\u0131n" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "mt-8 w-[360px] max-w-full [&>svg]:h-auto [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-6 text-[24px] font-semibold", children: "Scan to join \xB7 Kat\u0131lmak i\xE7in okutun" }),
+    rule && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-2 max-w-md text-[18px] text-muted-ink", children: rule }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-3 text-[15px] text-muted-ink", children: "No app needed \xB7 Uygulama gerekmez" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "mt-10 opacity-70", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Logo, { href: null }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "mt-8 print:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Island, { name: "PrintButton", props: { label: "Print" } }) })
   ] });
 }
 function SubscriptionPage({ biz, plans, sub, usage }) {
@@ -33265,125 +33769,125 @@ function SubscriptionPage({ biz, plans, sub, usage }) {
     ["csvExport", "CSV export"],
     ["prioritySupport", "Priority support"]
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "subscription", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Subscription" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid gap-4 lg:grid-cols-[1fr_1fr]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-[13px] text-muted-ink", children: "Current plan" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-1 font-display text-[30px] font-semibold", children: biz.plan.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("dl", { className: "mt-4 space-y-2 text-[14.5px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex justify-between gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { className: "text-muted-ink", children: "Subscription status" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dd", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Badge, { tone: sub?.status === "active" ? "success" : sub?.status === "past_due" ? "error" : "warning", children: statusText[sub?.status] ?? sub?.status }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "subscription", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Subscription" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "text-[13px] text-muted-ink", children: "Current plan" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-1 font-display text-[30px] font-semibold", children: biz.plan.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("dl", { className: "mt-4 space-y-2 text-[14.5px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { className: "text-muted-ink", children: "Subscription status" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dd", { children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Badge, { tone: sub?.status === "active" ? "success" : sub?.status === "past_due" ? "error" : "warning", children: statusText[sub?.status] ?? sub?.status }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex justify-between gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { className: "text-muted-ink", children: "Payment" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dd", { children: sub?.payment_status === "paid" ? "Paid" : sub?.payment_status === "failed" ? "Failed" : "No payment taken (billing not configured)" })
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { className: "text-muted-ink", children: "Payment" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dd", { children: sub?.payment_status === "paid" ? "Paid" : sub?.payment_status === "failed" ? "Failed" : "No payment taken (billing not configured)" })
           ] }),
-          sub?.trial_ends_at && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex justify-between gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { className: "text-muted-ink", children: "Trial ends" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dd", { children: dateShort(sub.trial_ends_at, biz.timezone) })
+          sub?.trial_ends_at && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { className: "text-muted-ink", children: "Trial ends" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dd", { children: dateShort(sub.trial_ends_at, biz.timezone) })
           ] }),
-          sub?.requested_plan_id && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex justify-between gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { className: "text-muted-ink", children: "Requested change" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("dd", { className: "capitalize", children: [
+          sub?.requested_plan_id && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { className: "text-muted-ink", children: "Requested change" }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("dd", { className: "capitalize", children: [
               sub.requested_plan_id,
               " (awaiting confirmation)"
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("p", { className: "mt-5 text-[13.5px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("p", { className: "mt-5 text-[13.5px] text-muted-ink", children: [
           "Online payment isn\u2019t set up yet. During the pilot, our team arranges billing with you directly and activates your plan. Nothing is charged automatically.",
           " ",
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: "/contact", className: "link", children: "Contact us" })
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { href: "/contact", className: "link", children: "Contact us" })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[16px] font-semibold", children: "Usage" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dl", { className: "mt-3 space-y-3 text-[14.5px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[16px] font-semibold", children: "Usage" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dl", { className: "mt-3 space-y-3 text-[14.5px]", children: [
           ["Loyalty programmes", usage.programmes, f.limits.programmes],
           ["Staff seats", usage.staff, f.limits.staffSeats],
           ["Running campaigns", usage.campaigns, f.limits.activeCampaigns],
           ["Caf\xE9 locations", 1, f.limits.locations]
-        ].map(([l, used, max]) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex justify-between", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { children: l }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("dd", { className: "tnum", children: [
+        ].map(([l, used, max]) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { children: l }),
+            /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("dd", { className: "tnum", children: [
               used,
               " / ",
               max
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-1 h-1.5 rounded-full bg-beige", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "h-full rounded-full bg-sage", style: { width: `${max ? Math.min(100, used / max * 100) : 0}%` } }) })
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "mt-1 h-1.5 rounded-full bg-beige", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "h-full rounded-full bg-sage", style: { width: `${max ? Math.min(100, used / max * 100) : 0}%` } }) })
         ] }, l)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "mt-6 text-[14px] font-semibold", children: "Included features" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("ul", { className: "mt-2 grid gap-1.5 text-[13.5px] sm:grid-cols-2", children: featureRows.map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("li", { className: "flex items-center gap-2", children: [
-          f.features[k] ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LuCheck, { className: "h-4 w-4 text-success", "aria-label": "Included" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LuX, { className: "h-4 w-4 text-muted", "aria-label": "Not included" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: f.features[k] ? "" : "text-muted-ink", children: l })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h3", { className: "mt-6 text-[14px] font-semibold", children: "Included features" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("ul", { className: "mt-2 grid grid-cols-1 gap-1.5 text-[13.5px] sm:grid-cols-2", children: featureRows.map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("li", { className: "flex items-center gap-2", children: [
+          f.features[k] ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(LuCheck, { className: "h-4 w-4 text-success", "aria-label": "Included" }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(LuX, { className: "h-4 w-4 text-muted", "aria-label": "Not included" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: f.features[k] ? "" : "text-muted-ink", children: l })
         ] }, k)) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "mb-3 mt-8 text-[18px] font-semibold", children: "Change plan" }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "grid gap-4 md:grid-cols-3", children: plans.map((p) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: `p-5 ${p.id === biz.plan.id ? "border-espresso" : ""}`, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "text-[17px] font-semibold", children: p.name }),
-        p.recommended && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Badge, { tone: "accent", children: "Recommended" })
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "mb-3 mt-8 text-[18px] font-semibold", children: "Change plan" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "grid grid-cols-1 gap-4 md:grid-cols-3", children: plans.map((p) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: `p-5 ${p.id === biz.plan.id ? "border-espresso" : ""}`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h3", { className: "text-[17px] font-semibold", children: p.name }),
+        p.recommended && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Badge, { tone: "accent", children: "Recommended" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("p", { className: "mt-1 font-display text-[26px] font-semibold tnum", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("p", { className: "mt-1 font-display text-[26px] font-semibold tnum", children: [
         moneyWhole(p.monthlyPriceMinor, p.currency),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[14px] font-normal text-muted-ink", children: "/month" })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "text-[14px] font-normal text-muted-ink", children: "/month" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: p.description }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-4", children: p.id === biz.plan.id ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "btn btn-secondary btn-sm w-full", "aria-disabled": "true", children: "Current plan" }) : biz.isDemo ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "btn btn-secondary btn-sm w-full", "aria-disabled": "true", children: "Not available in the demo" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Form, { action: "/dashboard/subscription", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "hidden", name: "plan_id", value: p.id }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: "secondary", size: "sm", className: "w-full", children: sub?.status === "trialing" ? `Switch to ${p.name}` : `Request ${p.name}` })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-1 text-[13.5px] text-muted-ink", children: p.description }),
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "mt-4", children: p.id === biz.plan.id ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "btn btn-secondary btn-sm w-full", "aria-disabled": "true", children: "Current plan" }) : biz.isDemo ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "btn btn-secondary btn-sm w-full", "aria-disabled": "true", children: "Not available in the demo" }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Form, { action: "/dashboard/subscription", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("input", { type: "hidden", name: "plan_id", value: p.id }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { variant: "secondary", size: "sm", className: "w-full", children: sub?.status === "trialing" ? `Switch to ${p.name}` : `Request ${p.name}` })
       ] }) })
     ] }, p.id)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: "Prices are introductory proposals and may change. Taxes, payment processing fees and messaging charges may be additional." })
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-4 text-[13px] text-muted-ink", children: "Prices are introductory proposals and may change. Taxes, payment processing fees and messaging charges may be additional." })
   ] });
 }
 function HelpPage({ biz }) {
   const s = biz.settings;
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(DashboardLayout, { biz, active: "help", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(PageHeader, { title: "Help", description: "How to run your programme day to day." }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid gap-4 lg:grid-cols-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[17px] font-semibold", children: "At the counter" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("ol", { className: "mt-3 list-decimal space-y-2 pl-5 text-[14.5px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Open the Counter terminal on the till device and stay signed in." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Ask the customer to open their card and tap \u201CShow at the counter\u201D." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Tap \u201CScan customer QR\u201D, or type the 8-character member code under the code." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Check the name, choose Add stamp or Add points, and review the change." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Tap Confirm. The customer\u2019s card updates on their phone within a few seconds." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "To use a reward, tap Redeem next to it and confirm. Give the customer the item." })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(DashboardLayout, { biz, active: "help", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PageHeader, { title: "Help", description: "How to run your programme day to day." }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "grid grid-cols-1 gap-4 lg:grid-cols-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[17px] font-semibold", children: "At the counter" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("ol", { className: "mt-3 list-decimal space-y-2 pl-5 text-[14.5px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Open the Counter terminal on the till device and stay signed in." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Ask the customer to open their card and tap \u201CShow at the counter\u201D." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Tap \u201CScan customer QR\u201D, or type the 8-character member code under the code." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Check the name, choose Add stamp or Add points, and review the change." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Tap Confirm. The customer\u2019s card updates on their phone within a few seconds." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "To use a reward, tap Redeem next to it and confirm. Give the customer the item." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-3 text-[13.5px] text-muted-ink", children: "Tip: on phones and tablets you can also scan the customer\u2019s code with the normal camera app. The link opens the terminal on that customer, as long as the device is signed in." })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-3 text-[13.5px] text-muted-ink", children: "Tip: on phones and tablets you can also scan the customer\u2019s code with the normal camera app. The link opens the terminal on that customer, as long as the device is signed in." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[17px] font-semibold", children: "Fixing mistakes" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("ul", { className: "mt-3 list-disc space-y-2 pl-5 text-[14.5px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Added a stamp to the wrong person? Open Transactions and choose Reverse on that row." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Redeemed by mistake? Choose Undo on the redemption row; the reward goes back on the card." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Moving a paper card across? Open the customer and use Correct balance with a reason." }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Every correction is added as a new, signed record. Nothing is ever deleted." })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[17px] font-semibold", children: "Fixing mistakes" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("ul", { className: "mt-3 list-disc space-y-2 pl-5 text-[14.5px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Added a stamp to the wrong person? Open Transactions and choose Reverse on that row." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Redeemed by mistake? Choose Undo on the redemption row; the reward goes back on the card." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Moving a paper card across? Open the customer and use Correct balance with a reason." }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("li", { children: "Every correction is added as a new, signed record. Nothing is ever deleted." })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[17px] font-semibold", children: "How numbers are calculated" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dl", { className: "mt-3 space-y-3 text-[14px]", children: Object.entries(METRIC_DEFINITIONS).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { className: "font-medium capitalize", children: k.replace(/([A-Z])/g, " $1").toLowerCase() }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dd", { className: "text-muted-ink", children: v })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[17px] font-semibold", children: "How numbers are calculated" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dl", { className: "mt-3 space-y-3 text-[14px]", children: Object.entries(METRIC_DEFINITIONS).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { className: "font-medium capitalize", children: k.replace(/([A-Z])/g, " $1").toLowerCase() }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dd", { className: "text-muted-ink", children: v })
         ] }, k)) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-[17px] font-semibold", children: "Customer groups" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dl", { className: "mt-3 space-y-3 text-[14px]", children: Object.entries(SEGMENT_LABELS).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dt", { className: "font-medium", children: v.label }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("dd", { className: "text-muted-ink", children: v.describe(s) })
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h2", { className: "text-[17px] font-semibold", children: "Customer groups" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dl", { className: "mt-3 space-y-3 text-[14px]", children: Object.entries(SEGMENT_LABELS).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dt", { className: "font-medium", children: v.label }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("dd", { className: "text-muted-ink", children: v.describe(s) })
         ] }, k)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("p", { className: "mt-4 text-[13.5px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("p", { className: "mt-4 text-[13.5px] text-muted-ink", children: [
           "Need help? ",
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: "/contact", className: "link", children: "Contact the Perkora team" }),
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { href: "/contact", className: "link", children: "Contact the Perkora team" }),
           "."
         ] })
       ] })
@@ -33391,38 +33895,38 @@ function HelpPage({ biz }) {
   ] });
 }
 function InvitePage({ state, cafeName, email, error, path: path5 = "/" }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "flex min-h-screen items-center justify-center px-4", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Card, { className: "w-full max-w-md p-7 text-center", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Logo, {}),
-    state === "invalid" ? /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h1", { className: "mt-6 text-[22px] font-semibold", children: "This invitation isn\u2019t valid" }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 text-muted-ink", children: "It may have expired, been revoked or already been used. Ask the caf\xE9 owner for a new link." })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("h1", { className: "mt-6 text-[22px] font-semibold", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "flex min-h-screen items-center justify-center px-4", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Card, { className: "w-full max-w-md p-7 text-center", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Logo, {}),
+    state === "invalid" ? /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h1", { className: "mt-6 text-[22px] font-semibold", children: "This invitation isn\u2019t valid" }),
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "mt-2 text-muted-ink", children: "It may have expired, been revoked or already been used. Ask the caf\xE9 owner for a new link." })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("h1", { className: "mt-6 text-[22px] font-semibold", children: [
         "Join ",
         cafeName,
         " on Perkora"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("p", { className: "mt-2 text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("p", { className: "mt-2 text-muted-ink", children: [
         "You\u2019ve been invited as staff to use the counter terminal. The invitation is for ",
         email,
         "."
       ] }),
-      error && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Alert, { tone: "error", className: "mt-4 text-left", children: error }),
-      state === "mismatch" && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(Alert, { tone: "warning", className: "mt-4 text-left", children: [
+      error && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Alert, { tone: "error", className: "mt-4 text-left", children: error }),
+      state === "mismatch" && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(Alert, { tone: "warning", className: "mt-4 text-left", children: [
         "You\u2019re signed in with a different email. Sign out and sign in or create an account with ",
         email,
         "."
       ] }),
-      state === "accept" && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Form, { action: "", className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { size: "lg", className: "w-full", children: "Accept invitation" }) }),
-      state === "signin" && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mt-6 grid gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { className: "btn btn-primary btn-lg", href: `/sign-up?next=${encodeURIComponent(path5)}`, children: "Create an account" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { className: "btn btn-secondary btn-lg", href: `/sign-in?next=${encodeURIComponent(path5)}`, children: "I already have an account" })
+      state === "accept" && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Form, { action: "", className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { size: "lg", className: "w-full", children: "Accept invitation" }) }),
+      state === "signin" && /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "mt-6 grid gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { className: "btn btn-primary btn-lg", href: `/sign-up?next=${encodeURIComponent(path5)}`, children: "Create an account" }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { className: "btn btn-secondary btn-lg", href: `/sign-in?next=${encodeURIComponent(path5)}`, children: "I already have an account" })
       ] }),
-      state === "mismatch" && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Form, { action: "/sign-out", className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { variant: "secondary", children: "Sign out" }) })
+      state === "mismatch" && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Form, { action: "/sign-out", className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Button, { variant: "secondary", children: "Sign out" }) })
     ] })
   ] }) });
 }
-var import_jsx_runtime40, TIMEZONES;
+var import_jsx_runtime43, TIMEZONES;
 var init_Admin = __esm({
   "src/ui/pages/dashboard/Admin.tsx"() {
     "use strict";
@@ -33436,7 +33940,7 @@ var init_Admin = __esm({
     init_format();
     init_analytics();
     init_segments();
-    import_jsx_runtime40 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime43 = __toESM(require_jsx_runtime(), 1);
     TIMEZONES = ["Asia/Famagusta", "Asia/Nicosia", "Europe/Istanbul", "Europe/Athens", "Europe/London", "Europe/Berlin", "UTC"];
   }
 });
@@ -33456,7 +33960,7 @@ async function storeImage(biz, userId, file, purpose) {
   const r2 = await one(
     db,
     `insert into uploads (business_id, uploaded_by, purpose, content_type, byte_size, sha256, data) values ($1,$2,$3,$4,$5,$6,$7) returning id`,
-    [biz.id, userId, purpose, type, file.data.length, import_node_crypto5.default.createHash("sha256").update(file.data).digest("hex"), file.data]
+    [biz.id, userId, purpose, type, file.data.length, import_node_crypto6.default.createHash("sha256").update(file.data).digest("hex"), file.data]
   );
   return r2.id;
 }
@@ -33498,7 +34002,7 @@ function dashboardSettingsRoutes(r2) {
       `select id, email, name, expires_at, created_at from staff_invitations where business_id = $1 and accepted_at is null and revoked_at is null and expires_at > now() order by created_at desc`,
       [biz.id]
     );
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(TeamPage, { biz, members, invitations, seatsUsed: await seatsUsed(biz.id), inviteLink: extra.inviteLink ?? null, errors: extra.errors, values: extra.values }), {
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(TeamPage, { biz, members, invitations, seatsUsed: await seatsUsed(biz.id), inviteLink: extra.inviteLink ?? null, errors: extra.errors, values: extra.values }), {
       title: "Team",
       noindex: true,
       status: extra.status
@@ -33566,15 +34070,15 @@ function dashboardSettingsRoutes(r2) {
   };
   r2.get("/invite/:token", async (ctx) => {
     const inv = await loadInvite(ctx.params.token);
-    if (!inv) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(InvitePage, { state: "invalid" }), { title: "Invitation", noindex: true, status: 404 });
+    if (!inv) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(InvitePage, { state: "invalid" }), { title: "Invitation", noindex: true, status: 404 });
     const state = !ctx.user ? "signin" : ctx.user.email.toLowerCase() === inv.email.toLowerCase() ? "accept" : "mismatch";
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(InvitePage, { state, cafeName: inv.cafe_name, email: inv.email, path: ctx.path }), { title: "Invitation", noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(InvitePage, { state, cafeName: inv.cafe_name, email: inv.email, path: ctx.path }), { title: "Invitation", noindex: true });
   });
   r2.post("/invite/:token", async (ctx) => {
     const inv = await loadInvite(ctx.params.token);
-    if (!inv) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(InvitePage, { state: "invalid" }), { title: "Invitation", noindex: true, status: 404 });
+    if (!inv) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(InvitePage, { state: "invalid" }), { title: "Invitation", noindex: true, status: 404 });
     if (!ctx.user) return redirect(ctx, `/sign-in?next=${encodeURIComponent(ctx.path)}`);
-    if (ctx.user.email.toLowerCase() !== inv.email.toLowerCase()) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(InvitePage, { state: "mismatch", cafeName: inv.cafe_name, email: inv.email }), { title: "Invitation", status: 403 });
+    if (ctx.user.email.toLowerCase() !== inv.email.toLowerCase()) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(InvitePage, { state: "mismatch", cafeName: inv.cafe_name, email: inv.email }), { title: "Invitation", status: 403 });
     await tx(async (q) => {
       const claimed = await q.query(`update staff_invitations set accepted_at = now(), accepted_by = $2 where id = $1 and accepted_at is null returning id`, [inv.id, ctx.user.id]);
       if (!claimed.rowCount) throw new DomainError("conflict", "This invitation was already used.", 409);
@@ -33640,7 +34144,7 @@ function dashboardSettingsRoutes(r2) {
     "/dashboard/settings",
     withBiz(
       { owner: true },
-      async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsProfilePage, { biz, values: await profileValues(biz), publicUrl: `${appUrl()}/c/${biz.slug}` }), { title: "Caf\xE9 Settings", noindex: true })
+      async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsProfilePage, { biz, values: await profileValues(biz), publicUrl: `${appUrl()}/c/${biz.slug}` }), { title: "Caf\xE9 Settings", noindex: true })
     )
   );
   r2.post(
@@ -33659,7 +34163,7 @@ function dashboardSettingsRoutes(r2) {
         if (hasMoney) errors.default_currency = "Purchases have already been recorded in the current currency. Contact support to change it.";
       }
       if (Object.keys(errors).length)
-        return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsProfilePage, { biz, values: v, errors, publicUrl: `${appUrl()}/c/${biz.slug}` }), { title: "Caf\xE9 Settings", status: 422, noindex: true });
+        return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsProfilePage, { biz, values: v, errors, publicUrl: `${appUrl()}/c/${biz.slug}` }), { title: "Caf\xE9 Settings", status: 422, noindex: true });
       await db.query(
         `update businesses set name=$2, description=$3, city=$4, address=$5, business_email=$6, phone=$7, website=$8, timezone=$9, default_currency=$10, updated_at=now() where id=$1`,
         [biz.id, v.name.trim(), v.description?.trim() || null, v.city?.trim() || null, v.address?.trim() || null, v.business_email?.trim() || null, v.phone?.trim() || null, v.website?.trim() || null, tz, currency]
@@ -33668,7 +34172,7 @@ function dashboardSettingsRoutes(r2) {
       return redirect(ctx, "/dashboard/settings", { type: "success", message: "Profile saved." });
     })
   );
-  r2.get("/dashboard/settings/branding", withBiz({ owner: true }, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsBrandingPage, { biz }), { title: "Branding", noindex: true })));
+  r2.get("/dashboard/settings/branding", withBiz({ owner: true }, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsBrandingPage, { biz }), { title: "Branding", noindex: true })));
   r2.post(
     "/dashboard/settings/branding",
     withBiz({ owner: true }, async (ctx, biz) => {
@@ -33692,7 +34196,7 @@ function dashboardSettingsRoutes(r2) {
           }
         } else if (field(body, `remove_${kind}`) === "1") images[kind] = null;
       }
-      if (Object.keys(errors).length) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsBrandingPage, { biz, errors }), { title: "Branding", status: 422, noindex: true });
+      if (Object.keys(errors).length) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsBrandingPage, { biz, errors }), { title: "Branding", status: 422, noindex: true });
       const listed = field(body, "directory_seen") === "1" ? field(body, "list_in_directory") === "1" : biz.listInDirectory;
       await db.query(
         `update businesses set primary_colour = $2, secondary_colour = $3,
@@ -33706,7 +34210,7 @@ function dashboardSettingsRoutes(r2) {
       return redirect(ctx, "/dashboard/settings/branding", { type: "success", message: "Saved. Customers see the new look straight away." });
     })
   );
-  r2.get("/dashboard/settings/loyalty", withBiz({ owner: true }, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsLoyaltyPage, { biz }), { title: "Loyalty settings", noindex: true })));
+  r2.get("/dashboard/settings/loyalty", withBiz({ owner: true }, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsLoyaltyPage, { biz }), { title: "Loyalty settings", noindex: true })));
   r2.post(
     "/dashboard/settings/loyalty",
     withBiz({ owner: true }, async (ctx, biz) => {
@@ -33726,7 +34230,7 @@ function dashboardSettingsRoutes(r2) {
       if (!parsed.success) {
         const errors = {};
         for (const i of parsed.error.issues) errors[String(i.path[0])] ??= "Enter a number in the allowed range.";
-        return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsLoyaltyPage, { biz, errors }), { title: "Loyalty settings", status: 422, noindex: true });
+        return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsLoyaltyPage, { biz, errors }), { title: "Loyalty settings", status: 422, noindex: true });
       }
       await db.query("update businesses set settings = $2, updated_at = now() where id = $1", [biz.id, parsed.data]);
       await audit(biz, ctx.user.id, "settings.loyalty", "business", biz.id, parsed.data);
@@ -33741,7 +34245,7 @@ function dashboardSettingsRoutes(r2) {
         `select count(*) filter (where marketing_consent)::int as opted, count(*)::int as total from loyalty_memberships where business_id = $1 and status = 'active'`,
         [biz.id]
       );
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsNotificationsPage, { biz, consent: c }), { title: "Notifications", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsNotificationsPage, { biz, consent: c }), { title: "Notifications", noindex: true });
     })
   );
   r2.post(
@@ -33756,7 +34260,7 @@ function dashboardSettingsRoutes(r2) {
     "/dashboard/settings/qr",
     withBiz({}, async (ctx, biz) => {
       const url = `${appUrl()}/c/${biz.slug}`;
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SettingsQrPage, { biz, url, svg: qrSvg(url, { ecc: "Q", title: "Join QR code" }) }), { title: "QR code", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SettingsQrPage, { biz, url, svg: qrSvg(url, { ecc: "Q", title: "Join QR code" }) }), { title: "QR code", noindex: true });
     })
   );
   r2.get(
@@ -33769,7 +34273,7 @@ function dashboardSettingsRoutes(r2) {
         [biz.id]
       );
       const rule = p ? `Collect ${p.config.stampsRequired} stamps and receive ${String(p.name ?? "a reward").toLowerCase()}.` : "";
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(QrPosterPage, { biz, svg: qrSvg(url, { ecc: "Q", title: "Join QR code" }), rule }), { title: `${biz.name} QR poster`, noindex: true, bodyClass: "bg-white" });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(QrPosterPage, { biz, svg: qrSvg(url, { ecc: "Q", title: "Join QR code" }), rule }), { title: `${biz.name} QR poster`, noindex: true, bodyClass: "bg-white" });
     })
   );
   r2.get(
@@ -33784,7 +34288,7 @@ function dashboardSettingsRoutes(r2) {
                 (select count(*)::int from campaigns where business_id = $1 and status = 'published' and (end_date is null or end_date >= current_date)) as campaigns`,
         [biz.id]
       );
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SubscriptionPage, { biz, plans, sub, usage }), { title: "Subscription", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SubscriptionPage, { biz, plans, sub, usage }), { title: "Subscription", noindex: true });
     })
   );
   r2.post(
@@ -33805,13 +34309,13 @@ function dashboardSettingsRoutes(r2) {
       return redirect(ctx, "/dashboard/subscription", { type: "success", message: `Request sent. Our team will confirm the ${plan.name} plan with you before anything changes.` });
     })
   );
-  r2.get("/dashboard/help", withBiz({}, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(HelpPage, { biz }), { title: "Help", noindex: true })));
+  r2.get("/dashboard/help", withBiz({}, async (ctx, biz) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(HelpPage, { biz }), { title: "Help", noindex: true })));
 }
-var import_node_crypto5, import_jsx_runtime41, appUrl;
+var import_node_crypto6, import_jsx_runtime44, appUrl;
 var init_dashboard_settings = __esm({
   "src/server/routes/dashboard-settings.tsx"() {
     "use strict";
-    import_node_crypto5 = __toESM(require("node:crypto"), 1);
+    import_node_crypto6 = __toESM(require("node:crypto"), 1);
     init_core();
     init_render();
     init_db();
@@ -33826,7 +34330,7 @@ var init_dashboard_settings = __esm({
     init_qrcode();
     init_dashboard_core();
     init_Admin();
-    import_jsx_runtime41 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime44 = __toESM(require_jsx_runtime(), 1);
     appUrl = () => config().APP_URL.replace(/\/$/, "");
   }
 });
@@ -33834,67 +34338,67 @@ var init_dashboard_settings = __esm({
 // src/ui/pages/Onboarding.tsx
 function Shell({ step, children, maxStep }) {
   const { user } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "min-h-screen bg-cream", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("header", { className: "border-b border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mx-auto flex h-16 max-w-[980px] items-center justify-between px-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Logo, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "text-[13.5px] text-muted-ink", children: user?.name })
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "min-h-screen bg-cream", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("header", { className: "border-b border-beige bg-paper", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mx-auto flex h-16 max-w-[980px] items-center justify-between px-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Logo, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "text-[13.5px] text-muted-ink", children: user?.name })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mx-auto max-w-[980px] px-4 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("ol", { className: "mb-8 grid grid-cols-5 gap-2", "aria-label": "Setup progress", children: STEPS.map((s, i) => {
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mx-auto max-w-[980px] px-4 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("ol", { className: "mb-8 grid grid-cols-5 gap-2", "aria-label": "Setup progress", children: STEPS.map((s, i) => {
         const n = i + 1;
         const done = n < step;
         const reachable = n <= maxStep;
-        const inner = /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold", n === step ? "bg-espresso text-cream" : done ? "bg-sage text-white" : "bg-beige text-muted-ink"), children: done ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LuCheck, { className: "h-4 w-4", "aria-hidden": "true" }) : n }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: cn("hidden text-[13px] md:block", n === step ? "font-semibold text-ink" : "text-muted-ink"), children: s })
+        const inner = /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(import_jsx_runtime45.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold", n === step ? "bg-espresso text-cream" : done ? "bg-sage text-white" : "bg-beige text-muted-ink"), children: done ? /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LuCheck, { className: "h-4 w-4", "aria-hidden": "true" }) : n }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: cn("hidden text-[13px] md:block", n === step ? "font-semibold text-ink" : "text-muted-ink"), children: s })
         ] });
-        return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { "aria-current": n === step ? "step" : void 0, children: reachable && n !== step ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: `/onboarding?step=${n}`, className: "flex items-center gap-2 border-t-2 border-beige-strong pt-3 hover:border-espresso", children: inner }) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: cn("flex items-center gap-2 border-t-2 pt-3", n === step ? "border-espresso" : "border-beige"), children: inner }) }, s);
+        return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("li", { "aria-current": n === step ? "step" : void 0, children: reachable && n !== step ? /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: `/onboarding?step=${n}`, className: "flex items-center gap-2 border-t-2 border-beige-strong pt-3 hover:border-espresso", children: inner }) : /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: cn("flex items-center gap-2 border-t-2 pt-3", n === step ? "border-espresso" : "border-beige"), children: inner }) }, s);
       }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(FlashMessage, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(FlashMessage, {}),
       children
     ] })
   ] });
 }
 function OnboardingStep1({ values, errors = {}, maxStep }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Shell, { step: 1, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-6 lg:grid-cols-[1fr_300px]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel p-6 sm:p-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h1", { className: "text-[26px] font-semibold", children: "Tell us about your caf\xE9" }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-1 text-muted-ink", children: "Customers see your name, logo and colours on their loyalty card." }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Form, { action: "/onboarding/1", multipart: true, className: "mt-6 grid gap-5", noValidate: true, children: [
-        errors.form && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Alert, { tone: "error", children: errors.form }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "hidden", name: "plan", value: values.plan ?? "" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Caf\xE9 name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name, autoFocus: true }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Owner\u2019s name", name: "owner_name", error: errors.owner_name, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "owner_name", required: true, maxLength: 120, defaultValue: values.owner_name, error: errors.owner_name }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Business email", name: "business_email", error: errors.business_email, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "business_email", type: "email", required: true, defaultValue: values.business_email, error: errors.business_email }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Phone", name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "phone", type: "tel", maxLength: 40, defaultValue: values.phone, error: errors.phone }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "City", name: "city", error: errors.city, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "city", required: true, maxLength: 80, defaultValue: values.city ?? "Girne", error: errors.city }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Website", name: "website", optional: true, error: errors.website, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "website", type: "url", maxLength: 200, defaultValue: values.website, placeholder: "https://", error: errors.website }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Shell, { step: 1, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel p-6 sm:p-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h1", { className: "text-[26px] font-semibold", children: "Tell us about your caf\xE9" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-1 text-muted-ink", children: "Customers see your name, logo and colours on their loyalty card." }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Form, { action: "/onboarding/1", multipart: true, className: "mt-6 grid gap-5", noValidate: true, children: [
+        errors.form && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Alert, { tone: "error", children: errors.form }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { type: "hidden", name: "plan", value: values.plan ?? "" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Caf\xE9 name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "name", required: true, maxLength: 120, defaultValue: values.name, error: errors.name, autoFocus: true }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Owner\u2019s name", name: "owner_name", error: errors.owner_name, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "owner_name", required: true, maxLength: 120, defaultValue: values.owner_name, error: errors.owner_name }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Business email", name: "business_email", error: errors.business_email, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "business_email", type: "email", required: true, defaultValue: values.business_email, error: errors.business_email }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Phone", name: "phone", optional: true, error: errors.phone, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "phone", type: "tel", maxLength: 40, defaultValue: values.phone, error: errors.phone }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "City", name: "city", error: errors.city, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "city", required: true, maxLength: 80, defaultValue: values.city ?? "Girne", error: errors.city }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Website", name: "website", optional: true, error: errors.website, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "website", type: "url", maxLength: 200, defaultValue: values.website, placeholder: "https://", error: errors.website }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Address", name: "address", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "address", maxLength: 200, defaultValue: values.address }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-5 sm:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Logo", name: "logo", optional: true, hint: "PNG, JPEG or WebP, max 1 MB.", error: errors.logo, className: "sm:col-span-1", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { id: "logo", name: "logo", type: "file", accept: "image/png,image/jpeg,image/webp", className: "text-[13.5px]" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Primary colour", name: "primary_colour", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { id: "primary_colour", type: "color", name: "primary_colour", defaultValue: values.primary_colour ?? "#3B2925", className: "h-11 w-full cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Secondary colour", name: "secondary_colour", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { id: "secondary_colour", type: "color", name: "secondary_colour", defaultValue: values.secondary_colour ?? "#B86F52", className: "h-11 w-full cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Address", name: "address", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "address", maxLength: 200, defaultValue: values.address }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Logo", name: "logo", optional: true, hint: "PNG, JPEG or WebP, max 1 MB.", error: errors.logo, className: "sm:col-span-1", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { id: "logo", name: "logo", type: "file", accept: "image/png,image/jpeg,image/webp", className: "text-[13.5px]" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Primary colour", name: "primary_colour", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { id: "primary_colour", type: "color", name: "primary_colour", defaultValue: values.primary_colour ?? "#3B2925", className: "h-11 w-full cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Secondary colour", name: "secondary_colour", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { id: "secondary_colour", type: "color", name: "secondary_colour", defaultValue: values.secondary_colour ?? "#B86F52", className: "h-11 w-full cursor-pointer rounded-[10px] border border-beige-strong bg-paper p-1" }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Currency", name: "default_currency", hint: "Points are calculated in this currency.", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Select, { name: "default_currency", defaultValue: values.default_currency ?? "EUR", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "EUR", children: "Euro (EUR)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "TRY", children: "Turkish lira (TRY)" })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Currency", name: "default_currency", hint: "Points are calculated in this currency.", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Select, { name: "default_currency", defaultValue: values.default_currency ?? "EUR", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "EUR", children: "Euro (EUR)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "TRY", children: "Turkish lira (TRY)" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Timezone", name: "timezone", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Select, { name: "timezone", defaultValue: values.timezone ?? "Asia/Famagusta", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "Asia/Famagusta", children: "Northern Cyprus (Asia/Famagusta)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "Europe/Istanbul", children: "Turkey (Europe/Istanbul)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "Asia/Nicosia", children: "Cyprus (Asia/Nicosia)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "Europe/London", children: "UK (Europe/London)" })
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Timezone", name: "timezone", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Select, { name: "timezone", defaultValue: values.timezone ?? "Asia/Famagusta", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "Asia/Famagusta", children: "Northern Cyprus (Asia/Famagusta)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "Europe/Istanbul", children: "Turkey (Europe/Istanbul)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "Asia/Nicosia", children: "Cyprus (Asia/Nicosia)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "Europe/London", children: "UK (Europe/London)" })
           ] }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Button, { size: "lg", children: "Save and continue" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Button, { size: "lg", children: "Save and continue" }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("aside", { className: "text-[14px] text-muted-ink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "font-medium text-ink", children: "What happens next" }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-1", children: "Choose how customers earn, set your first reward and download your QR code. Nothing goes live until you activate it in the last step." })
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("aside", { className: "text-[14px] text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "font-medium text-ink", children: "What happens next" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-1", children: "Choose how customers earn, set your first reward and download your QR code. Nothing goes live until you activate it in the last step." })
     ] })
   ] }) });
 }
@@ -33904,60 +34408,60 @@ function OnboardingStep2({ values, pointsAllowed, maxStep }) {
     { v: "points", title: "Points", body: "Customers earn points per euro or per purchase and spend them on rewards you choose." },
     { v: "both", title: "Both, side by side", body: "A stamp card for coffee plus points on everything else. Each balance is separate." }
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Shell, { step: 2, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel max-w-3xl p-6 sm:p-8", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h1", { className: "text-[26px] font-semibold", children: "How should customers earn?" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-1 text-muted-ink", children: "You can add or change programmes later." }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Form, { action: "/onboarding/2", className: "mt-6 grid gap-3", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Shell, { step: 2, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel max-w-3xl p-6 sm:p-8", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h1", { className: "text-[26px] font-semibold", children: "How should customers earn?" }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-1 text-muted-ink", children: "You can add or change programmes later." }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Form, { action: "/onboarding/2", className: "mt-6 grid gap-3", children: [
       opts.map((o) => {
         const disabled = o.v !== "stamps" && !pointsAllowed;
-        return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: cn("flex cursor-pointer gap-4 rounded-[14px] border border-beige-strong bg-paper p-4 has-[:checked]:border-espresso has-[:checked]:bg-cream", disabled && "cursor-not-allowed opacity-50"), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "radio", name: "programme_choice", value: o.v, defaultChecked: (values.programme_choice ?? "stamps") === o.v, disabled, className: "mt-1 h-4 w-4 accent-[#3B2925]" }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: "block text-[16px] font-semibold", children: [
+        return /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: cn("flex cursor-pointer gap-4 rounded-[14px] border border-beige-strong bg-paper p-4 has-[:checked]:border-espresso has-[:checked]:bg-cream", disabled && "cursor-not-allowed opacity-50"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { type: "radio", name: "programme_choice", value: o.v, defaultChecked: (values.programme_choice ?? "stamps") === o.v, disabled, className: "mt-1 h-4 w-4 accent-[#3B2925]" }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("span", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("span", { className: "block text-[16px] font-semibold", children: [
               o.title,
               " ",
-              o.v === "stamps" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "badge badge-sage ml-1", children: "Recommended" })
+              o.v === "stamps" && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "badge badge-sage ml-1", children: "Recommended" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "block text-[14.5px] text-muted-ink", children: disabled ? "Points are included in the Premium plan." : o.body })
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "block text-[14.5px] text-muted-ink", children: disabled ? "Points are included in the Premium plan." : o.body })
           ] })
         ] }, o.v);
       }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mt-3 flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Button, { size: "lg", children: "Continue" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "/onboarding?step=1", className: "btn btn-ghost btn-lg", children: "Back" })
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mt-3 flex gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Button, { size: "lg", children: "Continue" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/onboarding?step=1", className: "btn btn-ghost btn-lg", children: "Back" })
       ] })
     ] })
   ] }) });
 }
 function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, currency, maxStep }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Shell, { step: 3, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel max-w-3xl p-6 sm:p-8", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h1", { className: "text-[26px] font-semibold", children: "Set your first reward" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-1 text-muted-ink", children: "For example: \u201CCollect 9 stamps and receive 1 free regular coffee.\u201D" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Form, { action: "/onboarding/3", className: "mt-6 grid gap-5", noValidate: true, children: [
-      hasStamps && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("fieldset", { className: "grid gap-4 rounded-[14px] border border-beige p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Stamp card" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Qualifying purchase", name: "eligiblePurchase", error: errors.eligiblePurchase, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "eligiblePurchase", maxLength: 120, defaultValue: values.eligiblePurchase ?? "Any handcrafted coffee drink", error: errors.eligiblePurchase }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-4 sm:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Stamps required", name: "stampsRequired", error: errors.stampsRequired, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "stampsRequired", type: "number", min: 2, max: 30, defaultValue: values.stampsRequired ?? "9", error: errors.stampsRequired }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Reward", name: "rewardName", error: errors.rewardName, className: "sm:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "rewardName", maxLength: 80, defaultValue: values.rewardName ?? "Free Regular Coffee", error: errors.rewardName }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Shell, { step: 3, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel max-w-3xl p-6 sm:p-8", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h1", { className: "text-[26px] font-semibold", children: "Set your first reward" }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-1 text-muted-ink", children: "For example: \u201CCollect 9 stamps and receive 1 free regular coffee.\u201D" }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Form, { action: "/onboarding/3", className: "mt-6 grid gap-5", noValidate: true, children: [
+      hasStamps && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("fieldset", { className: "grid gap-4 rounded-[14px] border border-beige p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Stamp card" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Qualifying purchase", name: "eligiblePurchase", error: errors.eligiblePurchase, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "eligiblePurchase", maxLength: 120, defaultValue: values.eligiblePurchase ?? "Any handcrafted coffee drink", error: errors.eligiblePurchase }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Stamps required", name: "stampsRequired", error: errors.stampsRequired, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "stampsRequired", type: "number", min: 2, max: 30, defaultValue: values.stampsRequired ?? "9", error: errors.stampsRequired }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Reward", name: "rewardName", error: errors.rewardName, className: "sm:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "rewardName", maxLength: 80, defaultValue: values.rewardName ?? "Free Regular Coffee", error: errors.rewardName }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Reward valid for (days)", name: "validityDays", optional: true, hint: "After the card is completed. Empty means no expiry.", error: errors.validityDays, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "validityDays", type: "number", min: 1, max: 730, defaultValue: values.validityDays ?? "30", error: errors.validityDays }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Restrictions", name: "rewardDescription", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "rewardDescription", maxLength: 200, defaultValue: values.rewardDescription ?? "Any regular-size hot or iced coffee" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Reward valid for (days)", name: "validityDays", optional: true, hint: "After the card is completed. Empty means no expiry.", error: errors.validityDays, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "validityDays", type: "number", min: 1, max: 730, defaultValue: values.validityDays ?? "30", error: errors.validityDays }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Restrictions", name: "rewardDescription", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "rewardDescription", maxLength: 200, defaultValue: values.rewardDescription ?? "Any regular-size hot or iced coffee" }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Checkbox, { name: "allowWithOtherPromotions", value: "1", defaultChecked: values.allowWithOtherPromotions === "1", label: "Give a stamp even when the purchase used another promotion" })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Checkbox, { name: "allowWithOtherPromotions", value: "1", defaultChecked: values.allowWithOtherPromotions === "1", label: "Give a stamp even when the purchase used another promotion" })
       ] }),
-      hasPoints && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("fieldset", { className: "grid gap-4 rounded-[14px] border border-beige p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Points" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-4 sm:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: `Points per ${currency === "EUR" ? "\u20AC1" : "\u20BA1"}`, name: "pointsPerUnit", error: errors.pointsPerUnit, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "pointsPerUnit", type: "number", min: 1, max: 100, defaultValue: values.pointsPerUnit ?? "1" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "First points reward", name: "pointsRewardName", error: errors.pointsRewardName, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "pointsRewardName", maxLength: 80, defaultValue: values.pointsRewardName ?? "Free Coffee Upgrade" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Costs (points)", name: "pointsRewardCost", error: errors.pointsRewardCost, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "pointsRewardCost", type: "number", min: 1, max: 1e5, defaultValue: values.pointsRewardCost ?? "40" }) })
+      hasPoints && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("fieldset", { className: "grid gap-4 rounded-[14px] border border-beige p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Points" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: `Points per ${currency === "EUR" ? "\u20AC1" : "\u20BA1"}`, name: "pointsPerUnit", error: errors.pointsPerUnit, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "pointsPerUnit", type: "number", min: 1, max: 100, defaultValue: values.pointsPerUnit ?? "1" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "First points reward", name: "pointsRewardName", error: errors.pointsRewardName, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "pointsRewardName", maxLength: 80, defaultValue: values.pointsRewardName ?? "Free Coffee Upgrade" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Costs (points)", name: "pointsRewardCost", error: errors.pointsRewardCost, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "pointsRewardCost", type: "number", min: 1, max: 1e5, defaultValue: values.pointsRewardCost ?? "40" }) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("fieldset", { className: "grid gap-3 rounded-[14px] border border-beige p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Bring a friend" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("fieldset", { className: "grid gap-3 rounded-[14px] border border-beige p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Bring a friend" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
           Checkbox,
           {
             name: "referral_on",
@@ -33967,38 +34471,38 @@ function OnboardingStep3({ values, errors = {}, hasStamps, hasPoints, currency, 
             hint: "Each customer gets an invite link. When their friend makes a first purchase, both of them get a reward. You can change this later under Referrals."
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "hidden", name: "referral_seen", value: "1" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-3 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: `The inviter gets (${hasStamps ? "stamps" : "points"})`, name: "referral_referrer", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "referral_referrer", type: "number", min: 1, max: 1e3, defaultValue: values.referral_referrer ?? (hasStamps ? "1" : "20") }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: `Their friend gets (${hasStamps ? "stamps" : "points"})`, name: "referral_referred", optional: true, hint: "Leave empty for nothing.", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Input, { name: "referral_referred", type: "number", min: 0, max: 1e3, defaultValue: values.referral_referred ?? (hasStamps ? "1" : "20") }) })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { type: "hidden", name: "referral_seen", value: "1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: `The inviter gets (${hasStamps ? "stamps" : "points"})`, name: "referral_referrer", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "referral_referrer", type: "number", min: 1, max: 1e3, defaultValue: values.referral_referrer ?? (hasStamps ? "1" : "20") }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: `Their friend gets (${hasStamps ? "stamps" : "points"})`, name: "referral_referred", optional: true, hint: "Leave empty for nothing.", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "referral_referred", type: "number", min: 0, max: 1e3, defaultValue: values.referral_referred ?? (hasStamps ? "1" : "20") }) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Field, { label: "Programme terms", name: "terms", optional: true, hint: "Shown on your public loyalty page.", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Textarea, { name: "terms", rows: 3, maxLength: 2e3, defaultValue: values.terms ?? "One stamp per qualifying drink. Rewards have no cash value and cannot be exchanged." }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Button, { size: "lg", children: "Save and continue" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "/onboarding?step=2", className: "btn btn-ghost btn-lg", children: "Back" })
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Programme terms", name: "terms", optional: true, hint: "Shown on your public loyalty page.", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Textarea, { name: "terms", rows: 3, maxLength: 2e3, defaultValue: values.terms ?? "One stamp per qualifying drink. Rewards have no cash value and cannot be exchanged." }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "flex gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Button, { size: "lg", children: "Save and continue" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/onboarding?step=2", className: "btn btn-ghost btn-lg", children: "Back" })
       ] })
     ] })
   ] }) });
 }
 function OnboardingStep4({ svg, url, slug, maxStep, cafe, values, errors = {} }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Shell, { step: 4, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel p-6 sm:p-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h1", { className: "text-[26px] font-semibold", children: "Make it yours" }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-1 text-muted-ink", children: "Pick how your page and stamp card look to customers. Everything here is optional and can be changed later in Caf\xE9 Settings." }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Form, { action: "/onboarding/4", multipart: true, className: "mt-6 grid gap-6", id: "look-form", noValidate: true, children: [
-        errors.form && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Alert, { tone: "error", children: errors.form }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LookFields, { values, errors, primary: cafe.primaryColour, secondary: cafe.secondaryColour, bannerUrl: cafe.bannerUrl, showRemoveBanner: true }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Button, { size: "lg", children: "Continue to review" }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "/onboarding?step=3", className: "btn btn-ghost btn-lg", children: "Back" })
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Shell, { step: 4, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel p-6 sm:p-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h1", { className: "text-[26px] font-semibold", children: "Make it yours" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-1 text-muted-ink", children: "Pick how your page and stamp card look to customers. Everything here is optional and can be changed later in Caf\xE9 Settings." }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Form, { action: "/onboarding/4", multipart: true, className: "mt-6 grid gap-6", id: "look-form", noValidate: true, children: [
+        errors.form && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Alert, { tone: "error", children: errors.form }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LookFields, { values, errors, primary: cafe.primaryColour, secondary: cafe.secondaryColour, bannerUrl: cafe.bannerUrl, showRemoveBanner: true }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "flex gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Button, { size: "lg", children: "Continue to review" }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/onboarding?step=3", className: "btn btn-ghost btn-lg", children: "Back" })
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid content-start gap-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mb-2 text-[13px] font-medium text-muted-ink", children: "Live preview" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid content-start gap-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mb-2 text-[13px] font-medium text-muted-ink", children: "Live preview" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
           Island,
           {
             name: "BrandPreview",
@@ -34006,110 +34510,110 @@ function OnboardingStep4({ svg, url, slug, maxStep, cafe, values, errors = {} })
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel p-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h2", { className: "text-[16px] font-semibold", children: "Your QR code" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "mx-auto mt-3 aspect-square w-40 rounded-[12px] border border-beige bg-white p-1.5 [&>svg]:h-full [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: "Customers scan it to open your page and join:" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-1 break-all text-[13px] font-medium", children: url }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mt-3 grid gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("a", { href: `/c/${slug}/qr.svg?download=1`, className: "btn btn-secondary btn-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel p-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { className: "text-[16px] font-semibold", children: "Your QR code" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "mx-auto mt-3 aspect-square w-40 rounded-[12px] border border-beige bg-white p-1.5 [&>svg]:h-full [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: "Customers scan it to open your page and join:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-1 break-all text-[13px] font-medium", children: url }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mt-3 grid gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("a", { href: `/c/${slug}/qr.svg?download=1`, className: "btn btn-secondary btn-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Download QR code"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("a", { href: "/dashboard/settings/qr/poster", target: "_blank", className: "btn btn-secondary btn-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LuPrinter, { className: "h-4 w-4", "aria-hidden": "true" }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("a", { href: "/dashboard/settings/qr/poster", target: "_blank", className: "btn btn-secondary btn-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LuPrinter, { className: "h-4 w-4", "aria-hidden": "true" }),
             " Print-ready poster"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-2 text-[12.5px] text-muted-ink", children: "The page says \u201Cnot available yet\u201D until you activate in the next step." })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-2 text-[12.5px] text-muted-ink", children: "The page says \u201Cnot available yet\u201D until you activate in the next step." })
       ] })
     ] })
   ] }) });
 }
 function OnboardingStep5({ cafe, programmes, plan, maxStep }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Shell, { step: 5, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "grid gap-6 lg:grid-cols-[1fr_320px]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel p-6 sm:p-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h1", { className: "text-[26px] font-semibold", children: "Review and activate" }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("dl", { className: "mt-6 divide-y divide-beige", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Shell, { step: 5, maxStep, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel p-6 sm:p-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h1", { className: "text-[26px] font-semibold", children: "Review and activate" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("dl", { className: "mt-6 divide-y divide-beige", children: [
         ["Caf\xE9", `${cafe.name}${cafe.city ? `, ${cafe.city}` : ""}`, 1],
         ["Contact", [cafe.business_email, cafe.phone].filter(Boolean).join(" \xB7 "), 1],
         ["Currency and timezone", `${cafe.default_currency} \xB7 ${cafe.timezone}`, 1],
         ...programmes.map((p) => [p.name, p.summary, 3]),
         ["Plan", `${plan} \u2014 free trial, no payment taken`, 0]
-      ].map(([k, v, step]) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("dt", { className: "text-[14px] text-muted-ink", children: k }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("dd", { className: "flex items-center gap-3 text-[15px]", children: [
+      ].map(([k, v, step]) => /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("dt", { className: "text-[14px] text-muted-ink", children: k }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("dd", { className: "flex items-center gap-3 text-[15px]", children: [
           v,
-          step ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: `/onboarding?step=${step}`, className: "text-[13px] link", children: "Edit" }) : null
+          step ? /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: `/onboarding?step=${step}`, className: "text-[13px] link", children: "Edit" }) : null
         ] })
       ] }, String(k))) }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(Form, { action: "/onboarding/5", className: "mt-6 flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Button, { size: "lg", children: "Activate loyalty programme" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "/onboarding?step=4", className: "btn btn-ghost btn-lg", children: "Back" })
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Form, { action: "/onboarding/5", className: "mt-6 flex flex-wrap items-center gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Button, { size: "lg", children: "Activate loyalty programme" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/onboarding?step=4", className: "btn btn-ghost btn-lg", children: "Back" })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(CardPreview, { cafe })
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(CardPreview, { cafe })
   ] }) });
 }
 function CardPreview({ cafe }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "overflow-hidden rounded-[20px] border border-beige bg-paper", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex items-center gap-3 px-5 py-4", style: { background: cafe.primary_colour, color: contrastText(cafe.primary_colour) }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(CafeMark, { name: cafe.name, logoUrl: cafe.logo_upload_id ? `/media/${cafe.logo_upload_id}` : null, colour: cafe.secondary_colour, size: 38 }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "font-display text-[17px] font-semibold", children: cafe.name })
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "overflow-hidden rounded-[20px] border border-beige bg-paper", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "flex items-center gap-3 px-5 py-4", style: { background: cafe.primary_colour, color: contrastText(cafe.primary_colour) }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(CafeMark, { name: cafe.name, logoUrl: cafe.logo_upload_id ? `/media/${cafe.logo_upload_id}` : null, colour: cafe.secondary_colour, size: 38 }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "font-display text-[17px] font-semibold", children: cafe.name })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "p-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(StampGrid, { required: Number(cafe.stamps_required ?? 9), filled: 3, size: 34, color: cafe.secondary_colour, icon: cafe.settings?.stampIcon, ariaLabel: "Preview of the stamp card" }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-3 text-[14px] text-muted-ink", children: "Customer card preview" })
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "p-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(StampGrid, { required: Number(cafe.stamps_required ?? 9), filled: 3, size: 34, color: cafe.secondary_colour, icon: cafe.settings?.stampIcon, ariaLabel: "Preview of the stamp card" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-3 text-[14px] text-muted-ink", children: "Customer card preview" })
     ] })
   ] });
 }
 function OnboardingDone({ cafe, url, svg, programmes }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "min-h-screen bg-cream", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mx-auto max-w-[880px] px-4 py-12", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success text-white animate-stamp-in", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LuCheck, { className: "h-8 w-8", "aria-hidden": "true" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("h1", { className: "mt-5 text-[32px] font-semibold", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "min-h-screen bg-cream", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mx-auto max-w-[880px] px-4 py-12", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success text-white animate-stamp-in", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LuCheck, { className: "h-8 w-8", "aria-hidden": "true" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("h1", { className: "mt-5 text-[32px] font-semibold", children: [
         cafe.name,
         " is live on Perkora"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-2 text-muted-ink", children: "Customers can join now by scanning your QR code." })
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-2 text-muted-ink", children: "Customers can join now by scanning your QR code." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mt-10 grid gap-5 md:grid-cols-[280px_1fr]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "aspect-square w-full [&>svg]:h-full [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("a", { href: `/c/${cafe.slug}/qr.svg?download=1`, className: "btn btn-secondary btn-sm mt-3 w-full", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mt-10 grid grid-cols-1 gap-5 md:grid-cols-[280px_1fr]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "aspect-square w-full [&>svg]:h-full [&>svg]:w-full", dangerouslySetInnerHTML: { __html: svg } }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("a", { href: `/c/${cafe.slug}/qr.svg?download=1`, className: "btn btn-secondary btn-sm mt-3 w-full", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LuDownload, { className: "h-4 w-4", "aria-hidden": "true" }),
           " Download QR code"
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "panel p-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h2", { className: "text-[18px] font-semibold", children: "Your programme" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("ul", { className: "mt-2 space-y-1 text-[15px]", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("li", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("span", { className: "font-medium", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "panel p-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { className: "text-[18px] font-semibold", children: "Your programme" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("ul", { className: "mt-2 space-y-1 text-[15px]", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("li", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("span", { className: "font-medium", children: [
             p.name,
             ":"
           ] }),
           " ",
           p.summary
         ] }, p.name)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h2", { className: "mt-5 text-[18px] font-semibold", children: "Enrolment link" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Island, { name: "CopyField", props: { value: url, copyLabel: "Copy", copiedLabel: "Copied" } }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h2", { className: "mt-5 text-[18px] font-semibold", children: "Instructions for staff" }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("ol", { className: "mt-2 list-decimal space-y-1 pl-5 text-[14.5px] text-muted-ink", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "Open perkora on the till device and sign in, then open the Counter terminal." }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "Scan the customer\u2019s card or type their member code." }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "Tap Add stamp, check the change, and confirm." }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "When a reward is ready, tap Redeem and confirm before handing it over." })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { className: "mt-5 text-[18px] font-semibold", children: "Enrolment link" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Island, { name: "CopyField", props: { value: url, copyLabel: "Copy", copiedLabel: "Copied" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { className: "mt-5 text-[18px] font-semibold", children: "Instructions for staff" }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("ol", { className: "mt-2 list-decimal space-y-1 pl-5 text-[14.5px] text-muted-ink", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("li", { children: "Open perkora on the till device and sign in, then open the Counter terminal." }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("li", { children: "Scan the customer\u2019s card or type their member code." }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("li", { children: "Tap Add stamp, check the change, and confirm." }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("li", { children: "When a reward is ready, tap Redeem and confirm before handing it over." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-2 text-[13.5px] text-muted-ink", children: "Invite staff accounts under Team." }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "mt-6 flex flex-wrap gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "/dashboard", className: "btn btn-primary btn-lg", children: "Open the dashboard" }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: url, className: "btn btn-secondary btn-lg", target: "_blank", children: "View your loyalty page" })
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-2 text-[13.5px] text-muted-ink", children: "Invite staff accounts under Team." }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "mt-6 flex flex-wrap gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/dashboard", className: "btn btn-primary btn-lg", children: "Open the dashboard" }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: url, className: "btn btn-secondary btn-lg", target: "_blank", children: "View your loyalty page" })
         ] })
       ] })
     ] })
   ] }) });
 }
-var import_jsx_runtime42, STEPS;
+var import_jsx_runtime45, STEPS;
 var init_Onboarding = __esm({
   "src/ui/pages/Onboarding.tsx"() {
     "use strict";
@@ -34120,7 +34624,7 @@ var init_Onboarding = __esm({
     init_Island();
     init_branding_fields();
     init_cn();
-    import_jsx_runtime42 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime45 = __toESM(require_jsx_runtime(), 1);
     STEPS = ["Business information", "Loyalty programme", "Rewards", "Look & QR code", "Review"];
   }
 });
@@ -34129,7 +34633,7 @@ var init_Onboarding = __esm({
 function slugify(name) {
   const map2 = { \u00E7: "c", \u011F: "g", \u0131: "i", \u0130: "i", \u00F6: "o", \u015F: "s", \u00FC: "u", \u00E2: "a", \u00E9: "e", \u00E8: "e", \u00E0: "a", \u00F4: "o" };
   const s = name.toLowerCase().replace(/[çğıİöşüâéèàô]/g, (c) => map2[c] ?? c).normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50);
-  return s.length >= 3 ? s : `cafe-${s || import_node_crypto6.default.randomBytes(3).toString("hex")}`;
+  return s.length >= 3 ? s : `cafe-${s || import_node_crypto7.default.randomBytes(3).toString("hex")}`;
 }
 async function uniqueSlug(q, base) {
   let slug = base;
@@ -34138,7 +34642,7 @@ async function uniqueSlug(q, base) {
     if (!ex && !["dashboard", "admin", "demo", "api", "perkora"].includes(slug)) return slug;
     slug = `${base}-${i}`;
   }
-  return `${base}-${import_node_crypto6.default.randomBytes(3).toString("hex")}`;
+  return `${base}-${import_node_crypto7.default.randomBytes(3).toString("hex")}`;
 }
 async function ownerBusiness(ctx) {
   const biz = await loadBusinessContext(ctx);
@@ -34169,7 +34673,7 @@ function step4(ctx, biz, b, maxStep, values, errors = {}, status = 200) {
   const s = biz.settings;
   return render(
     ctx,
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
       OnboardingStep4,
       {
         svg: qrSvg(url, { ecc: "Q" }),
@@ -34195,11 +34699,11 @@ function onboardingRoutes(r2) {
     if (step === 1 || !biz) {
       const b2 = biz ? await one(db, "select * from businesses where id = $1", [biz.id]) : null;
       const values = b2 ? Object.fromEntries(Object.entries(b2).map(([k, v]) => [k, v === null ? "" : String(v)])) : { owner_name: ctx.user.name, business_email: ctx.user.email, plan: ctx.query.get("plan") ?? "" };
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingStep1, { values, maxStep }), { title: "Set up your caf\xE9", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingStep1, { values, maxStep }), { title: "Set up your caf\xE9", noindex: true });
     }
     const b = await one(db, "select * from businesses where id = $1", [biz.id]);
     if (step === 2) {
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingStep2, { values: { programme_choice: b.settings?.onboardingChoice ?? "stamps" }, pointsAllowed: biz.plan.features.features.points, maxStep }), {
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingStep2, { values: { programme_choice: b.settings?.onboardingChoice ?? "stamps" }, pointsAllowed: biz.plan.features.features.points, maxStep }), {
         title: "Loyalty programme",
         noindex: true
       });
@@ -34231,11 +34735,11 @@ function onboardingRoutes(r2) {
         if (ref.config.referrerGrant.kind === "bonus") values.referral_referrer = String(ref.config.referrerGrant.amount);
         values.referral_referred = ref.config.referredGrant.kind === "bonus" ? String(ref.config.referredGrant.amount) : "";
       }
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingStep3, { values, hasStamps: Boolean(stamps), hasPoints: Boolean(points), currency: biz.currency, maxStep }), { title: "First reward", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingStep3, { values, hasStamps: Boolean(stamps), hasPoints: Boolean(points), currency: biz.currency, maxStep }), { title: "First reward", noindex: true });
     }
     if (step === 4) return step4(ctx, biz, b, maxStep);
     const card = await maybeOne(db, `select p.config from loyalty_programmes p where p.business_id = $1 and p.programme_type = 'stamps' limit 1`, [biz.id]);
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingStep5, { cafe: { ...b, stamps_required: card?.config?.stampsRequired ?? 9 }, programmes: await programmeSummaries(biz.id, biz.currency), plan: biz.plan.name, maxStep }), {
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingStep5, { cafe: { ...b, stamps_required: card?.config?.stampsRequired ?? 9 }, programmes: await programmeSummaries(biz.id, biz.currency), plan: biz.plan.name, maxStep }), {
       title: "Review",
       noindex: true
     });
@@ -34263,7 +34767,7 @@ function onboardingRoutes(r2) {
       if (!logoType) errors.logo = "Upload a PNG, JPEG or WebP image.";
       else if (logo.data.length > 1024 * 1024) errors.logo = "The image is larger than 1 MB.";
     }
-    if (Object.keys(errors).length) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingStep1, { values: v, errors, maxStep: biz?.onboardingStep ?? 1 }), { title: "Set up your caf\xE9", status: 422, noindex: true });
+    if (Object.keys(errors).length) return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingStep1, { values: v, errors, maxStep: biz?.onboardingStep ?? 1 }), { title: "Set up your caf\xE9", status: 422, noindex: true });
     const tz = isValidTimezone(v.timezone) ? v.timezone : "Asia/Famagusta";
     const currency = v.default_currency === "TRY" ? "TRY" : "EUR";
     const planId = ["basic", "premium"].includes(v.plan) ? v.plan : "premium";
@@ -34292,7 +34796,7 @@ function onboardingRoutes(r2) {
         const up = await one(
           q,
           `insert into uploads (business_id, uploaded_by, purpose, content_type, byte_size, sha256, data) values ($1,$2,'logo',$3,$4,$5,$6) returning id`,
-          [id, ctx.user.id, logoType, logo.data.length, import_node_crypto6.default.createHash("sha256").update(logo.data).digest("hex"), logo.data]
+          [id, ctx.user.id, logoType, logo.data.length, import_node_crypto7.default.createHash("sha256").update(logo.data).digest("hex"), logo.data]
         );
         await q.query("update businesses set logo_upload_id = $2 where id = $1", [id, up.id]);
       }
@@ -34354,7 +34858,7 @@ function onboardingRoutes(r2) {
       if (!(n(v.pointsRewardCost) >= 1)) errors.pointsRewardCost = "Enter a points cost.";
     }
     if (Object.keys(errors).length)
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingStep3, { values: v, errors, hasStamps: Boolean(stamps), hasPoints: Boolean(points), currency: biz.currency, maxStep: biz.onboardingStep }), { title: "First reward", status: 422, noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingStep3, { values: v, errors, hasStamps: Boolean(stamps), hasPoints: Boolean(points), currency: biz.currency, maxStep: biz.onboardingStep }), { title: "First reward", status: 422, noindex: true });
     await tx(async (q) => {
       if (stamps) {
         const cfg = { ...stamps.config, stampsRequired: n(v.stampsRequired), eligiblePurchase: v.eligiblePurchase.trim(), allowWithOtherPromotions: v.allowWithOtherPromotions === "1" };
@@ -34442,10 +34946,10 @@ function onboardingRoutes(r2) {
     if (biz.status === "onboarding") return redirect(ctx, "/onboarding");
     const cafe = await one(db, "select * from businesses where id = $1", [biz.id]);
     const url = `${appUrl2()}/c/${cafe.slug}`;
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(OnboardingDone, { cafe, url, svg: qrSvg(url, { ecc: "Q" }), programmes: await programmeSummaries(biz.id, biz.currency) }), { title: "You\u2019re live", noindex: true });
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OnboardingDone, { cafe, url, svg: qrSvg(url, { ecc: "Q" }), programmes: await programmeSummaries(biz.id, biz.currency) }), { title: "You\u2019re live", noindex: true });
   });
 }
-var import_node_crypto6, import_jsx_runtime43, appUrl2;
+var import_node_crypto7, import_jsx_runtime46, appUrl2;
 var init_onboarding = __esm({
   "src/server/routes/onboarding.tsx"() {
     "use strict";
@@ -34462,126 +34966,126 @@ var init_onboarding = __esm({
     init_dashboard_settings();
     init_schemas();
     init_Onboarding();
-    import_node_crypto6 = __toESM(require("node:crypto"), 1);
-    import_jsx_runtime43 = __toESM(require_jsx_runtime(), 1);
+    import_node_crypto7 = __toESM(require("node:crypto"), 1);
+    import_jsx_runtime46 = __toESM(require_jsx_runtime(), 1);
     appUrl2 = () => config().APP_URL.replace(/\/$/, "");
   }
 });
 
 // src/ui/pages/dashboard/Manage.tsx
 function LockedFeature({ title, plan }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex items-start gap-3 rounded-[14px] border border-dashed border-beige-strong bg-paper p-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuLock, { className: "mt-0.5 h-5 w-5 text-muted", "aria-hidden": "true" }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "text-[14.5px] font-medium", children: title }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "text-[13.5px] text-muted-ink", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-start gap-3 rounded-[14px] border border-dashed border-beige-strong bg-paper p-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuLock, { className: "mt-0.5 h-5 w-5 text-muted", "aria-hidden": "true" }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-[14.5px] font-medium", children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "text-[13.5px] text-muted-ink", children: [
         "Not included in the ",
         plan,
         " plan.",
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/subscription", className: "link", children: "Compare plans" })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/subscription", className: "link", children: "Compare plans" })
       ] })
     ] })
   ] });
 }
 function StatusBadge({ s }) {
   const tone = s === "active" ? "success" : s === "scheduled" ? "sage" : s === "draft" ? "neutral" : s === "paused" ? "warning" : "neutral";
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Badge, { tone, children: s });
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone, children: s });
 }
 function ProgrammesPage({ biz, programmes, challenges, canAddProgramme, pointsAllowed, challengesAllowed }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "programmes", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "programmes", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       PageHeader,
       {
         title: "Loyalty Programmes",
         description: "How customers earn. Stamp cards turn full cards into rewards; points programmes let customers spend points on rewards you choose.",
-        actions: canAddProgramme ? /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("a", { href: "/dashboard/programmes/new", className: "btn btn-primary btn-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
+        actions: canAddProgramme ? /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("a", { href: "/dashboard/programmes/new", className: "btn btn-primary btn-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
           " New programme"
         ] }) : void 0
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "grid gap-4 lg:grid-cols-2", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex items-start justify-between gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { className: "flex h-10 w-10 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink", children: p.programme_type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuStamp, { className: "h-5 w-5", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuStar, { className: "h-5 w-5", "aria-hidden": "true" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[17px] font-semibold", children: p.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "text-[13px] text-muted-ink", children: p.programme_type === "stamps" ? "Stamp card" : "Points" })
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "grid grid-cols-1 gap-4 lg:grid-cols-2", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-start justify-between gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-center gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("span", { className: "flex h-10 w-10 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink", children: p.programme_type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuStamp, { className: "h-5 w-5", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuStar, { className: "h-5 w-5", "aria-hidden": "true" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[17px] font-semibold", children: p.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-[13px] text-muted-ink", children: p.programme_type === "stamps" ? "Stamp card" : "Points" })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(StatusBadge, { s: p.status })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StatusBadge, { s: p.status })
       ] }),
-      p.programme_type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "mt-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(StampGrid, { required: Number(p.config.stampsRequired), filled: Math.max(0, Number(p.config.stampsRequired) - 2), size: 30, ariaLabel: "Example card" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "mt-3 text-[14.5px]", children: [
+      p.programme_type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mt-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StampGrid, { required: Number(p.config.stampsRequired), filled: Math.max(0, Number(p.config.stampsRequired) - 2), size: 30, ariaLabel: "Example card" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "mt-3 text-[14.5px]", children: [
           "Collect ",
           p.config.stampsRequired,
           " stamps \u2192 ",
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { className: "font-medium", children: p.card_reward ?? "no reward set" })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("span", { className: "font-medium", children: p.card_reward ?? "no reward set" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "text-[13px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "text-[13px] text-muted-ink", children: [
           "Qualifying: ",
           p.config.eligiblePurchase,
           " \xB7 up to ",
           p.config.maxStampsPerTransaction ?? 1,
           " per purchase"
         ] })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "mt-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "text-[14.5px]", children: p.config.earnMode === "per_currency_unit" ? `${p.config.pointsPerUnit} point${p.config.pointsPerUnit === 1 ? "" : "s"} per ${biz.currency === "EUR" ? "\u20AC1" : "\u20BA1"} spent` : `${p.config.pointsPerPurchase} points per qualifying purchase` }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "text-[13px] text-muted-ink", children: [
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mt-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-[14.5px]", children: p.config.earnMode === "per_currency_unit" ? `${p.config.pointsPerUnit} point${p.config.pointsPerUnit === 1 ? "" : "s"} per ${biz.currency === "EUR" ? "\u20AC1" : "\u20BA1"} spent` : `${p.config.pointsPerPurchase} points per qualifying purchase` }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "text-[13px] text-muted-ink", children: [
           "Qualifying: ",
           p.config.eligiblePurchase
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "mt-4 flex items-center justify-between border-t border-beige pt-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("span", { className: "text-[13px] text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mt-4 flex items-center justify-between border-t border-beige pt-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("span", { className: "text-[13px] text-muted-ink", children: [
           num2(p.members),
           " members with a balance"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: `/dashboard/programmes/${p.id}`, className: "btn btn-secondary btn-sm", children: "Edit" })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: `/dashboard/programmes/${p.id}`, className: "btn btn-secondary btn-sm", children: "Edit" })
       ] })
     ] }, p.id)) }),
-    !pointsAllowed && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LockedFeature, { title: "Points-based loyalty", plan: biz.plan.name }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("section", { className: "mt-10", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "mb-4 flex items-end justify-between gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[20px] font-semibold", children: "Visit challenges" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "text-[14px] text-muted-ink", children: "Optional streaks such as \u201Cvisit on three different days this week\u201D. Only verified visits count; several purchases in one visit count once." })
+    !pointsAllowed && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LockedFeature, { title: "Points-based loyalty", plan: biz.plan.name }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("section", { className: "mt-10", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mb-4 flex items-end justify-between gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[20px] font-semibold", children: "Visit challenges" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-[14px] text-muted-ink", children: "Optional streaks such as \u201Cvisit on three different days this week\u201D. Only verified visits count; several purchases in one visit count once." })
         ] }),
-        challengesAllowed && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("a", { href: "/dashboard/challenges/new", className: "btn btn-secondary btn-sm shrink-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
+        challengesAllowed && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("a", { href: "/dashboard/challenges/new", className: "btn btn-secondary btn-sm shrink-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
           " New challenge"
         ] })
       ] }),
-      !challengesAllowed ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LockedFeature, { title: "Configurable visit streaks", plan: biz.plan.name }) : challenges.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuTrophy, { className: "h-6 w-6" }), title: "No challenges yet", body: "Challenges are optional. Create one if you want to reward regular visits." }) }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("table", { className: "table", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Challenge" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Rule" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Reward" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Dates" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { className: "text-right", children: "Completed" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", {})
+      !challengesAllowed ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LockedFeature, { title: "Configurable visit streaks", plan: biz.plan.name }) : challenges.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuTrophy, { className: "h-6 w-6" }), title: "No challenges yet", body: "Challenges are optional. Create one if you want to reward regular visits." }) }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("table", { className: "table", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Challenge" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide", children: "Rule" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Reward" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide", children: "Dates" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide text-right", children: "Completed" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", {})
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("tbody", { children: challenges.map((c) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "font-medium", children: c.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("td", { className: "text-[13.5px]", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("tbody", { children: challenges.map((c) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "font-medium", children: c.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "col-wide text-[13.5px]", children: [
             c.required_count,
             " ",
             c.rule_type === "distinct_days" ? "different days" : "visits",
             " per ",
             c.period === "campaign" ? "challenge" : c.period
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-[13.5px]", children: c.reward_label }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("td", { className: "whitespace-nowrap text-[13.5px] text-muted-ink", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "text-[13.5px]", children: c.reward_label }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "col-wide whitespace-nowrap text-[13.5px] text-muted-ink", children: [
             dateShort(c.start_date, biz.timezone),
             " \u2013 ",
             dateShort(c.end_date, biz.timezone)
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-right tnum", children: c.completions }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(StatusBadge, { s: c.status }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { className: "btn btn-ghost btn-sm", href: `/dashboard/challenges/${c.id}`, children: "Edit" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "col-wide text-right tnum", children: c.completions }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StatusBadge, { s: c.status }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { className: "btn btn-ghost btn-sm", href: `/dashboard/challenges/${c.id}`, children: "Edit" }) })
         ] }, c.id)) })
       ] }) }) })
     ] })
@@ -34589,139 +35093,139 @@ function ProgrammesPage({ biz, programmes, challenges, canAddProgramme, pointsAl
 }
 function ProgrammeFormPage({ biz, mode, type, values, errors = {}, pointsAllowed }) {
   const action = mode === "new" ? "/dashboard/programmes/new" : `/dashboard/programmes/${values.id}`;
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "programmes", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(PageHeader, { title: mode === "new" ? "New loyalty programme" : `Edit ${values.name}`, back: { href: "/dashboard/programmes", label: "Loyalty Programmes" } }),
-    mode === "new" && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "mb-4 flex gap-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/programmes/new?type=stamps", className: cn("btn btn-sm", type === "stamps" ? "btn-primary" : "btn-secondary"), children: "Stamp card" }),
-      pointsAllowed ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/programmes/new?type=points", className: cn("btn btn-sm", type === "points" ? "btn-primary" : "btn-secondary"), children: "Points" }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("span", { className: "btn btn-secondary btn-sm", "aria-disabled": "true", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuLock, { className: "h-3.5 w-3.5", "aria-hidden": "true" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "programmes", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: mode === "new" ? "New loyalty programme" : `Edit ${values.name}`, back: { href: "/dashboard/programmes", label: "Loyalty Programmes" } }),
+    mode === "new" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mb-4 flex gap-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/programmes/new?type=stamps", className: cn("btn btn-sm", type === "stamps" ? "btn-primary" : "btn-secondary"), children: "Stamp card" }),
+      pointsAllowed ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/programmes/new?type=points", className: cn("btn btn-sm", type === "points" ? "btn-primary" : "btn-secondary"), children: "Points" }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("span", { className: "btn btn-secondary btn-sm", "aria-disabled": "true", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuLock, { className: "h-3.5 w-3.5", "aria-hidden": "true" }),
         " Points (Premium plan)"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action, className: "grid gap-5", noValidate: true, children: [
-      errors.form && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Alert, { tone: "error", children: errors.form }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("input", { type: "hidden", name: "programme_type", value: type }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Programme name", name: "name", error: errors.name, hint: "Shown to customers, e.g. \u201CCoffee Club\u201D.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, error: errors.name }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Qualifying purchases", name: "eligiblePurchase", error: errors.eligiblePurchase, hint: "Be specific so staff and customers know what counts.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "eligiblePurchase", required: true, maxLength: 120, defaultValue: values.eligiblePurchase, placeholder: type === "stamps" ? "Any handcrafted coffee drink" : "Any purchase", error: errors.eligiblePurchase }) }),
-      type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_jsx_runtime44.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Stamps for a reward", name: "stampsRequired", error: errors.stampsRequired, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "stampsRequired", type: "number", min: 2, max: 30, required: true, defaultValue: values.stampsRequired ?? "9", error: errors.stampsRequired }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Most stamps per purchase", name: "maxStampsPerTransaction", error: errors.maxStampsPerTransaction, hint: "Stops typing mistakes at the counter.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "maxStampsPerTransaction", type: "number", min: 1, max: 10, required: true, defaultValue: values.maxStampsPerTransaction ?? "1", error: errors.maxStampsPerTransaction }) })
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action, className: "grid gap-5", noValidate: true, children: [
+      errors.form && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Alert, { tone: "error", children: errors.form }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "programme_type", value: type }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Programme name", name: "name", error: errors.name, hint: "Shown to customers, e.g. \u201CCoffee Club\u201D.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, error: errors.name }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Qualifying purchases", name: "eligiblePurchase", error: errors.eligiblePurchase, hint: "Be specific so staff and customers know what counts.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "eligiblePurchase", required: true, maxLength: 120, defaultValue: values.eligiblePurchase, placeholder: type === "stamps" ? "Any handcrafted coffee drink" : "Any purchase", error: errors.eligiblePurchase }) }),
+      type === "stamps" ? /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_jsx_runtime47.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Stamps for a reward", name: "stampsRequired", error: errors.stampsRequired, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "stampsRequired", type: "number", min: 2, max: 30, required: true, defaultValue: values.stampsRequired ?? "9", error: errors.stampsRequired }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Most stamps per purchase", name: "maxStampsPerTransaction", error: errors.maxStampsPerTransaction, hint: "Stops typing mistakes at the counter.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "maxStampsPerTransaction", type: "number", min: 1, max: 10, required: true, defaultValue: values.maxStampsPerTransaction ?? "1", error: errors.maxStampsPerTransaction }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Reward for a full card" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Reward name", name: "rewardName", error: errors.rewardName, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "rewardName", required: true, maxLength: 80, defaultValue: values.rewardName ?? "Free Regular Coffee", error: errors.rewardName }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Description", name: "rewardDescription", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "rewardDescription", maxLength: 200, defaultValue: values.rewardDescription }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Valid for (days after unlocking)", name: "validityDays", optional: true, error: errors.validityDays, hint: "Leave empty for no expiry.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "validityDays", type: "number", min: 1, max: 730, defaultValue: values.validityDays, error: errors.validityDays }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Icon", name: "rewardIcon", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: "rewardIcon", defaultValue: values.rewardIcon ?? "coffee", children: REWARD_ICONS.map((i) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: i, children: i }, i)) }) })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Reward for a full card" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Reward name", name: "rewardName", error: errors.rewardName, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "rewardName", required: true, maxLength: 80, defaultValue: values.rewardName ?? "Free Regular Coffee", error: errors.rewardName }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Description", name: "rewardDescription", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "rewardDescription", maxLength: 200, defaultValue: values.rewardDescription }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Valid for (days after unlocking)", name: "validityDays", optional: true, error: errors.validityDays, hint: "Leave empty for no expiry.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "validityDays", type: "number", min: 1, max: 730, defaultValue: values.validityDays, error: errors.validityDays }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Icon", name: "rewardIcon", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: "rewardIcon", defaultValue: values.rewardIcon ?? "coffee", children: REWARD_ICONS.map((i) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: i, children: i }, i)) }) })
             ] })
           ] })
         ] })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_jsx_runtime44.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "How customers earn", name: "earnMode", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "earnMode", defaultValue: values.earnMode ?? "per_currency_unit", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("option", { value: "per_currency_unit", children: [
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_jsx_runtime47.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "How customers earn", name: "earnMode", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "earnMode", defaultValue: values.earnMode ?? "per_currency_unit", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("option", { value: "per_currency_unit", children: [
             "Points per ",
             biz.currency === "EUR" ? "\u20AC1" : "\u20BA1",
             " spent"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "per_purchase", children: "Fixed points per qualifying purchase" })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "per_purchase", children: "Fixed points per qualifying purchase" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: `Points per ${biz.currency === "EUR" ? "\u20AC1" : "\u20BA1"}`, name: "pointsPerUnit", error: errors.pointsPerUnit, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "pointsPerUnit", type: "number", min: 1, max: 100, defaultValue: values.pointsPerUnit ?? "1", error: errors.pointsPerUnit }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Points per purchase", name: "pointsPerPurchase", error: errors.pointsPerPurchase, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "pointsPerPurchase", type: "number", min: 1, max: 1e3, defaultValue: values.pointsPerPurchase ?? "10", error: errors.pointsPerPurchase }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Most points per purchase", name: "maxPointsPerTransaction", error: errors.maxPointsPerTransaction, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "maxPointsPerTransaction", type: "number", min: 1, max: 1e5, defaultValue: values.maxPointsPerTransaction ?? "500", error: errors.maxPointsPerTransaction }) })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: `Points per ${biz.currency === "EUR" ? "\u20AC1" : "\u20BA1"}`, name: "pointsPerUnit", error: errors.pointsPerUnit, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "pointsPerUnit", type: "number", min: 1, max: 100, defaultValue: values.pointsPerUnit ?? "1", error: errors.pointsPerUnit }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Points per purchase", name: "pointsPerPurchase", error: errors.pointsPerPurchase, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "pointsPerPurchase", type: "number", min: 1, max: 1e3, defaultValue: values.pointsPerPurchase ?? "10", error: errors.pointsPerPurchase }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Most points per purchase", name: "maxPointsPerTransaction", error: errors.maxPointsPerTransaction, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "maxPointsPerTransaction", type: "number", min: 1, max: 1e5, defaultValue: values.maxPointsPerTransaction ?? "500", error: errors.maxPointsPerTransaction }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: `Minimum spend (${biz.currency})`, name: "minSpend", optional: true, error: errors.minSpend, hint: "Purchases below this earn no points.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "minSpend", inputMode: "decimal", defaultValue: values.minSpend, placeholder: "0.00", error: errors.minSpend }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "text-[13.5px] text-muted-ink", children: "Add rewards customers can spend points on under Rewards after saving." })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: `Minimum spend (${biz.currency})`, name: "minSpend", optional: true, error: errors.minSpend, hint: "Purchases below this earn no points.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "minSpend", inputMode: "decimal", defaultValue: values.minSpend, placeholder: "0.00", error: errors.minSpend }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-[13.5px] text-muted-ink", children: "Add rewards customers can spend points on under Rewards after saving." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Checkbox, { name: "allowWithOtherPromotions", value: "1", defaultChecked: values.allowWithOtherPromotions === "1", label: "Give credit for purchases that already used another discount or promotion" }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Programme terms", name: "terms", optional: true, hint: "Shown on your public loyalty page.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Textarea, { name: "terms", rows: 3, maxLength: 2e3, defaultValue: values.terms }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "status", defaultValue: values.status ?? "active", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "active", children: "Active" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "paused", children: "Paused" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "archived", children: "Archived" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Checkbox, { name: "allowWithOtherPromotions", value: "1", defaultChecked: values.allowWithOtherPromotions === "1", label: "Give credit for purchases that already used another discount or promotion" }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Programme terms", name: "terms", optional: true, hint: "Shown on your public loyalty page.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Textarea, { name: "terms", rows: 3, maxLength: 2e3, defaultValue: values.terms }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "status", defaultValue: values.status ?? "active", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "active", children: "Active" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "paused", children: "Paused" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "archived", children: "Archived" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Starts", name: "start_date", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "start_date", type: "date", defaultValue: values.start_date }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Ends", name: "end_date", optional: true, error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "end_date", type: "date", defaultValue: values.end_date, error: errors.end_date }) })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Starts", name: "start_date", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "start_date", type: "date", defaultValue: values.start_date }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Ends", name: "end_date", optional: true, error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "end_date", type: "date", defaultValue: values.end_date, error: errors.end_date }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { children: mode === "new" ? "Create programme" : "Save changes" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/programmes", className: "btn btn-ghost", children: "Cancel" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { children: mode === "new" ? "Create programme" : "Save changes" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/programmes", className: "btn btn-ghost", children: "Cancel" })
       ] })
     ] }) })
   ] });
 }
 function ChallengeFormPage({ biz, mode, values, errors = {}, rewards, programmes, segmentsAllowed }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "programmes", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(PageHeader, { title: mode === "new" ? "New visit challenge" : `Edit ${values.name}`, back: { href: "/dashboard/programmes", label: "Loyalty Programmes" } }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action: mode === "new" ? "/dashboard/challenges/new" : `/dashboard/challenges/${values.id}`, className: "grid gap-5", noValidate: true, children: [
-      errors.form && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Alert, { tone: "error", children: errors.form }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Challenge name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, placeholder: "Three-day week", error: errors.name }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Description", name: "description", optional: true, hint: "Explain the rule in one sentence for customers.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "description", maxLength: 200, defaultValue: values.description, placeholder: "Visit on three different days this week and get a free pastry." }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Count", name: "rule_type", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "rule_type", defaultValue: values.rule_type ?? "distinct_days", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "distinct_days", children: "Different visit days" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "visit_count", children: "Verified visits" })
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "programmes", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: mode === "new" ? "New visit challenge" : `Edit ${values.name}`, back: { href: "/dashboard/programmes", label: "Loyalty Programmes" } }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: mode === "new" ? "/dashboard/challenges/new" : `/dashboard/challenges/${values.id}`, className: "grid gap-5", noValidate: true, children: [
+      errors.form && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Alert, { tone: "error", children: errors.form }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Challenge name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, placeholder: "Three-day week", error: errors.name }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Description", name: "description", optional: true, hint: "Explain the rule in one sentence for customers.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "description", maxLength: 200, defaultValue: values.description, placeholder: "Visit on three different days this week and get a free pastry." }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Count", name: "rule_type", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "rule_type", defaultValue: values.rule_type ?? "distinct_days", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "distinct_days", children: "Different visit days" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "visit_count", children: "Verified visits" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Required", name: "required_count", error: errors.required_count, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "required_count", type: "number", min: 1, max: 100, defaultValue: values.required_count ?? "3", error: errors.required_count }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Within", name: "period", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "period", defaultValue: values.period ?? "week", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "week", children: "Each week (Mon\u2013Sun)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "month", children: "Each month" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "campaign", children: "The whole challenge" })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Required", name: "required_count", error: errors.required_count, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "required_count", type: "number", min: 1, max: 100, defaultValue: values.required_count ?? "3", error: errors.required_count }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Within", name: "period", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "period", defaultValue: values.period ?? "week", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "week", children: "Each week (Mon\u2013Sun)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "month", children: "Each month" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "campaign", children: "The whole challenge" })
         ] }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Starts", name: "start_date", error: errors.start_date, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "start_date", type: "date", required: true, defaultValue: values.start_date, error: errors.start_date }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Ends", name: "end_date", error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "end_date", type: "date", required: true, defaultValue: values.end_date, error: errors.end_date }) })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Starts", name: "start_date", error: errors.start_date, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "start_date", type: "date", required: true, defaultValue: values.start_date, error: errors.start_date }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Ends", name: "end_date", error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "end_date", type: "date", required: true, defaultValue: values.end_date, error: errors.end_date }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Reward" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4 sm:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Type", name: "reward_kind", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "reward_kind", defaultValue: values.reward_kind ?? "voucher", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "voucher", children: "A reward" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "bonus", children: "Bonus stamps or points" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Reward" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Type", name: "reward_kind", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "reward_kind", defaultValue: values.reward_kind ?? "voucher", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "voucher", children: "A reward" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "bonus", children: "Bonus stamps or points" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { "data-show-when": "reward_kind:voucher", className: "sm:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Reward", name: "reward_id", error: errors.reward_id, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "reward_id", defaultValue: values.reward_id, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "", children: "Choose\u2026" }),
-            rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { "data-show-when": "reward_kind:voucher", className: "sm:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Reward", name: "reward_id", error: errors.reward_id, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "reward_id", defaultValue: values.reward_id, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "", children: "Choose\u2026" }),
+            rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
           ] }) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { "data-show-when": "reward_kind:bonus", className: "sm:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Bonus", name: "bonus_amount", error: errors.bonus_amount, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "bonus_amount", type: "number", min: 1, max: 1e4, defaultValue: values.bonus_amount, className: "w-24" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: "bonus_programme_id", defaultValue: values.bonus_programme_id, children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: p.id, children: p.name }, p.id)) })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { "data-show-when": "reward_kind:bonus", className: "sm:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Bonus", name: "bonus_amount", error: errors.bonus_amount, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "bonus_amount", type: "number", min: 1, max: 1e4, defaultValue: values.bonus_amount, className: "w-24" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: "bonus_programme_id", defaultValue: values.bonus_programme_id, children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: p.id, children: p.name }, p.id)) })
           ] }) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Island, { name: "ShowWhen", props: {} }),
-        rewards.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: "Create a campaign reward under Rewards to use it here." })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Island, { name: "ShowWhen", props: {} }),
+        rewards.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: "Create a campaign reward under Rewards to use it here." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Times a customer can complete it", name: "max_completions_per_customer", error: errors.max_completions_per_customer, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "max_completions_per_customer", type: "number", min: 1, max: 520, defaultValue: values.max_completions_per_customer ?? "4" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Who can take part", name: "eligible_segment", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "eligible_segment", defaultValue: values.eligible_segment ?? "all", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "all", children: "All members" }),
-          segmentsAllowed && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_jsx_runtime44.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "new", children: "New members" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "active", children: "Active members" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "frequent", children: "Frequent visitors" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "inactive", children: "Not visited recently" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Times a customer can complete it", name: "max_completions_per_customer", error: errors.max_completions_per_customer, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "max_completions_per_customer", type: "number", min: 1, max: 520, defaultValue: values.max_completions_per_customer ?? "4" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Who can take part", name: "eligible_segment", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "eligible_segment", defaultValue: values.eligible_segment ?? "all", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "all", children: "All members" }),
+          segmentsAllowed && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_jsx_runtime47.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "new", children: "New members" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "active", children: "Active members" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "frequent", children: "Frequent visitors" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "inactive", children: "Not visited recently" })
           ] })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Visibility", name: "visibility", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "visibility", defaultValue: values.visibility ?? "public", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "public", children: "Shown to eligible members" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "invite_only", children: "Invitation only" })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Visibility", name: "visibility", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "visibility", defaultValue: values.visibility ?? "public", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "public", children: "Shown to eligible members" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "invite_only", children: "Invitation only" })
         ] }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "-mt-2 text-[13px] text-muted-ink", children: "Invitation-only challenges enrol the members who are in the chosen group when you activate it." }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "status", defaultValue: values.status ?? "draft", className: "sm:w-60", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "draft", children: "Draft" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "active", children: "Active" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "paused", children: "Paused" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "ended", children: "Ended" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "-mt-2 text-[13px] text-muted-ink", children: "Invitation-only challenges enrol the members who are in the chosen group when you activate it." }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "status", defaultValue: values.status ?? "draft", className: "sm:w-60", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "draft", children: "Draft" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "active", children: "Active" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "paused", children: "Paused" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "ended", children: "Ended" })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { children: mode === "new" ? "Create challenge" : "Save changes" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/programmes", className: "btn btn-ghost", children: "Cancel" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { children: mode === "new" ? "Create challenge" : "Save changes" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/programmes", className: "btn btn-ghost", children: "Cancel" })
       ] })
     ] }) })
   ] });
@@ -34732,117 +35236,117 @@ function RewardsPage({ biz, rewards }) {
     ["Points rewards", "Customers spend points on these at the counter.", rewards.filter((r2) => r2.points_cost)],
     ["Campaign, challenge and referral rewards", "Given by campaigns, challenges and referrals. They have no cost.", rewards.filter((r2) => !r2.is_card_reward && !r2.points_cost)]
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "rewards", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "rewards", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       PageHeader,
       {
         title: "Rewards",
         description: "What customers can unlock. Unavailable rewards are never shown as redeemable.",
-        actions: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("a", { href: "/dashboard/rewards/new", className: "btn btn-primary btn-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
+        actions: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("a", { href: "/dashboard/rewards/new", className: "btn btn-primary btn-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
           " Create reward"
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "space-y-6", children: groups.map(([title, help, items]) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(CardHeader, { title, description: help }),
-      items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "None yet." }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("table", { className: "table", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Reward" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Cost" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Validity" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { className: "text-right", children: "Issued" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { className: "text-right", children: "Redeemed" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", {})
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "space-y-6", children: groups.map(([title, help, items]) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(CardHeader, { title, description: help }),
+      items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "None yet." }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("table", { className: "table", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Reward" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Cost" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide", children: "Validity" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide text-right", children: "Issued" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide text-right", children: "Redeemed" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", {})
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("tbody", { children: items.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex items-center gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(RewardBadgeIcon, { icon: r2.icon, size: "sm" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "font-medium", children: r2.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "text-[12.5px] capitalize text-muted-ink", children: r2.reward_type.replace("_", " ") })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("tbody", { children: items.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(RewardBadgeIcon, { icon: r2.icon, size: "sm" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "font-medium", children: r2.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "text-[12.5px] capitalize text-muted-ink", children: r2.reward_type.replace("_", " ") })
             ] })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "whitespace-nowrap", children: r2.points_cost ? `${r2.points_cost} points` : r2.stamps_cost ? `${r2.stamps_cost} stamps` : "\u2014" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("td", { className: "whitespace-nowrap text-[13.5px] text-muted-ink", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "whitespace-nowrap", children: r2.points_cost ? `${r2.points_cost} points` : r2.stamps_cost ? `${r2.stamps_cost} stamps` : "\u2014" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "col-wide whitespace-nowrap text-[13.5px] text-muted-ink", children: [
             r2.validity_days ? `${r2.validity_days} days after unlock` : "No expiry",
-            r2.end_date && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { children: [
+            r2.end_date && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
               "until ",
               dateShort(r2.end_date, biz.timezone)
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-right tnum", children: r2.issued }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-right tnum", children: r2.redeemed }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(StatusBadge, { s: r2.status }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { className: "btn btn-ghost btn-sm", href: r2.is_card_reward && r2.programme_id ? `/dashboard/programmes/${r2.programme_id}` : `/dashboard/rewards/${r2.id}`, children: "Edit" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "col-wide text-right tnum", children: r2.issued }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "col-wide text-right tnum", children: r2.redeemed }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StatusBadge, { s: r2.status }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { className: "btn btn-ghost btn-sm", href: r2.is_card_reward && r2.programme_id ? `/dashboard/programmes/${r2.programme_id}` : `/dashboard/rewards/${r2.id}`, children: "Edit" }) })
         ] }, r2.id)) })
       ] }) })
     ] }, title)) })
   ] });
 }
 function RewardFormPage({ biz, mode, values, errors = {}, pointsProgrammes, stats }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "rewards", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(PageHeader, { title: mode === "new" ? "Create reward" : `Edit ${values.name}`, back: { href: "/dashboard/rewards", label: "Rewards" } }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 lg:grid-cols-[1fr_340px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action: mode === "new" ? "/dashboard/rewards/new" : `/dashboard/rewards/${values.id}`, className: "grid gap-5", id: "reward-form", noValidate: true, children: [
-        errors.form && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Alert, { tone: "error", children: errors.form }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "How it is earned", name: "kind", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "kind", defaultValue: values.kind ?? (pointsProgrammes.length ? "points" : "grant"), disabled: mode === "edit", children: [
-          pointsProgrammes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "points", children: "Bought with points" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "grant", children: "Given by a campaign, challenge or referral" })
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "rewards", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: mode === "new" ? "Create reward" : `Edit ${values.name}`, back: { href: "/dashboard/rewards", label: "Rewards" } }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: mode === "new" ? "/dashboard/rewards/new" : `/dashboard/rewards/${values.id}`, className: "grid gap-5", id: "reward-form", noValidate: true, children: [
+        errors.form && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Alert, { tone: "error", children: errors.form }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "How it is earned", name: "kind", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "kind", defaultValue: values.kind ?? (pointsProgrammes.length ? "points" : "grant"), disabled: mode === "edit", children: [
+          pointsProgrammes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "points", children: "Bought with points" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "grant", children: "Given by a campaign, challenge or referral" })
         ] }) }),
-        mode === "edit" && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("input", { type: "hidden", name: "kind", value: values.kind }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Reward name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, placeholder: "Free pastry", error: errors.name }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Description", name: "description", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "description", maxLength: 200, defaultValue: values.description, placeholder: "Any pastry from the counter" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Type", name: "reward_type", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "reward_type", defaultValue: values.reward_type ?? "free_item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "free_item", children: "Free item" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "discount", children: "Discount" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "free_upgrade", children: "Free upgrade" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "custom", children: "Custom" })
+        mode === "edit" && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "kind", value: values.kind }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Reward name", name: "name", error: errors.name, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, placeholder: "Free pastry", error: errors.name }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Description", name: "description", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "description", maxLength: 200, defaultValue: values.description, placeholder: "Any pastry from the counter" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Type", name: "reward_type", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "reward_type", defaultValue: values.reward_type ?? "free_item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "free_item", children: "Free item" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "discount", children: "Discount" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "free_upgrade", children: "Free upgrade" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "custom", children: "Custom" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Icon", name: "icon", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: "icon", defaultValue: values.icon ?? "gift", children: REWARD_ICONS.map((i) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: i, children: i }, i)) }) })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Icon", name: "icon", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: "icon", defaultValue: values.icon ?? "gift", children: REWARD_ICONS.map((i) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: i, children: i }, i)) }) })
         ] }),
-        pointsProgrammes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", "data-show-when": "kind:points", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Points programme", name: "programme_id", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: "programme_id", defaultValue: values.programme_id, children: pointsProgrammes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: p.id, children: p.name }, p.id)) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Points cost", name: "points_cost", error: errors.points_cost, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "points_cost", type: "number", min: 1, max: 1e5, defaultValue: values.points_cost, error: errors.points_cost }) })
+        pointsProgrammes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", "data-show-when": "kind:points", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Points programme", name: "programme_id", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: "programme_id", defaultValue: values.programme_id, children: pointsProgrammes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: p.id, children: p.name }, p.id)) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Points cost", name: "points_cost", error: errors.points_cost, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "points_cost", type: "number", min: 1, max: 1e5, defaultValue: values.points_cost, error: errors.points_cost }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Valid for (days)", name: "validity_days", optional: true, hint: "After it is given.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "validity_days", type: "number", min: 1, max: 730, defaultValue: values.validity_days }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Available from", name: "start_date", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "start_date", type: "date", defaultValue: values.start_date }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Available until", name: "end_date", optional: true, error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "end_date", type: "date", defaultValue: values.end_date, error: errors.end_date }) })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Valid for (days)", name: "validity_days", optional: true, hint: "After it is given.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "validity_days", type: "number", min: 1, max: 730, defaultValue: values.validity_days }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Available from", name: "start_date", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "start_date", type: "date", defaultValue: values.start_date }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Available until", name: "end_date", optional: true, error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "end_date", type: "date", defaultValue: values.end_date, error: errors.end_date }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Limit per customer", name: "per_customer_limit", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "per_customer_limit", type: "number", min: 1, defaultValue: values.per_customer_limit }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Total limit", name: "total_limit", optional: true, hint: "Across all customers.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "total_limit", type: "number", min: 1, defaultValue: values.total_limit }) })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Limit per customer", name: "per_customer_limit", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "per_customer_limit", type: "number", min: 1, defaultValue: values.per_customer_limit }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Total limit", name: "total_limit", optional: true, hint: "Across all customers.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "total_limit", type: "number", min: 1, defaultValue: values.total_limit }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Terms and restrictions", name: "terms", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Textarea, { name: "terms", rows: 2, maxLength: 1e3, defaultValue: values.terms, placeholder: "Not valid with other offers." }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "status", defaultValue: values.status ?? "active", className: "sm:w-60", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "active", children: "Active" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "inactive", children: "Inactive" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "archived", children: "Archived" })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Terms and restrictions", name: "terms", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Textarea, { name: "terms", rows: 2, maxLength: 1e3, defaultValue: values.terms, placeholder: "Not valid with other offers." }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "status", defaultValue: values.status ?? "active", className: "sm:w-60", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "active", children: "Active" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "inactive", children: "Inactive" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "archived", children: "Archived" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Island, { name: "ShowWhen", props: {} }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { children: mode === "new" ? "Create reward" : "Save changes" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/rewards", className: "btn btn-ghost", children: "Cancel" })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Island, { name: "ShowWhen", props: {} }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { children: mode === "new" ? "Create reward" : "Save changes" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/rewards", className: "btn btn-ghost", children: "Cancel" })
         ] })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[15px] font-semibold", children: "Customer preview" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "mb-3 text-[13px] text-muted-ink", children: "How this reward appears in a customer\u2019s card." }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Island, { name: "RewardPreview", props: { formId: "reward-form", initial: { name: values.name ?? "", description: values.description ?? "", icon: values.icon ?? "gift", validity: values.validity_days ?? "", cost: values.points_cost ?? "" } } })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[15px] font-semibold", children: "Customer preview" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mb-3 text-[13px] text-muted-ink", children: "How this reward appears in a customer\u2019s card." }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Island, { name: "RewardPreview", props: { formId: "reward-form", initial: { name: values.name ?? "", description: values.description ?? "", icon: values.icon ?? "gift", validity: values.validity_days ?? "", cost: values.points_cost ?? "" } } })
         ] }),
-        stats && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[15px] font-semibold", children: "Performance" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("dl", { className: "mt-3 grid grid-cols-3 gap-3 text-center", children: [
+        stats && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[15px] font-semibold", children: "Performance" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("dl", { className: "mt-3 grid grid-cols-3 gap-3 text-center", children: [
             ["Issued", stats.issued],
             ["Redeemed", stats.redeemed],
             ["Unused", stats.available]
-          ].map(([l, v]) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "rounded-[12px] bg-cream py-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("dt", { className: "text-[12px] text-muted-ink", children: l }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("dd", { className: "font-display text-[22px] font-semibold tnum", children: v })
+          ].map(([l, v]) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "rounded-[12px] bg-cream py-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("dt", { className: "text-[12px] text-muted-ink", children: l }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("dd", { className: "font-display text-[22px] font-semibold tnum", children: v })
           ] }, l)) })
         ] })
       ] })
@@ -34850,41 +35354,46 @@ function RewardFormPage({ biz, mode, values, errors = {}, pointsProgrammes, stat
   ] });
 }
 function CampaignsPage({ biz, campaigns, allowed }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "campaigns", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "campaigns", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       PageHeader,
       {
         title: "Campaigns",
         description: "Offers shown inside customers\u2019 cards. Perkora doesn\u2019t send email or SMS; for win-back campaigns it gives you a contact list of members who opted in.",
-        actions: allowed ? /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("a", { href: "/dashboard/campaigns/new", className: "btn btn-primary btn-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
+        actions: allowed ? /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("a", { href: "/dashboard/campaigns/new", className: "btn btn-primary btn-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
           " Create campaign"
         ] }) : void 0
       }
     ),
-    !allowed ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LockedFeature, { title: "Campaign management and promotional offers", plan: biz.plan.name }) : campaigns.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LuMegaphone, { className: "h-6 w-6" }), title: "No campaigns yet", body: "Start with a welcome offer or a weekday afternoon promotion.", action: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/campaigns/new", className: "btn btn-primary", children: "Create campaign" }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("table", { className: "table", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Campaign" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Benefit" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Dates" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { className: "text-right", children: "Issued" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { className: "text-right", children: "Redeemed" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Status" })
+    !allowed ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LockedFeature, { title: "Campaign management and promotional offers", plan: biz.plan.name }) : campaigns.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(EmptyState, { icon: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LuMegaphone, { className: "h-6 w-6" }), title: "No campaigns yet", body: "Start with a welcome offer or a weekday afternoon promotion.", action: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/campaigns/new", className: "btn btn-primary", children: "Create campaign" }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("table", { className: "table", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Campaign" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Benefit" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide", children: "Dates" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide text-right", children: "Issued" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "col-wide text-right", children: "Redeemed" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Status" })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("tbody", { children: campaigns.map((c) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("td", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: `/dashboard/campaigns/${c.id}`, className: "font-medium hover:underline", children: c.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "text-[12.5px] text-muted-ink", children: CAMPAIGN_TYPE_LABEL[c.campaign_type] })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("tbody", { children: campaigns.map((c) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: `/dashboard/campaigns/${c.id}`, className: "font-medium hover:underline", children: c.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "text-[12.5px] text-muted-ink", children: CAMPAIGN_TYPE_LABEL[c.campaign_type] }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "text-[12.5px] text-muted-ink md:hidden", children: [
+            dateShort(c.start_date, biz.timezone),
+            " \u2013 ",
+            c.end_date ? dateShort(c.end_date, biz.timezone) : "no end"
+          ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-[13.5px]", children: c.benefit_label }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("td", { className: "whitespace-nowrap text-[13.5px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "text-[13.5px]", children: c.benefit_label }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "col-wide whitespace-nowrap text-[13.5px] text-muted-ink", children: [
           dateShort(c.start_date, biz.timezone),
           " \u2013 ",
           c.end_date ? dateShort(c.end_date, biz.timezone) : "no end"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-right tnum", children: c.vouchers_issued + c.bonuses }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-right tnum", children: c.redeemed }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(StatusBadge, { s: c.display_status }) })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "col-wide text-right tnum", children: c.vouchers_issued + c.bonuses }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "col-wide text-right tnum", children: c.redeemed }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StatusBadge, { s: c.display_status }) })
       ] }, c.id)) })
     ] }) }) })
   ] });
@@ -34892,202 +35401,202 @@ function CampaignsPage({ biz, campaigns, allowed }) {
 function CampaignFormPage({ biz, mode, values, errors = {}, rewards, programmes, flexible, segmentsAllowed, referralsAllowed }) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const chosenDays = (values.weekdays ?? "").split(",").filter(Boolean);
-  const grantFields = (prefix, label) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("fieldset", { className: "rounded-[12px] border border-beige p-3", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("legend", { className: "px-1 text-[13px] font-semibold", children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-3 sm:grid-cols-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: `${prefix}_kind`, defaultValue: values[`${prefix}_kind`] ?? "bonus", "aria-label": `${label} type`, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "bonus", children: "Bonus stamps/points" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "voucher", children: "A reward" })
+  const grantFields = (prefix, label) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "rounded-[12px] border border-beige p-3", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "px-1 text-[13px] font-semibold", children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: `${prefix}_kind`, defaultValue: values[`${prefix}_kind`] ?? "bonus", "aria-label": `${label} type`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "bonus", children: "Bonus stamps/points" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "voucher", children: "A reward" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: `${prefix}_amount`, type: "number", min: 1, defaultValue: values[`${prefix}_amount`] ?? "1", "aria-label": "Amount", className: "w-20" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: `${prefix}_programme`, defaultValue: values[`${prefix}_programme`], "aria-label": "Programme", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: p.id, children: p.name }, p.id)) })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: `${prefix}_amount`, type: "number", min: 1, defaultValue: values[`${prefix}_amount`] ?? "1", "aria-label": "Amount", className: "w-20" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: `${prefix}_programme`, defaultValue: values[`${prefix}_programme`], "aria-label": "Programme", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: p.id, children: p.name }, p.id)) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: `${prefix}_reward`, defaultValue: values[`${prefix}_reward`], "aria-label": "Reward", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "", children: "Reward\u2026" }),
-        rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: `${prefix}_reward`, defaultValue: values[`${prefix}_reward`], "aria-label": "Reward", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "", children: "Reward\u2026" }),
+        rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
       ] })
     ] })
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "campaigns", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(PageHeader, { title: mode === "new" ? "Create campaign" : `Edit ${values.name}`, back: { href: "/dashboard/campaigns", label: "Campaigns" } }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action: mode === "new" ? "/dashboard/campaigns/new" : `/dashboard/campaigns/${values.id}/edit`, className: "grid gap-5", noValidate: true, children: [
-      errors.form && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Alert, { tone: "error", children: errors.form }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Campaign name", name: "name", error: errors.name, hint: "Call it anything you like. Customers see this name on their card.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, placeholder: "Student exam week", error: errors.name }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "campaigns", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: mode === "new" ? "Create campaign" : `Edit ${values.name}`, back: { href: "/dashboard/campaigns", label: "Campaigns" } }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { className: "max-w-3xl p-6", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: mode === "new" ? "/dashboard/campaigns/new" : `/dashboard/campaigns/${values.id}/edit`, className: "grid gap-5", noValidate: true, children: [
+      errors.form && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Alert, { tone: "error", children: errors.form }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Campaign name", name: "name", error: errors.name, hint: "Call it anything you like. Customers see this name on their card.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "name", required: true, maxLength: 80, defaultValue: values.name, placeholder: "Student exam week", error: errors.name }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
         Island,
         {
           name: "FillInput",
           props: { target: "name", label: "Ideas:", options: ["Student exam week", "Happy hour", "Rainy day special", "Weekend treat", "Morning commuter offer", "Thank-you week"] }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "What kind of offer is it?", name: "campaign_type", hint: "This only decides how the offer works. The name above is what customers see.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: "campaign_type", defaultValue: values.campaign_type ?? "custom", children: Object.entries(CAMPAIGN_TYPE_LABEL).filter(([k]) => k !== "referral" || values.campaign_type === "referral").map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: k, children: l }, k)) }) }),
-      referralsAllowed && values.campaign_type !== "referral" && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "-mt-2 text-[13.5px] text-muted-ink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "What kind of offer is it?", name: "campaign_type", hint: "This only decides how the offer works. The name above is what customers see.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: "campaign_type", defaultValue: values.campaign_type ?? "custom", children: Object.entries(CAMPAIGN_TYPE_LABEL).filter(([k]) => k !== "referral" || values.campaign_type === "referral").map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: k, children: l }, k)) }) }),
+      referralsAllowed && values.campaign_type !== "referral" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "-mt-2 text-[13.5px] text-muted-ink", children: [
         "Looking for \u201Cbring a friend\u201D rewards? Set them up on the ",
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { className: "link", href: "/dashboard/referrals", children: "Referrals" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { className: "link", href: "/dashboard/referrals", children: "Referrals" }),
         " page."
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Description", name: "description", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Textarea, { name: "description", rows: 2, maxLength: 400, defaultValue: values.description, placeholder: "Double stamps on weekday afternoons." }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-5 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Starts", name: "start_date", error: errors.start_date, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "start_date", type: "date", required: true, defaultValue: values.start_date, error: errors.start_date }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Ends", name: "end_date", optional: true, error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "end_date", type: "date", defaultValue: values.end_date, error: errors.end_date }) })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Description", name: "description", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Textarea, { name: "description", rows: 2, maxLength: 400, defaultValue: values.description, placeholder: "Double stamps on weekday afternoons." }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-5 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Starts", name: "start_date", error: errors.start_date, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "start_date", type: "date", required: true, defaultValue: values.start_date, error: errors.start_date }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Ends", name: "end_date", optional: true, error: errors.end_date, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "end_date", type: "date", defaultValue: values.end_date, error: errors.end_date }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", "data-show-when": "campaign_type:welcome|bonus_points|limited_time|weekday|birthday|win_back|custom", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Benefit" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "What members get", name: "benefit_kind", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "benefit_kind", defaultValue: values.benefit_kind ?? "bonus", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "bonus", children: "Bonus stamps or points on qualifying purchases" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "voucher", children: "A reward added to their card" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "none", children: "Nothing automatic (information only)" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", "data-show-when": "campaign_type:welcome|bonus_points|limited_time|weekday|birthday|win_back|custom", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Benefit" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "What members get", name: "benefit_kind", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "benefit_kind", defaultValue: values.benefit_kind ?? "bonus", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "bonus", children: "Bonus stamps or points on qualifying purchases" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "voucher", children: "A reward added to their card" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "none", children: "Nothing automatic (information only)" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { "data-show-when": "benefit_kind:voucher", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Reward", name: "benefit_reward", error: errors.benefit_reward, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "benefit_reward", defaultValue: values.benefit_reward, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "", children: "Choose\u2026" }),
-            rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { "data-show-when": "benefit_kind:voucher", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Reward", name: "benefit_reward", error: errors.benefit_reward, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "benefit_reward", defaultValue: values.benefit_reward, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "", children: "Choose\u2026" }),
+            rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
           ] }) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { "data-show-when": "benefit_kind:bonus", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Programme", name: "benefit_programme", error: errors.benefit_programme, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Select, { name: "benefit_programme", defaultValue: values.benefit_programme, children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: p.id, children: p.name }, p.id)) }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Bonus", name: "benefit_amount", error: errors.benefit_amount, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "benefit_mode", defaultValue: values.benefit_mode ?? "flat", "aria-label": "Bonus mode", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "flat", children: "Extra" }),
-                /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "multiplier", children: "Multiply by" })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { "data-show-when": "benefit_kind:bonus", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Programme", name: "benefit_programme", error: errors.benefit_programme, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Select, { name: "benefit_programme", defaultValue: values.benefit_programme, children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: p.id, children: p.name }, p.id)) }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Bonus", name: "benefit_amount", error: errors.benefit_amount, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "benefit_mode", defaultValue: values.benefit_mode ?? "flat", "aria-label": "Bonus mode", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "flat", children: "Extra" }),
+                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "multiplier", children: "Multiply by" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "benefit_amount", type: "number", min: 1, max: 1e4, defaultValue: values.benefit_amount ?? "1", className: "w-24", error: errors.benefit_amount })
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "benefit_amount", type: "number", min: 1, max: 1e4, defaultValue: values.benefit_amount ?? "1", className: "w-24", error: errors.benefit_amount })
             ] }) })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Who and when" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Target customers", name: "target_segment", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Select, { name: "target_segment", defaultValue: values.target_segment ?? "all", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "all", children: "All members" }),
-            segmentsAllowed ? /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_jsx_runtime44.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "new", children: "New members" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "active", children: "Active members" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "frequent", children: "Frequent visitors" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "approaching", children: "Close to a reward" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "unused_rewards", children: "Holding unused rewards" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("option", { value: "inactive", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Who and when" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Target customers", name: "target_segment", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "target_segment", defaultValue: values.target_segment ?? "all", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "all", children: "All members" }),
+            segmentsAllowed ? /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_jsx_runtime47.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "new", children: "New members" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "active", children: "Active members" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "frequent", children: "Frequent visitors" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "approaching", children: "Close to a reward" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "unused_rewards", children: "Holding unused rewards" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("option", { value: "inactive", children: [
                 "Not visited recently (",
                 biz.settings.inactivityDays,
                 "+ days)"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("option", { value: "no_visits", children: "Joined, no visit yet" })
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "no_visits", children: "Joined, no visit yet" })
             ] }) : null
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { "data-show-when": "campaign_type:bonus_points|limited_time|weekday|win_back|custom", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "label", children: "Days" }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "flex flex-wrap gap-2", children: days.map((d, i) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("label", { className: "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-beige-strong bg-paper px-3 py-1.5 text-[13.5px]", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("input", { type: "checkbox", name: "weekday", value: String(i + 1), defaultChecked: chosenDays.includes(String(i + 1)), className: "checkbox h-4 w-4" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { "data-show-when": "campaign_type:bonus_points|limited_time|weekday|win_back|custom", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "label", children: "Days" }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "flex flex-wrap gap-2", children: days.map((d, i) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("label", { className: "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-beige-strong bg-paper px-3 py-1.5 text-[13.5px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "checkbox", name: "weekday", value: String(i + 1), defaultChecked: chosenDays.includes(String(i + 1)), className: "checkbox h-4 w-4" }),
               d
             ] }, d)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "hint", children: "Leave all unticked for every day." })
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "hint", children: "Leave all unticked for every day." })
           ] }),
-          flexible ? /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", "data-show-when": "campaign_type:bonus_points|limited_time|weekday|win_back|custom", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "From time", name: "start_time", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "start_time", type: "time", defaultValue: values.start_time }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Until time", name: "end_time", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "end_time", type: "time", defaultValue: values.end_time }) })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(LockedFeature, { title: "Time-of-day windows (flexible campaign rules)", plan: biz.plan.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Uses per customer", name: "usage_limit_per_customer", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "usage_limit_per_customer", type: "number", min: 1, defaultValue: values.usage_limit_per_customer }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Total uses", name: "total_limit", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "total_limit", type: "number", min: 1, defaultValue: values.total_limit }) })
+          flexible ? /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", "data-show-when": "campaign_type:bonus_points|limited_time|weekday|win_back|custom", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "From time", name: "start_time", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "start_time", type: "time", defaultValue: values.start_time }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Until time", name: "end_time", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "end_time", type: "time", defaultValue: values.end_time }) })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(LockedFeature, { title: "Time-of-day windows (flexible campaign rules)", plan: biz.plan.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Uses per customer", name: "usage_limit_per_customer", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "usage_limit_per_customer", type: "number", min: 1, defaultValue: values.usage_limit_per_customer }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Total uses", name: "total_limit", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "total_limit", type: "number", min: 1, defaultValue: values.total_limit }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { "data-show-when": "campaign_type:birthday", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Birthday window (days either side)", name: "window_days", optional: true, hint: "The reward appears this many days before and after the birthday.", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "window_days", type: "number", min: 0, max: 31, defaultValue: values.window_days ?? "7", className: "sm:w-40" }) }) })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { "data-show-when": "campaign_type:birthday", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Birthday window (days either side)", name: "window_days", optional: true, hint: "The reward appears this many days before and after the birthday.", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "window_days", type: "number", min: 0, max: 31, defaultValue: values.window_days ?? "7", className: "sm:w-40" }) }) })
         ] })
       ] }),
-      referralsAllowed && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", "data-show-when": "campaign_type:referral", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Referral rewards" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-3", children: [
+      referralsAllowed && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", "data-show-when": "campaign_type:referral", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "px-1 text-[14px] font-semibold", children: "Referral rewards" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid gap-3", children: [
           grantFields("referrer", "Reward for the member who invites"),
           grantFields("referred", "Reward for the new member"),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "Rewarded referrals per member", name: "max_per_referrer", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "max_per_referrer", type: "number", min: 1, max: 100, defaultValue: values.max_per_referrer ?? "5", className: "sm:w-40" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "text-[13px] text-muted-ink", children: "A referral qualifies after the new member\u2019s first verified visit. Customers can\u2019t refer themselves." })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Rewarded referrals per member", name: "max_per_referrer", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "max_per_referrer", type: "number", min: 1, max: 100, defaultValue: values.max_per_referrer ?? "5", className: "sm:w-40" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-[13px] text-muted-ink", children: "A referral qualifies after the new member\u2019s first verified visit. Customers can\u2019t refer themselves." })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Field, { label: "How customers use it", name: "redemption_instructions", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Input, { name: "redemption_instructions", maxLength: 300, defaultValue: values.redemption_instructions, placeholder: "Show your card when you order." }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Checkbox, { name: "is_public", value: "1", defaultChecked: values.is_public !== "0", label: "Also show on the public join page (only for campaigns open to all members)" }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Island, { name: "ShowWhen", props: {} }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "flex flex-wrap gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { name: "intent", value: "preview", children: mode === "new" ? "Save and preview" : "Save changes" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: "/dashboard/campaigns", className: "btn btn-ghost", children: "Cancel" })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "How customers use it", name: "redemption_instructions", optional: true, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "redemption_instructions", maxLength: 300, defaultValue: values.redemption_instructions, placeholder: "Show your card when you order." }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Checkbox, { name: "is_public", value: "1", defaultChecked: values.is_public !== "0", label: "Also show on the public join page (only for campaigns open to all members)" }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Island, { name: "ShowWhen", props: {} }),
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-wrap gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { name: "intent", value: "preview", children: mode === "new" ? "Save and preview" : "Save changes" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: "/dashboard/campaigns", className: "btn btn-ghost", children: "Cancel" })
       ] })
     ] }) })
   ] });
 }
 function CampaignDetailPage({ biz, c, offerPreview, perf, contacts, eligible, canPublish, publishBlock }) {
   const voucherDistributable = c.benefit?.kind === "voucher" && ["limited_time", "win_back", "custom"].includes(c.campaign_type) && c.display_status === "active";
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(DashboardLayout, { biz, active: "campaigns", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(DashboardLayout, { biz, active: "campaigns", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       PageHeader,
       {
         title: c.name,
         back: { href: "/dashboard/campaigns", label: "Campaigns" },
         description: `${CAMPAIGN_TYPE_LABEL[c.campaign_type]} \xB7 ${dateShort(c.start_date, biz.timezone)} \u2013 ${c.end_date ? dateShort(c.end_date, biz.timezone) : "no end date"}`,
-        actions: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_jsx_runtime44.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(StatusBadge, { s: c.display_status }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { href: `/dashboard/campaigns/${c.id}/edit`, className: "btn btn-secondary btn-sm", children: "Edit" })
+        actions: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_jsx_runtime47.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(StatusBadge, { s: c.display_status }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: `/dashboard/campaigns/${c.id}/edit`, className: "btn btn-secondary btn-sm", children: "Edit" })
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "grid gap-4 lg:grid-cols-[1fr_380px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[16px] font-semibold", children: "Status" }),
-          publishBlock && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Alert, { tone: "warning", children: publishBlock }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "mt-3 flex flex-wrap gap-2", children: [
-            (c.status === "draft" || c.status === "paused") && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action: `/dashboard/campaigns/${c.id}/status`, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("input", { type: "hidden", name: "status", value: "published" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { size: "sm", disabled: !canPublish, children: c.status === "draft" ? "Publish" : "Resume" })
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[16px] font-semibold", children: "Status" }),
+          publishBlock && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Alert, { tone: "warning", children: publishBlock }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mt-3 flex flex-wrap gap-2", children: [
+            (c.status === "draft" || c.status === "paused") && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/dashboard/campaigns/${c.id}/status`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: "published" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", disabled: !canPublish, children: c.status === "draft" ? "Publish" : "Resume" })
             ] }),
-            c.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action: `/dashboard/campaigns/${c.id}/status`, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("input", { type: "hidden", name: "status", value: "paused" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { size: "sm", variant: "secondary", children: "Pause" })
+            c.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/dashboard/campaigns/${c.id}/status`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: "paused" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: "secondary", children: "Pause" })
             ] }),
-            c.status !== "completed" && c.status !== "draft" && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Form, { action: `/dashboard/campaigns/${c.id}/status`, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("input", { type: "hidden", name: "status", value: "completed" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { size: "sm", variant: "ghost", children: "End campaign" })
+            c.status !== "completed" && c.status !== "draft" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/dashboard/campaigns/${c.id}/status`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: "completed" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: "ghost", children: "End campaign" })
             ] }),
-            c.status === "draft" && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Form, { action: `/dashboard/campaigns/${c.id}/delete`, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Button, { size: "sm", variant: "danger-ghost", children: "Delete draft" }) })
+            c.status === "draft" && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Form, { action: `/dashboard/campaigns/${c.id}/delete`, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: "danger-ghost", children: "Delete draft" }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: "Draft campaigns are never shown to customers. Published campaigns become active on their start date and complete after their end date." })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mt-3 text-[13px] text-muted-ink", children: "Draft campaigns are never shown to customers. Published campaigns become active on their start date and complete after their end date." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[16px] font-semibold", children: "Performance" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("dl", { className: "mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[16px] font-semibold", children: "Performance" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("dl", { className: "mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4", children: [
             ["Eligible now", eligible],
             ["Viewed in card", perf.viewers],
             [c.campaign_type === "referral" ? "Referrals qualified" : "Rewards issued", c.campaign_type === "referral" ? `${perf.referrals_qualified} / ${perf.referrals_started}` : perf.vouchers_issued],
             [c.benefit?.kind === "bonus" ? "Bonuses given" : "Redeemed", c.benefit?.kind === "bonus" ? `${perf.bonuses} (+${perf.bonus_total})` : perf.redeemed]
-          ].map(([l, v]) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "rounded-[12px] bg-cream px-3 py-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("dt", { className: "text-[12.5px] text-muted-ink", children: l }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("dd", { className: "font-display text-[22px] font-semibold tnum", children: v })
+          ].map(([l, v]) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "rounded-[12px] bg-cream px-3 py-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("dt", { className: "text-[12.5px] text-muted-ink", children: l }),
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("dd", { className: "font-display text-[22px] font-semibold tnum", children: v })
           ] }, l)) }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "mt-3 text-[12.5px] text-muted-ink", children: "\u201CViewed\u201D counts members who opened the Offers tab while the campaign ran. Perkora does not track email or SMS opens because it does not send messages." })
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mt-3 text-[12.5px] text-muted-ink", children: "\u201CViewed\u201D counts members who opened the Offers tab while the campaign ran. Perkora does not track email or SMS opens because it does not send messages." })
         ] }),
-        voucherDistributable && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[16px] font-semibold", children: "Add the reward to eligible cards" }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
+        voucherDistributable && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[16px] font-semibold", children: "Add the reward to eligible cards" }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "mt-1 text-[14px] text-muted-ink", children: [
             eligible,
             " member",
             eligible === 1 ? "" : "s",
             " currently match this campaign. Adding the reward places it in their card; members who already received it are skipped."
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Form, { action: `/dashboard/campaigns/${c.id}/distribute`, className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Button, { size: "sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Form, { action: `/dashboard/campaigns/${c.id}/distribute`, className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Button, { size: "sm", children: [
             "Add reward to ",
             eligible,
             " card",
             eligible === 1 ? "" : "s"
           ] }) })
         ] }),
-        contacts && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+        contacts && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
             CardHeader,
             {
               title: "Manual contact list",
               description: "Perkora does not send messages. These eligible members agreed to hear from you; contact them yourself with the template below.",
-              action: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/campaigns/${c.id}/contacts.csv`, children: "Export CSV" })
+              action: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { className: "btn btn-secondary btn-sm", href: `/dashboard/campaigns/${c.id}/contacts.csv`, children: "Export CSV" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "px-5 pb-3", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("p", { className: "rounded-[12px] bg-cream p-3 text-[14px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "px-5 pb-3", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "rounded-[12px] bg-cream p-3 text-[14px]", children: [
             "Hi! We\u2019ve missed you at ",
             biz.name,
             ". ",
@@ -35096,29 +35605,29 @@ function CampaignDetailPage({ biz, c, offerPreview, perf, contacts, eligible, ca
             c.end_date ? `Valid until ${dateShort(c.end_date, biz.timezone)}.` : "",
             " Reply STOP to opt out."
           ] }) }),
-          contacts.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No eligible members have opted in to marketing." }) : /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("table", { className: "table", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Name" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Email" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("th", { children: "Phone" })
+          contacts.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "px-5 pb-5 text-[14px] text-muted-ink", children: "No eligible members have opted in to marketing." }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("table", { className: "table", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Email" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Phone" })
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("tbody", { children: contacts.slice(0, 50).map((m, i) => /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("tr", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { children: m.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-muted-ink", children: m.email ?? "\u2014" }),
-              /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("td", { className: "text-muted-ink", children: m.phone ?? "\u2014" })
+            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("tbody", { children: contacts.slice(0, 50).map((m, i) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: m.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "text-muted-ink", children: m.email ?? "\u2014" }),
+              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "text-muted-ink", children: m.phone ?? "\u2014" })
             ] }, i)) })
           ] }) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(Card, { className: "p-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("h2", { className: "text-[15px] font-semibold", children: "Customer preview" }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("p", { className: "mb-3 text-[13px] text-muted-ink", children: "As shown in the Offers tab of a member\u2019s card." }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "rounded-[16px] bg-cream p-3", children: offerPreview })
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "p-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[15px] font-semibold", children: "Customer preview" }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mb-3 text-[13px] text-muted-ink", children: "As shown in the Offers tab of a member\u2019s card." }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "rounded-[16px] bg-cream p-3", children: offerPreview })
       ] }) })
     ] })
   ] });
 }
-var import_jsx_runtime44, CAMPAIGN_TYPE_LABEL;
+var import_jsx_runtime47, CAMPAIGN_TYPE_LABEL;
 var init_Manage = __esm({
   "src/ui/pages/dashboard/Manage.tsx"() {
     "use strict";
@@ -35130,7 +35639,7 @@ var init_Manage = __esm({
     init_schemas();
     init_format();
     init_cn();
-    import_jsx_runtime44 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime47 = __toESM(require_jsx_runtime(), 1);
     CAMPAIGN_TYPE_LABEL = {
       custom: "Bonus on purchases or a reward (most offers)",
       weekday: "Certain days or hours (e.g. happy hour)",
@@ -35146,104 +35655,104 @@ var init_Manage = __esm({
 
 // src/ui/pages/dashboard/Referrals.tsx
 function ReferralsPage({ biz, values, errors = {}, programmes, rewards, stats, summary, locked }) {
-  const grant = (prefix, label, allowNone) => /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("legend", { className: "px-1 text-[14.5px] font-semibold", children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid gap-3 sm:grid-cols-[170px_minmax(0,1fr)]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Select, { name: `${prefix}_kind`, defaultValue: values[`${prefix}_kind`] ?? "bonus", "aria-label": `${label}: type`, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "bonus", children: "Stamps or points" }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "voucher", children: "A reward" }),
-        allowNone && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "none", children: "Nothing" })
+  const grant = (prefix, label, allowNone) => /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("fieldset", { className: "rounded-[14px] border border-beige p-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("legend", { className: "px-1 text-[14.5px] font-semibold", children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-[170px_minmax(0,1fr)]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(Select, { name: `${prefix}_kind`, defaultValue: values[`${prefix}_kind`] ?? "bonus", "aria-label": `${label}: type`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("option", { value: "bonus", children: "Stamps or points" }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("option", { value: "voucher", children: "A reward" }),
+        allowNone && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("option", { value: "none", children: "Nothing" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { "data-show-when": `${prefix}_kind:bonus`, className: "flex gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: `${prefix}_amount`, type: "number", min: 1, max: 1e3, defaultValue: values[`${prefix}_amount`] ?? "1", "aria-label": "How many", className: "w-24", error: errors[`${prefix}_amount`] }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Select, { name: `${prefix}_programme`, defaultValue: values[`${prefix}_programme`], "aria-label": "Stamps or points", className: "flex-1", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("option", { value: p.id, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { "data-show-when": `${prefix}_kind:bonus`, className: "flex gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Input, { name: `${prefix}_amount`, type: "number", min: 1, max: 1e3, defaultValue: values[`${prefix}_amount`] ?? "1", "aria-label": "How many", className: "w-24", error: errors[`${prefix}_amount`] }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Select, { name: `${prefix}_programme`, defaultValue: values[`${prefix}_programme`], "aria-label": "Stamps or points", className: "flex-1", children: programmes.map((p) => /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("option", { value: p.id, children: [
           p.programme_type === "points" ? "points" : "stamps",
           " \xB7 ",
           p.name
         ] }, p.id)) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { "data-show-when": `${prefix}_kind:voucher`, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Select, { name: `${prefix}_reward`, defaultValue: values[`${prefix}_reward`], "aria-label": "Reward", error: errors[`${prefix}_reward`], children: [
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: "", children: "Choose a reward\u2026" }),
-          rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { "data-show-when": `${prefix}_kind:voucher`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(Select, { name: `${prefix}_reward`, defaultValue: values[`${prefix}_reward`], "aria-label": "Reward", error: errors[`${prefix}_reward`], children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("option", { value: "", children: "Choose a reward\u2026" }),
+          rewards.map((r2) => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("option", { value: r2.id, children: r2.name }, r2.id))
         ] }),
-        rewards.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("p", { className: "hint", children: [
+        rewards.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("p", { className: "hint", children: [
           "No rewards yet. ",
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { className: "link", href: "/dashboard/rewards/new", children: "Create one" }),
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("a", { className: "link", href: "/dashboard/rewards/new", children: "Create one" }),
           " first."
         ] })
       ] })
     ] })
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(DashboardLayout, { biz, active: "referrals", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(PageHeader, { title: "Referrals", description: "Reward customers who bring their friends. Each customer gets a personal invite link to share." }),
-    locked ? /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Card, { className: "max-w-2xl p-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "text-[15px]", children: "Referral rewards aren\u2019t included in your current plan." }),
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/dashboard/subscription", className: "btn btn-primary mt-4", children: "See plans" })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Form, { action: "/dashboard/referrals", className: "grid gap-5", noValidate: true, children: [
-        errors.form && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Alert, { tone: "error", children: errors.form }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(DashboardLayout, { biz, active: "referrals", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(PageHeader, { title: "Referrals", description: "Reward customers who bring their friends. Each customer gets a personal invite link to share." }),
+    locked ? /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(Card, { className: "max-w-2xl p-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-[15px]", children: "Referral rewards aren\u2019t included in your current plan." }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("a", { href: "/dashboard/subscription", className: "btn btn-primary mt-4", children: "See plans" })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Card, { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(Form, { action: "/dashboard/referrals", className: "grid gap-5", noValidate: true, children: [
+        errors.form && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Alert, { tone: "error", children: errors.form }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
           Checkbox,
           {
             name: "enabled",
             value: "1",
             defaultChecked: values.enabled === "1",
-            label: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "text-[15.5px] font-semibold", children: "Turn on referral rewards" }),
+            label: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-[15.5px] font-semibold", children: "Turn on referral rewards" }),
             hint: "Customers see an \u201CInvite friends\u201D page with their own link. Turn it off at any time; rewards already earned stay on their cards."
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Name customers see", name: "name", error: errors.name, hint: "For example \u201CBring a friend\u201D or \u201CCoffee buddies\u201D.", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "name", maxLength: 80, defaultValue: values.name ?? "Bring a friend", error: errors.name }) }),
-        programmes.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Alert, { tone: "info", children: "Set up a stamp card or points programme first, then choose the referral rewards here." }) : /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(import_jsx_runtime45.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Field, { label: "Name customers see", name: "name", error: errors.name, hint: "For example \u201CBring a friend\u201D or \u201CCoffee buddies\u201D.", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Input, { name: "name", maxLength: 80, defaultValue: values.name ?? "Bring a friend", error: errors.name }) }),
+        programmes.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Alert, { tone: "info", children: "Set up a stamp card or points programme first, then choose the referral rewards here." }) : /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(import_jsx_runtime48.Fragment, { children: [
           grant("referrer", "The customer who invites gets", false),
           grant("referred", "Their friend gets", true)
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("fieldset", { className: "grid gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("legend", { className: "label", children: "When does the inviter get the reward?" }),
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "flex cursor-pointer items-start gap-2.5 rounded-[12px] border border-beige p-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { type: "radio", name: "qualify_on", value: "first_visit", defaultChecked: values.qualify_on !== "join", className: "mt-1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("span", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "block text-[14.5px] font-medium", children: "When the friend makes their first purchase (recommended)" }),
-              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "block text-[13.5px] text-muted-ink", children: "Staff confirm the visit at the counter, so nobody can earn rewards with made-up accounts." })
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("fieldset", { className: "grid gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("legend", { className: "label", children: "When does the inviter get the reward?" }),
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("label", { className: "flex cursor-pointer items-start gap-2.5 rounded-[12px] border border-beige p-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("input", { type: "radio", name: "qualify_on", value: "first_visit", defaultChecked: values.qualify_on !== "join", className: "mt-1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "block text-[14.5px] font-medium", children: "When the friend makes their first purchase (recommended)" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "block text-[13.5px] text-muted-ink", children: "Staff confirm the visit at the counter, so nobody can earn rewards with made-up accounts." })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "flex cursor-pointer items-start gap-2.5 rounded-[12px] border border-beige p-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("input", { type: "radio", name: "qualify_on", value: "join", defaultChecked: values.qualify_on === "join", className: "mt-1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("span", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "block text-[14.5px] font-medium", children: "As soon as the friend joins" }),
-              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "block text-[13.5px] text-muted-ink", children: "Faster, but someone could invite fake accounts. The limit below caps this." })
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("label", { className: "flex cursor-pointer items-start gap-2.5 rounded-[12px] border border-beige p-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("input", { type: "radio", name: "qualify_on", value: "join", defaultChecked: values.qualify_on === "join", className: "mt-1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "block text-[14.5px] font-medium", children: "As soon as the friend joins" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "block text-[13.5px] text-muted-ink", children: "Faster, but someone could invite fake accounts. The limit below caps this." })
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Field, { label: "Most rewards one customer can earn", name: "max_per_referrer", error: errors.max_per_referrer, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Input, { name: "max_per_referrer", type: "number", min: 1, max: 100, defaultValue: values.max_per_referrer ?? "10", className: "sm:w-40", error: errors.max_per_referrer }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "text-[13px] text-muted-ink", children: "Customers can\u2019t refer themselves, and each friend can only be referred once." }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Island, { name: "ShowWhen", props: {} }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Button, { children: "Save referral settings" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Field, { label: "Most rewards one customer can earn", name: "max_per_referrer", error: errors.max_per_referrer, children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Input, { name: "max_per_referrer", type: "number", min: 1, max: 100, defaultValue: values.max_per_referrer ?? "10", className: "sm:w-40", error: errors.max_per_referrer }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-[13px] text-muted-ink", children: "Customers can\u2019t refer themselves, and each friend can only be referred once." }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Island, { name: "ShowWhen", props: {} }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Button, { children: "Save referral settings" }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid content-start gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("h2", { className: "flex items-center gap-2 text-[15.5px] font-semibold", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(LuUserPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid content-start gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("h2", { className: "flex items-center gap-2 text-[15.5px] font-semibold", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(LuUserPlus, { className: "h-4 w-4", "aria-hidden": "true" }),
             " What customers see"
           ] }),
-          summary ? /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-2 text-[14.5px]", children: summary }) : /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: "Referral rewards are off. Customers don\u2019t see an invite page." })
+          summary ? /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "mt-2 text-[14.5px]", children: summary }) : /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "mt-2 text-[14px] text-muted-ink", children: "Referral rewards are off. Customers don\u2019t see an invite page." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "grid grid-cols-2 gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Stat, { label: "Friends invited", value: num2(stats.pending + stats.qualified), hint: "joined with a link" }),
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(Stat, { label: "Rewards earned", value: num2(stats.qualified), hint: "referrals that counted" })
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid grid-cols-2 gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Stat, { label: "Friends invited", value: num2(stats.pending + stats.qualified), hint: "joined with a link" }),
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Stat, { label: "Rewards earned", value: num2(stats.qualified), hint: "referrals that counted" })
         ] }),
-        stats.top.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(Card, { className: "p-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { className: "text-[15px] font-semibold", children: "Top inviters" }),
-          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("ul", { className: "mt-2 space-y-1.5 text-[14px]", children: stats.top.map((t) => /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("li", { className: "flex justify-between gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "truncate", children: t.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "tnum text-muted-ink", children: t.n })
+        stats.top.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(Card, { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h2", { className: "text-[15px] font-semibold", children: "Top inviters" }),
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("ul", { className: "mt-2 space-y-1.5 text-[14px]", children: stats.top.map((t) => /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("li", { className: "flex justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "truncate", children: t.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "tnum text-muted-ink", children: t.n })
           ] }, t.name)) })
         ] })
       ] })
     ] })
   ] });
 }
-var import_jsx_runtime45;
+var import_jsx_runtime48;
 var init_Referrals = __esm({
   "src/ui/pages/dashboard/Referrals.tsx"() {
     "use strict";
@@ -35252,7 +35761,7 @@ var init_Referrals = __esm({
     init_ui();
     init_Island();
     init_format();
-    import_jsx_runtime45 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime48 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -35329,7 +35838,7 @@ async function referralsPage(ctx, biz, values, errors = {}, status = 200) {
     const friend = await grantText(biz, current2.config.referredGrant);
     summary = `\u201C${current2.name}\u201D: invite a friend and get ${mine} ${current2.config.qualifyOn === "join" ? "as soon as they join" : "after their first purchase"}.${friend !== "nothing" ? ` Your friend gets ${friend}.` : ""}`;
   }
-  return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(ReferralsPage, { biz, values, errors, programmes, rewards, stats, summary, locked }), {
+  return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(ReferralsPage, { biz, values, errors, programmes, rewards, stats, summary, locked }), {
     title: "Referrals",
     noindex: true,
     status
@@ -35408,7 +35917,7 @@ function dashboardManageRoutes(r2) {
       const active = programmes.filter((p) => p.status !== "archived").length;
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
           ProgrammesPage,
           {
             biz,
@@ -35423,7 +35932,7 @@ function dashboardManageRoutes(r2) {
       );
     })
   );
-  const programmeForm = async (ctx, biz, mode, type, values, errors = {}, status = 200) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(ProgrammeFormPage, { biz, mode, type, values, errors, pointsAllowed: hasFeature(biz, "points") }), { title: "Loyalty programme", status, noindex: true });
+  const programmeForm = async (ctx, biz, mode, type, values, errors = {}, status = 200) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(ProgrammeFormPage, { biz, mode, type, values, errors, pointsAllowed: hasFeature(biz, "points") }), { title: "Loyalty programme", status, noindex: true });
   r2.get(
     "/dashboard/programmes/new",
     withBiz({ owner: true }, async (ctx, biz) => {
@@ -35564,7 +36073,7 @@ function dashboardManageRoutes(r2) {
   r2.post("/dashboard/programmes/:id", saveProgramme("edit"));
   const challengeForm = async (ctx, biz, mode, values, errors = {}, status = 200) => render(
     ctx,
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(ChallengeFormPage, { biz, mode, values, errors, rewards: await grantRewardsFor(biz), programmes: await programmesFor(biz), segmentsAllowed: hasFeature(biz, "segments") }),
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(ChallengeFormPage, { biz, mode, values, errors, rewards: await grantRewardsFor(biz), programmes: await programmesFor(biz), segmentsAllowed: hasFeature(biz, "segments") }),
     { title: "Visit challenge", status, noindex: true }
   );
   r2.get(
@@ -35680,11 +36189,11 @@ function dashboardManageRoutes(r2) {
          where r.business_id = $1 and r.status <> 'archived' order by r.is_card_reward desc, r.points_cost nulls last, r.name`,
         [biz.id]
       );
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(RewardsPage, { biz, rewards }), { title: "Rewards", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(RewardsPage, { biz, rewards }), { title: "Rewards", noindex: true });
     })
   );
   const pointsProgs = (biz) => many(db, `select id, name from loyalty_programmes where business_id = $1 and programme_type = 'points' and status <> 'archived' order by created_at`, [biz.id]);
-  const rewardForm = async (ctx, biz, mode, values, errors = {}, status = 200, stats = null) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(RewardFormPage, { biz, mode, values, errors, pointsProgrammes: await pointsProgs(biz), stats }), { title: "Reward", status, noindex: true });
+  const rewardForm = async (ctx, biz, mode, values, errors = {}, status = 200, stats = null) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(RewardFormPage, { biz, mode, values, errors, pointsProgrammes: await pointsProgs(biz), stats }), { title: "Reward", status, noindex: true });
   r2.get("/dashboard/rewards/new", withBiz({ perm: "manage_rewards" }, async (ctx, biz) => rewardForm(ctx, biz, "new", { icon: "gift" })));
   r2.get(
     "/dashboard/rewards/:id",
@@ -35779,12 +36288,12 @@ function dashboardManageRoutes(r2) {
       for (const c of perf) {
         rows.push({ ...c, display_status: displayStatus(c, today), benefit_label: await benefitLabel(biz, c) });
       }
-      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(CampaignsPage, { biz, campaigns: rows, allowed }), { title: "Campaigns", noindex: true });
+      return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(CampaignsPage, { biz, campaigns: rows, allowed }), { title: "Campaigns", noindex: true });
     })
   );
   const campaignForm = async (ctx, biz, mode, values, errors = {}, status = 200) => render(
     ctx,
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       CampaignFormPage,
       {
         biz,
@@ -35988,12 +36497,12 @@ function dashboardManageRoutes(r2) {
       }
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
           CampaignDetailPage,
           {
             biz,
             c,
-            offerPreview: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(OfferCard, { o: offer, tz: biz.timezone }),
+            offerPreview: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(OfferCard, { o: offer, tz: biz.timezone }),
             perf: perf ?? { viewers: 0, vouchers_issued: 0, bonuses: 0, bonus_total: 0, redeemed: 0, referrals_qualified: 0, referrals_started: 0 },
             contacts,
             eligible,
@@ -36074,7 +36583,7 @@ function dashboardManageRoutes(r2) {
     })
   );
 }
-var import_jsx_runtime46, UUID, int, dateOrNull, str2;
+var import_jsx_runtime49, UUID, int, dateOrNull, str2;
 var init_dashboard_manage = __esm({
   "src/server/routes/dashboard-manage.tsx"() {
     "use strict";
@@ -36095,7 +36604,7 @@ var init_dashboard_manage = __esm({
     init_parts();
     init_Referrals();
     init_referrals();
-    import_jsx_runtime46 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime49 = __toESM(require_jsx_runtime(), 1);
     UUID = /^[0-9a-f-]{36}$/;
     int = (s) => s && /^-?\d+$/.test(s.trim()) ? Number(s) : null;
     dateOrNull = (s) => s && isDateStr(s) ? s : null;
@@ -36402,10 +36911,10 @@ async function seedDemo() {
         `select id from customer_rewards where membership_id = $1 and status = 'available' and (expires_at is null or expires_at > $2) and issued_at < $2 order by issued_at limit 1`,
         [m, ev.at]
       );
-      if (v) await tx((q) => redeemVoucher(q, { businessId: B, customerRewardId: v.id, actorUserId: staff, idempotencyKey: import_node_crypto7.default.randomUUID(), now: new Date(ev.at.getTime() - 6e4), source: "seed" }));
+      if (v) await tx((q) => redeemVoucher(q, { businessId: B, customerRewardId: v.id, actorUserId: staff, idempotencyKey: import_node_crypto8.default.randomUUID(), now: new Date(ev.at.getTime() - 6e4), source: "seed" }));
     }
     await tx(
-      (q) => awardPurchase(q, { businessId: B, membershipId: m, programmeId: stamps.id, actorUserId: staff, idempotencyKey: import_node_crypto7.default.randomUUID(), quantity: ev.qty, source: "seed", confirmSeparatePurchase: true, now: ev.at })
+      (q) => awardPurchase(q, { businessId: B, membershipId: m, programmeId: stamps.id, actorUserId: staff, idempotencyKey: import_node_crypto8.default.randomUUID(), quantity: ev.qty, source: "seed", confirmSeparatePurchase: true, now: ev.at })
     );
     if (ev.amount) {
       await tx(
@@ -36414,7 +36923,7 @@ async function seedDemo() {
           membershipId: m,
           programmeId: points.id,
           actorUserId: staff,
-          idempotencyKey: import_node_crypto7.default.randomUUID(),
+          idempotencyKey: import_node_crypto8.default.randomUUID(),
           amountMinor: ev.amount,
           currency: "EUR",
           source: "seed",
@@ -36425,7 +36934,7 @@ async function seedDemo() {
       const bal = await one(db, "select balance from membership_balances where membership_id = $1 and programme_id = $2", [m, points.id]);
       if (bal.balance >= 45 && rand() < 0.35 && p.fixed !== "maya") {
         await tx(
-          (q) => redeemPoints(q, { businessId: B, membershipId: m, rewardId: rand() < 0.6 ? upgradeId : pastryPtsId, actorUserId: staff, idempotencyKey: import_node_crypto7.default.randomUUID(), now: new Date(ev.at.getTime() + 4e4), source: "seed" })
+          (q) => redeemPoints(q, { businessId: B, membershipId: m, rewardId: rand() < 0.6 ? upgradeId : pastryPtsId, actorUserId: staff, idempotencyKey: import_node_crypto8.default.randomUUID(), now: new Date(ev.at.getTime() + 4e4), source: "seed" })
         );
       }
     }
@@ -36468,7 +36977,7 @@ async function seedDemo() {
   const bm = await tx((q) => joinBusiness(q, { businessId: bakery.id, customerId: mayaCustomer, source: "demo", marketingConsent: false, now: new Date(now.getTime() - 20 * 864e5) }));
   for (const daysAgo of [18, 11, 4]) {
     await tx(
-      (q) => awardPurchase(q, { businessId: bakery.id, membershipId: bm.membershipId, programmeId: bStamps.id, actorUserId: bakeryOwnerId, idempotencyKey: import_node_crypto7.default.randomUUID(), source: "seed", confirmSeparatePurchase: true, now: new Date(now.getTime() - daysAgo * 864e5) })
+      (q) => awardPurchase(q, { businessId: bakery.id, membershipId: bm.membershipId, programmeId: bStamps.id, actorUserId: bakeryOwnerId, idempotencyKey: import_node_crypto8.default.randomUUID(), source: "seed", confirmSeparatePurchase: true, now: new Date(now.getTime() - daysAgo * 864e5) })
     );
   }
   const counts = await one(db, `select (select count(*)::int from loyalty_memberships where business_id = $1) as members, (select count(*)::int from loyalty_transactions where business_id = $1) as txns`, [B]);
@@ -36514,11 +37023,11 @@ async function resetDemoData() {
   console.log("demo data removed");
   await seedDemo();
 }
-var import_node_crypto7, DEMO_SLUG, TZ, POOLS;
+var import_node_crypto8, DEMO_SLUG, TZ, POOLS;
 var init_demo = __esm({
   "src/server/seed/demo.ts"() {
     "use strict";
-    import_node_crypto7 = __toESM(require("node:crypto"), 1);
+    import_node_crypto8 = __toESM(require("node:crypto"), 1);
     init_db();
     init_config();
     init_accounts();
@@ -36547,14 +37056,14 @@ var init_demo = __esm({
 // src/server/routes/admin.tsx
 function AdminLayout({ tab, children }) {
   const { badges } = usePage();
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "min-h-screen bg-cream", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("header", { className: "border-b border-beige bg-coffee text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mx-auto flex h-14 max-w-[1240px] items-center gap-4 px-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Logo, { tone: "light" }),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("span", { className: "badge bg-terracotta text-white", children: "Platform admin" }),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Form, { action: "/sign-out", className: "ml-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("button", { className: "btn btn-sm text-cream hover:bg-cream/10", type: "submit", children: "Sign out" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "min-h-screen bg-cream", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("header", { className: "border-b border-beige bg-coffee text-cream", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "mx-auto flex h-14 max-w-[1240px] items-center gap-4 px-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Logo, { tone: "light" }),
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("span", { className: "badge bg-terracotta text-white", children: "Platform admin" }),
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Form, { action: "/sign-out", className: "ml-auto", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("button", { className: "btn btn-sm text-cream hover:bg-cream/10", type: "submit", children: "Sign out" }) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("main", { className: "mx-auto max-w-[1240px] px-4 py-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("main", { className: "mx-auto max-w-[1240px] px-4 py-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
         Tabs,
         {
           current: tab,
@@ -36567,7 +37076,7 @@ function AdminLayout({ tab, children }) {
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(FlashMessage, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(FlashMessage, {}),
       children
     ] })
   ] });
@@ -36608,67 +37117,67 @@ function adminRoutes(r2) {
       );
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(AdminLayout, { tab: "cafes", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: "Caf\xE9s", description: "Platform view. Customer personal data is not shown here." }),
-          m.requests > 0 && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Alert, { tone: "warning", className: "mb-4", title: `You have ${m.requests} new message${m.requests === 1 ? "" : "s"}`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(AdminLayout, { tab: "cafes", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(PageHeader, { title: "Caf\xE9s", description: "Platform view. Customer personal data is not shown here." }),
+          m.requests > 0 && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Alert, { tone: "warning", className: "mb-4", title: `You have ${m.requests} new message${m.requests === 1 ? "" : "s"}`, children: [
             "People wrote to you through the website. ",
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { className: "link font-medium", href: "/admin/requests", children: "Read and reply" })
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("a", { className: "link font-medium", href: "/admin/requests", children: "Read and reply" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mb-5 grid grid-cols-2 gap-3 md:grid-cols-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Stat, { label: "Caf\xE9s (excl. demo)", value: num2(m.cafes), hint: `${m.active_cafes} active \xB7 ${m.onboarding} onboarding \xB7 ${m.suspended} suspended` }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Stat, { label: "Loyalty memberships", value: num2(m.members), hint: "all caf\xE9s" }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Stat, { label: "Transactions (30 days)", value: num2(m.txns) }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Stat, { label: "New messages", value: num2(m.requests), hint: `${m.errors} errors in 7 days` })
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "mb-5 grid grid-cols-2 gap-3 md:grid-cols-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Stat, { label: "Caf\xE9s (excl. demo)", value: num2(m.cafes), hint: `${m.active_cafes} active \xB7 ${m.onboarding} onboarding \xB7 ${m.suspended} suspended` }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Stat, { label: "Loyalty memberships", value: num2(m.members), hint: "all caf\xE9s" }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Stat, { label: "Transactions (30 days)", value: num2(m.txns) }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Stat, { label: "New messages", value: num2(m.requests), hint: `${m.errors} errors in 7 days` })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("table", { className: "table", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Caf\xE9" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Status" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Plan" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Subscription" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "text-right", children: "Members" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { className: "text-right", children: "Txns 30d" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Created" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Actions" })
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("table", { className: "table", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("tr", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Caf\xE9" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Status" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Plan" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Subscription" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { className: "text-right", children: "Members" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { className: "text-right", children: "Txns 30d" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Created" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Actions" })
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("tbody", { children: cafes.map((c) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: `/c/${c.slug}`, className: "font-medium hover:underline", target: "_blank", children: c.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "text-[12px] text-muted-ink", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("tbody", { children: cafes.map((c) => /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("tr", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("td", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("a", { href: `/c/${c.slug}`, className: "font-medium hover:underline", target: "_blank", children: c.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "text-[12px] text-muted-ink", children: [
                   c.city ?? "\u2014",
                   " ",
-                  c.is_demo && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: "warning", children: "demo" })
+                  c.is_demo && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: "warning", children: "demo" })
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: c.status === "active" ? "success" : c.status === "suspended" ? "error" : "neutral", children: c.status }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "capitalize", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: c.status === "active" ? "success" : c.status === "suspended" ? "error" : "neutral", children: c.status }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("td", { className: "capitalize", children: [
                 c.plan_id,
-                c.requested_plan_id && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "text-[12px] text-warning-ink", children: [
+                c.requested_plan_id && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "text-[12px] text-warning-ink", children: [
                   "requests ",
                   c.requested_plan_id
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "text-[13px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("td", { className: "text-[13px]", children: [
                 c.sub_status,
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "text-[12px] text-muted-ink", children: c.payment_status })
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "text-[12px] text-muted-ink", children: c.payment_status })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "text-right tnum", children: c.members }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "text-right tnum", children: c.txns_30d }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "whitespace-nowrap text-[13px] text-muted-ink", children: dateShort(c.created_at, "UTC") }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { className: "min-w-[230px]", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-wrap gap-1.5", children: [
-                c.status !== "onboarding" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/admin/cafes/${c.id}/status`, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: c.status === "suspended" ? "active" : "suspended" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: c.status === "suspended" ? "secondary" : "danger-ghost", children: c.status === "suspended" ? "Reactivate" : "Suspend" })
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("td", { className: "text-right tnum", children: c.members }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("td", { className: "text-right tnum", children: c.txns_30d }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("td", { className: "whitespace-nowrap text-[13px] text-muted-ink", children: dateShort(c.created_at, "UTC") }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("td", { className: "min-w-[230px]", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "flex flex-wrap gap-1.5", children: [
+                c.status !== "onboarding" && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Form, { action: `/admin/cafes/${c.id}/status`, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("input", { type: "hidden", name: "status", value: c.status === "suspended" ? "active" : "suspended" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Button, { size: "sm", variant: c.status === "suspended" ? "secondary" : "danger-ghost", children: c.status === "suspended" ? "Reactivate" : "Suspend" })
                 ] }),
-                !c.is_demo && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/admin/cafes/${c.id}/subscription`, className: "flex gap-1.5", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("select", { name: "action", className: "select h-9 min-h-0 w-36 text-[13px]", "aria-label": "Subscription action", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "activate", children: "Activate plan" }),
-                    c.requested_plan_id && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "apply_request", children: "Apply requested plan" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "mark_paid", children: "Mark period paid" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "past_due", children: "Mark past due" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "cancel", children: "Cancel" })
+                !c.is_demo && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Form, { action: `/admin/cafes/${c.id}/subscription`, className: "flex gap-1.5", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("select", { name: "action", className: "select h-9 min-h-0 w-36 text-[13px]", "aria-label": "Subscription action", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "activate", children: "Activate plan" }),
+                    c.requested_plan_id && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "apply_request", children: "Apply requested plan" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "mark_paid", children: "Mark period paid" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "past_due", children: "Mark past due" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "cancel", children: "Cancel" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: "secondary", children: "Apply" })
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Button, { size: "sm", variant: "secondary", children: "Apply" })
                 ] })
               ] }) })
             ] }, c.id)) })
@@ -36717,37 +37226,37 @@ function adminRoutes(r2) {
       const featureKeys = Object.keys(planFeaturesSchema.parse({}).features);
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(AdminLayout, { tab: "plans", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: "Plans", description: "The single source of truth for prices, features and limits shown on the pricing page and enforced in the app." }),
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "grid gap-4 lg:grid-cols-3", children: plans.map((p) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { className: "p-5", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/admin/plans/${p.id}`, className: "grid gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h2", { className: "text-[17px] font-semibold", children: p.id }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("span", { className: "text-[13px] text-muted-ink", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(AdminLayout, { tab: "plans", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(PageHeader, { title: "Plans", description: "The single source of truth for prices, features and limits shown on the pricing page and enforced in the app." }),
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "grid gap-4 lg:grid-cols-3", children: plans.map((p) => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Card, { className: "p-5", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Form, { action: `/admin/plans/${p.id}`, className: "grid gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("h2", { className: "text-[17px] font-semibold", children: p.id }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("span", { className: "text-[13px] text-muted-ink", children: [
                 moneyWhole(p.monthlyPriceMinor, p.currency),
                 "/month"
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Name", name: `name`, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "name", defaultValue: p.name, required: true }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Description", name: "description", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "description", defaultValue: p.description }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "grid grid-cols-2 gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Monthly price", name: "price", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: "price", defaultValue: (p.monthlyPriceMinor / 100).toFixed(2), required: true }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Select, { name: "status", defaultValue: p.status, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "active", children: "active" }),
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "hidden", children: "hidden" }),
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("option", { value: "retired", children: "retired" })
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Field, { label: "Name", name: `name`, children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Input, { name: "name", defaultValue: p.name, required: true }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Field, { label: "Description", name: "description", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Input, { name: "description", defaultValue: p.description }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "grid grid-cols-2 gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Field, { label: "Monthly price", name: "price", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Input, { name: "price", defaultValue: (p.monthlyPriceMinor / 100).toFixed(2), required: true }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Field, { label: "Status", name: "status", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Select, { name: "status", defaultValue: p.status, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "active", children: "active" }),
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "hidden", children: "hidden" }),
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("option", { value: "retired", children: "retired" })
               ] }) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "grid grid-cols-2 gap-3", children: ["programmes", "staffSeats", "activeCampaigns", "locations"].map((k) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Field, { label: k, name: `limit_${k}`, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Input, { name: `limit_${k}`, type: "number", min: 0, defaultValue: String(p.features.limits[k]) }) }, k)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("fieldset", { className: "grid grid-cols-2 gap-1.5 text-[13px]", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("legend", { className: "label", children: "Features" }),
-              featureKeys.map((k) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("label", { className: "flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "checkbox", name: "feature", value: k, defaultChecked: Boolean(p.features.features[k]), className: "checkbox h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "grid grid-cols-2 gap-3", children: ["programmes", "staffSeats", "activeCampaigns", "locations"].map((k) => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Field, { label: k, name: `limit_${k}`, children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Input, { name: `limit_${k}`, type: "number", min: 0, defaultValue: String(p.features.limits[k]) }) }, k)) }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("fieldset", { className: "grid grid-cols-2 gap-1.5 text-[13px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("legend", { className: "label", children: "Features" }),
+              featureKeys.map((k) => /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("label", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("input", { type: "checkbox", name: "feature", value: k, defaultChecked: Boolean(p.features.features[k]), className: "checkbox h-4 w-4" }),
                 " ",
                 k
               ] }, k))
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Checkbox, { name: "recommended", value: "1", defaultChecked: p.recommended, label: "Mark as recommended" }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Button, { size: "sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Checkbox, { name: "recommended", value: "1", defaultChecked: p.recommended, label: "Mark as recommended" }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Button, { size: "sm", children: [
               "Save ",
               p.name
             ] })
@@ -36792,29 +37301,37 @@ function adminRoutes(r2) {
       const filter = ctx.query.get("show") === "all" ? "all" : ctx.query.get("show") === "done" ? "done" : "open";
       const where = filter === "all" ? "true" : filter === "done" ? `status <> 'new'` : `status = 'new'`;
       const rows = await many(db, `select * from demo_requests where ${where} order by created_at desc limit 300`);
+      const replies = await many(
+        db,
+        `select r.request_id, r.body, r.channel, r.status, r.error, r.created_at, u.name as author
+           from message_replies r left join users u on u.id = r.author_user_id
+          where r.request_id = any($1::uuid[]) order by r.created_at`,
+        [rows.map((d) => d.id)]
+      );
+      const mailReady = Boolean(mailSettings());
       const counts = await one(db, `select count(*) filter (where status = 'new')::int as open, count(*) filter (where status <> 'new')::int as done from demo_requests`);
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(AdminLayout, { tab: "requests", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: "Messages", description: "Contact-form messages and demo requests from the website. Reply by email or phone, then mark them as replied." }),
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "mb-4 flex flex-wrap gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(AdminLayout, { tab: "requests", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(PageHeader, { title: "Messages", description: "Messages and demo requests from the website. Reply right here." }),
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "mb-4 flex flex-wrap gap-2", children: [
             ["open", `New (${counts.open})`],
             ["done", `Replied or closed (${counts.done})`],
             ["all", "All"]
-          ].map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: k === "open" ? "/admin/requests" : `/admin/requests?show=${k}`, className: `btn btn-sm ${filter === k ? "btn-primary" : "btn-secondary"}`, "aria-current": filter === k ? "page" : void 0, children: l }, k)) }),
-          rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { className: "p-8 text-center text-muted-ink", children: filter === "open" ? "No new messages. Messages people send through the Contact and Demo pages appear here." : "Nothing here yet." }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("ul", { className: "grid gap-3", children: rows.map((d) => {
+          ].map(([k, l]) => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("a", { href: k === "open" ? "/admin/requests" : `/admin/requests?show=${k}`, className: `btn btn-sm ${filter === k ? "btn-primary" : "btn-secondary"}`, "aria-current": filter === k ? "page" : void 0, children: l }, k)) }),
+          rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Card, { className: "p-8 text-center text-muted-ink", children: filter === "open" ? "No new messages. Messages people send through the Contact and Demo pages appear here." : "Nothing here yet." }) : /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("ul", { className: "grid gap-3", children: rows.map((d) => {
             const wa = d.phone ? String(d.phone).replace(/[^0-9]/g, "") : "";
-            return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: `p-5 ${d.status === "new" ? "border-terracotta" : ""}`, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-wrap items-start justify-between gap-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-wrap items-center gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("span", { className: "text-[16px] font-semibold", children: d.name }),
-                    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: d.kind === "demo" ? "accent" : "neutral", children: d.kind === "demo" ? "Demo request" : "Contact message" }),
-                    d.status === "new" && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: "accent", children: "New" }),
-                    d.status === "contacted" && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: "success", children: "Replied" }),
-                    d.status === "closed" && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: "neutral", children: "Closed" })
+            return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Card, { className: `p-5 ${d.status === "new" ? "border-terracotta" : ""}`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "flex flex-wrap items-start justify-between gap-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "min-w-0", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "flex flex-wrap items-center gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("span", { className: "text-[16px] font-semibold", children: d.name }),
+                    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: d.kind === "demo" ? "accent" : "neutral", children: d.kind === "demo" ? "Demo request" : "Contact message" }),
+                    d.status === "new" && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: "accent", children: "New" }),
+                    d.status === "contacted" && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: "success", children: "Replied" }),
+                    d.status === "closed" && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: "neutral", children: "Closed" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "mt-0.5 text-[13.5px] text-muted-ink", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { className: "mt-0.5 text-[13.5px] text-muted-ink", children: [
                     dateTime(d.created_at, "Asia/Famagusta"),
                     " \xB7 ",
                     relative(d.created_at),
@@ -36822,30 +37339,53 @@ function adminRoutes(r2) {
                     d.city ? `, ${d.city}` : ""
                   ] })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `mailto:${d.email}?subject=${encodeURIComponent("Re: your message to Perkora")}`, children: [
-                    "Email ",
-                    d.email
-                  ] }),
-                  wa && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("a", { className: "btn btn-secondary btn-sm", href: `https://wa.me/${wa}`, target: "_blank", rel: "noopener noreferrer", children: [
-                    "WhatsApp ",
-                    d.phone
-                  ] })
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "text-[13.5px] sm:text-right", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("a", { className: "link", href: `mailto:${d.email}`, children: d.email }),
+                  d.phone && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("a", { className: "block text-muted-ink hover:text-ink", href: `tel:${d.phone.replace(/[^+0-9]/g, "")}`, children: d.phone })
                 ] })
               ] }),
-              d.message ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mt-3 whitespace-pre-wrap text-[15px] leading-relaxed", children: d.message }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mt-3 text-[14px] text-muted-ink", children: "No message text (demo request)." }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mt-4 flex flex-wrap gap-2 border-t border-beige pt-3", children: [
-                d.status !== "contacted" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/admin/requests/${d.id}`, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: "contacted" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", children: "Mark as replied" })
+              d.message ? /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "mt-3 whitespace-pre-wrap text-[15px] leading-relaxed", children: d.message }) : /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "mt-3 text-[14px] text-muted-ink", children: "No message text (demo request)." }),
+              replies.filter((r3) => r3.request_id === d.id).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("ul", { className: "mt-4 space-y-2", children: replies.filter((r3) => r3.request_id === d.id).map((r3, i) => /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("li", { className: "rounded-[12px] border border-beige bg-cream px-4 py-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { className: "text-[12.5px] text-muted-ink", children: [
+                  r3.author ?? "Admin",
+                  " \xB7 ",
+                  dateTime(r3.created_at, "Asia/Famagusta"),
+                  " \xB7",
+                  " ",
+                  r3.status === "sent" ? "emailed" : r3.status === "failed" ? /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("span", { className: "text-error", children: [
+                    "not sent: ",
+                    r3.error
+                  ] }) : r3.channel === "whatsapp" ? "opened in WhatsApp" : "opened in email app"
                 ] }),
-                d.status !== "closed" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/admin/requests/${d.id}`, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: "closed" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: "secondary", children: "Close" })
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "mt-1 whitespace-pre-wrap text-[14.5px]", children: r3.body })
+              ] }, i)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "mt-4 flex flex-wrap items-start gap-2 border-t border-beige pt-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+                  Island,
+                  {
+                    name: "ReplyBox",
+                    props: {
+                      sendUrl: `/admin/requests/${d.id}/reply`,
+                      logUrl: `/admin/requests/${d.id}/reply-log`,
+                      csrf: ctx.csrfToken,
+                      email: d.email,
+                      phone: d.phone ? String(d.phone).replace(/[^0-9]/g, "") : "",
+                      firstName: String(d.name).split(" ")[0],
+                      mailReady
+                    }
+                  }
+                ),
+                d.status !== "contacted" && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Form, { action: `/admin/requests/${d.id}`, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("input", { type: "hidden", name: "status", value: "contacted" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Button, { size: "sm", variant: "secondary", children: "Mark as replied" })
                 ] }),
-                d.status !== "new" && /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Form, { action: `/admin/requests/${d.id}`, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("input", { type: "hidden", name: "status", value: "new" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { size: "sm", variant: "ghost", children: "Mark as new" })
+                d.status !== "closed" && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Form, { action: `/admin/requests/${d.id}`, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("input", { type: "hidden", name: "status", value: "closed" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Button, { size: "sm", variant: "secondary", children: "Close" })
+                ] }),
+                d.status !== "new" && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Form, { action: `/admin/requests/${d.id}`, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("input", { type: "hidden", name: "status", value: "new" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Button, { size: "sm", variant: "ghost", children: "Mark as new" })
                 ] })
               ] })
             ] }) }, d.id);
@@ -36853,6 +37393,42 @@ function adminRoutes(r2) {
         ] }),
         { title: "Messages", noindex: true }
       );
+    })
+  );
+  r2.post(
+    "/admin/requests/:id/reply",
+    guard(async (ctx) => {
+      const d = await maybeOne(db, "select * from demo_requests where id = $1", [ctx.params.id]);
+      if (!d) throw notFound();
+      const body = field(await readBody(ctx), "body").trim().slice(0, 5e3);
+      if (!body) return redirect(ctx, "/admin/requests", { type: "error", message: "Write a reply first." });
+      const settings = mailSettings();
+      if (!settings) return redirect(ctx, "/admin/requests", { type: "error", message: "Email sending isn\u2019t set up. Use \u201COpen in my email app\u201D instead." });
+      try {
+        await sendMail({ to: d.email, subject: "Re: your message to Perkora", text: body, replyTo: config().NOTIFY_EMAIL || void 0 }, settings);
+        await db.query(`insert into message_replies (request_id, author_user_id, body, channel, status) values ($1, $2, $3, 'email', 'sent')`, [d.id, ctx.user.id, body]);
+        await db.query(`update demo_requests set status = 'contacted', read_at = coalesce(read_at, now()) where id = $1`, [d.id]);
+        return redirect(ctx, "/admin/requests", { type: "success", message: `Reply sent to ${d.email}.` });
+      } catch (e) {
+        const msg = e instanceof MailError ? e.message : "Sending failed.";
+        await db.query(`insert into message_replies (request_id, author_user_id, body, channel, status, error) values ($1, $2, $3, 'email', 'failed', $4)`, [d.id, ctx.user.id, body, msg.slice(0, 300)]);
+        return redirect(ctx, "/admin/requests", { type: "error", message: `Your reply was not sent: ${msg}` });
+      }
+    })
+  );
+  r2.post(
+    "/admin/requests/:id/reply-log",
+    guard(async (ctx) => {
+      const d = await maybeOne(db, "select id from demo_requests where id = $1", [ctx.params.id]);
+      if (!d) throw notFound();
+      const b = await readBody(ctx);
+      const body = String(b.json?.body ?? field(b, "body") ?? "").trim().slice(0, 5e3);
+      const channel = String(b.json?.channel ?? field(b, "channel")) === "whatsapp" ? "whatsapp" : "email_app";
+      if (body) {
+        await db.query(`insert into message_replies (request_id, author_user_id, body, channel, status) values ($1, $2, $3, $4, 'opened')`, [d.id, ctx.user.id, body, channel]);
+        await db.query(`update demo_requests set status = 'contacted', read_at = coalesce(read_at, now()) where id = $1`, [d.id]);
+      }
+      return json({ ok: true });
     })
   );
   r2.post(
@@ -36875,28 +37451,28 @@ function adminRoutes(r2) {
       const rows = await many(db, `select id, level, message, path, method, error_code, created_at from error_logs order by created_at desc limit 200`);
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(AdminLayout, { tab: "logs", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: "Error logs", description: "Server errors, newest first. Messages are truncated and contain no passwords or tokens." }),
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("table", { className: "table", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "When" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Request" }),
-              /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("th", { children: "Error" })
+        /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(AdminLayout, { tab: "logs", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(PageHeader, { title: "Error logs", description: "Server errors, newest first. Messages are truncated and contain no passwords or tokens." }),
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("table", { className: "table", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("tr", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "When" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Request" }),
+              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("th", { children: "Error" })
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tbody", { children: [
-              rows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("tr", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("td", { colSpan: 3, className: "text-muted-ink", children: "No errors logged." }) }),
-              rows.map((e) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("tr", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "whitespace-nowrap text-[13px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("tbody", { children: [
+              rows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("tr", { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("td", { colSpan: 3, className: "text-muted-ink", children: "No errors logged." }) }),
+              rows.map((e) => /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("tr", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("td", { className: "whitespace-nowrap text-[13px]", children: [
                   dateTime(e.created_at, "UTC"),
                   " UTC"
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "text-[13px]", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("td", { className: "text-[13px]", children: [
                   e.method,
                   " ",
                   e.path
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("td", { className: "text-[13px]", children: [
-                  e.error_code && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Badge, { tone: "error", children: e.error_code }),
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("td", { className: "text-[13px]", children: [
+                  e.error_code && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Badge, { tone: "error", children: e.error_code }),
                   " ",
                   e.message
                 ] })
@@ -36914,21 +37490,21 @@ function adminRoutes(r2) {
       const demo = await many(db, `select b.name, b.slug, (select count(*)::int from loyalty_memberships m where m.business_id = b.id) as members from businesses b where b.is_demo order by b.name`);
       return render(
         ctx,
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(AdminLayout, { tab: "demo", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(PageHeader, { title: "Demo data", description: "Fictional caf\xE9s, customers and history used for sales demonstrations." }),
-          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(Card, { className: "max-w-2xl p-6", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("ul", { className: "space-y-1 text-[14.5px]", children: [
-              demo.map((d) => /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("li", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { className: "link", href: `/c/${d.slug}`, target: "_blank", children: d.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(AdminLayout, { tab: "demo", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(PageHeader, { title: "Demo data", description: "Fictional caf\xE9s, customers and history used for sales demonstrations." }),
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Card, { className: "max-w-2xl p-6", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("ul", { className: "space-y-1 text-[14.5px]", children: [
+              demo.map((d) => /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("li", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("a", { className: "link", href: `/c/${d.slug}`, target: "_blank", children: d.name }),
                 " ",
                 "\u2014 ",
                 d.members,
                 " fictional members"
               ] }, d.slug)),
-              demo.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("li", { className: "text-muted-ink", children: "No demo caf\xE9s. Reset to create them." })
+              demo.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("li", { className: "text-muted-ink", children: "No demo caf\xE9s. Reset to create them." })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Alert, { tone: "warning", className: "mt-5", children: "Resetting deletes only records marked as demo (the demo caf\xE9s, their fictional customers and demo guest accounts) and recreates them. Real caf\xE9s and customers are never touched." }),
-            config().DEMO_MODE ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Form, { action: "/admin/demo/reset", className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Button, { variant: "danger", children: "Reset demo data" }) }) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "mt-4 text-[14px] text-muted-ink", children: "Demo mode is off (DEMO_MODE=false)." })
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Alert, { tone: "warning", className: "mt-5", children: "Resetting deletes only records marked as demo (the demo caf\xE9s, their fictional customers and demo guest accounts) and recreates them. Real caf\xE9s and customers are never touched." }),
+            config().DEMO_MODE ? /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Form, { action: "/admin/demo/reset", className: "mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(Button, { variant: "danger", children: "Reset demo data" }) }) : /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "mt-4 text-[14px] text-muted-ink", children: "Demo mode is off (DEMO_MODE=false)." })
           ] })
         ] }),
         { title: "Demo data", noindex: true }
@@ -36946,7 +37522,7 @@ function adminRoutes(r2) {
     })
   );
 }
-var import_jsx_runtime47;
+var import_jsx_runtime50;
 var init_admin = __esm({
   "src/server/routes/admin.tsx"() {
     "use strict";
@@ -36961,8 +37537,10 @@ var init_admin = __esm({
     init_ui();
     init_format();
     init_config();
+    init_smtp();
+    init_Island();
     init_page_context();
-    import_jsx_runtime47 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime50 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -36998,25 +37576,25 @@ function ErrorPage({ status, message }) {
   const { t } = usePage();
   const title = status === 404 ? t.errors.notFoundTitle : status === 403 ? t.errors.forbiddenTitle : status === 429 ? t.errors.forbiddenTitle : status >= 500 ? t.errors.serverTitle : t.errors.forbiddenTitle;
   const body = message ?? (status === 404 ? t.errors.notFoundBody : status === 429 ? t.errors.tooMany : "");
-  return /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex min-h-screen flex-col items-center justify-center px-6 text-center", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(Logo, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "mt-10 font-display text-[64px] font-semibold text-beige-strong tnum", children: status }),
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h1", { className: "mt-2 text-[26px] font-semibold", children: title }),
-    body && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "mt-2 max-w-md text-muted-ink", children: body }),
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "mt-8 flex gap-3", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("a", { href: "/", className: "btn btn-primary", children: t.errors.goHome }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex min-h-screen flex-col items-center justify-center px-6 text-center", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Logo, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "mt-10 font-display text-[64px] font-semibold text-beige-strong tnum", children: status }),
+    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("h1", { className: "mt-2 text-[26px] font-semibold", children: title }),
+    body && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "mt-2 max-w-md text-muted-ink", children: body }),
+    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "mt-8 flex gap-3", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("a", { href: "/", className: "btn btn-primary", children: t.errors.goHome }) })
   ] });
 }
 function renderError(ctx, status, message) {
-  return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ErrorPage, { status, message }), { title: String(status), status, noindex: true });
+  return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(ErrorPage, { status, message }), { title: String(status), status, noindex: true });
 }
-var import_jsx_runtime48;
+var import_jsx_runtime51;
 var init_errors3 = __esm({
   "src/server/routes/errors.tsx"() {
     "use strict";
     init_render();
     init_brand();
     init_page_context();
-    import_jsx_runtime48 = __toESM(require_jsx_runtime(), 1);
+    import_jsx_runtime51 = __toESM(require_jsx_runtime(), 1);
   }
 });
 
@@ -37026,7 +37604,7 @@ __export(app_exports, {
   createApp: () => createApp
 });
 function serveStatic(req, res, urlPath) {
-  if (!/^\/(assets|fonts)\/|^\/(favicon\.svg|robots\.txt|manifest\.webmanifest)$/.test(urlPath)) return false;
+  if (!/^\/(assets|fonts|icons)\/|^\/(favicon\.svg|robots\.txt|manifest\.webmanifest)$/.test(urlPath)) return false;
   const rel = import_node_path2.default.normalize(decodeURIComponent(urlPath)).replace(/^([/\\])+/, "");
   const file = import_node_path2.default.join(publicDir, rel);
   if (!file.startsWith(publicDir + import_node_path2.default.sep)) return false;
@@ -37205,7 +37783,7 @@ function createApp() {
         out = wantsJson(ctx) ? json({ error: { code: "http_" + e.status, message: e.message } }, e.status) : renderError(ctx, e.status, e.message);
       } else {
         await logError(ctx, e);
-        const ref = import_node_crypto8.default.randomBytes(4).toString("hex");
+        const ref = import_node_crypto9.default.randomBytes(4).toString("hex");
         out = wantsJson(ctx) ? json({ error: { code: "internal", message: `Something went wrong on our side (ref ${ref}). Please try again.` } }, 500) : renderError(ctx, 500, `Something went wrong on our side (ref ${ref}). Please try again.`);
       }
       if (!res.headersSent) send(res, ctx, out, sec);
@@ -37227,13 +37805,13 @@ function send(res, ctx, out, sec) {
   res.writeHead(out.status, headers);
   res.end(ctx.method === "HEAD" ? void 0 : body);
 }
-var import_node_fs3, import_node_path2, import_node_crypto8, import_node_zlib, MIME, publicDir;
+var import_node_fs3, import_node_path2, import_node_crypto9, import_node_zlib, MIME, publicDir;
 var init_app = __esm({
   "src/server/app.ts"() {
     "use strict";
     import_node_fs3 = __toESM(require("node:fs"), 1);
     import_node_path2 = __toESM(require("node:path"), 1);
-    import_node_crypto8 = __toESM(require("node:crypto"), 1);
+    import_node_crypto9 = __toESM(require("node:crypto"), 1);
     import_node_zlib = __toESM(require("node:zlib"), 1);
     init_config();
     init_db();
@@ -37281,7 +37859,7 @@ async function migrate(dir = import_node_path3.default.resolve(process.cwd(), "m
   let count = 0;
   for (const file of files) {
     const sql = import_node_fs4.default.readFileSync(import_node_path3.default.join(dir, file), "utf8");
-    const checksum = import_node_crypto9.default.createHash("sha256").update(sql).digest("hex");
+    const checksum = import_node_crypto10.default.createHash("sha256").update(sql).digest("hex");
     if (applied.has(file)) {
       if (applied.get(file) !== checksum) {
         throw new Error(`Migration ${file} was modified after it was applied. Create a new migration instead.`);
@@ -37306,13 +37884,13 @@ async function migrate(dir = import_node_path3.default.resolve(process.cwd(), "m
   if (!count) log("database is up to date");
   return count;
 }
-var import_node_fs4, import_node_path3, import_node_crypto9;
+var import_node_fs4, import_node_path3, import_node_crypto10;
 var init_migrate = __esm({
   "src/server/db/migrate.ts"() {
     "use strict";
     import_node_fs4 = __toESM(require("node:fs"), 1);
     import_node_path3 = __toESM(require("node:path"), 1);
-    import_node_crypto9 = __toESM(require("node:crypto"), 1);
+    import_node_crypto10 = __toESM(require("node:crypto"), 1);
     init_db();
   }
 });

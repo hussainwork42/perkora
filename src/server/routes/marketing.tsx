@@ -5,6 +5,7 @@ import { field, formObject, readBody, redirect, safeNext, setCookie, reply } fro
 import { render } from '../http/render';
 import { db, many } from '../db';
 import { config } from '../config';
+import { mailSettings, sendMail } from '../mail/smtp';
 import { loadPlans } from '../domain/plans';
 import { rateLimit } from '../auth/ratelimit';
 import { isLocale } from '../../shared/i18n';
@@ -59,6 +60,15 @@ async function demoPost(ctx: Ctx, kind: 'demo' | 'contact') {
     d.phone || null,
     d.message || null,
   ]);
+  // let the team know by email, when email sending is set up (never blocks the visitor)
+  const mail = mailSettings();
+  if (mail) {
+    const to = config().NOTIFY_EMAIL || mail.user;
+    const lines = [`${d.name} <${d.email}>${d.phone ? `, ${d.phone}` : ''}`, d.cafe_name ? `Café: ${d.cafe_name}${d.city ? `, ${d.city}` : ''}` : '', '', d.message || '(demo request)', '', `Reply: ${config().APP_URL.replace(/\/$/, '')}/admin/requests`];
+    sendMail({ to, subject: `New ${kind === 'demo' ? 'demo request' : 'message'} from ${d.name}`, text: lines.filter((l, i) => l || i > 1).join('\n'), replyTo: d.email }, mail).catch((e) =>
+      console.error('[mail] notification failed:', e instanceof Error ? e.message : e),
+    );
+  }
   return render(ctx, <DemoRequestPage kind={kind} done={d.email} />, { title: ctx.t.demo.metaTitle });
 }
 

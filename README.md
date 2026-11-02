@@ -84,6 +84,7 @@ Every variable is documented in [.env.example](.env.example). The ones you must 
 | `APP_SECRET` | 32+ random characters. Signs the rotating member QR tokens |
 | `APP_URL` | Public base URL. Used in QR codes and links, and for the same-origin check |
 | `DEMO_MODE` / `DEMO_PASSWORD` | Whether the fictional demo café and its sign-in shortcuts are shown, and their password |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `MAIL_FROM` / `NOTIFY_EMAIL` | Optional email for replying to website messages and new-message alerts (see docs/DEPLOYMENT.md → Email) |
 
 `APP_URL` must start with `https://` in production. Cookies are then marked `Secure` and HSTS is sent.
 

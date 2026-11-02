@@ -15,6 +15,7 @@ Perkora runs as **one Node.js process plus one PostgreSQL database**. The produc
 - [ ] **Migrations and seed.** Migrations have run: `node dist/cli.cjs migrate`. Plans are seeded: `node dist/cli.cjs seed` (also seeds the demo cafés when `DEMO_MODE=true`).
 - [ ] **Platform admin.** Created from the server shell, never committed: `ADMIN_PASSWORD='…' node dist/cli.cjs create-admin --email you@yourdomain --name "Your Name"`.
 - [ ] **Legal and company details.** Privacy policy and terms reviewed by a lawyer; company details added (see KNOWN_LIMITATIONS.md).
+- [ ] **Email (optional).** To reply to website messages from the admin page and get new messages by email, set `SMTP_HOST`, `SMTP_PORT` (465 or 587), `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` and `NOTIFY_EMAIL`. See "Email" below. Without them, replies open in your own email app or WhatsApp.
 - [ ] **Health check.** The host's health check points at `GET /healthz`. It returns 200 when the database is reachable.
 - [ ] **Backups.** Database backups are enabled on the provider.
 - [ ] **Smoke test.** Sign in as admin, create a test café through sign-up and onboarding, join it from a phone, award and redeem at the terminal, then delete the test café's data.
@@ -96,6 +97,22 @@ Both are plain PostgreSQL to Perkora. Use the direct connection string with `?ss
 | Change plan prices and limits | Admin → Plans |
 | Rotate `APP_SECRET` | Change the variable and restart. Member QR codes on screen refresh within minutes; nothing else depends on it |
 | Upgrade | Deploy the new build. Pending migrations apply on start |
+
+## Email
+
+Perkora sends two kinds of email, both optional: your replies to website messages (Admin → Messages → **Reply**) and a notification when someone sends a message or books a demo.
+
+| Variable | Example | Notes |
+|---|---|---|
+| `SMTP_HOST` | `smtp.hostinger.com` or `smtp.gmail.com` | Your mail provider's SMTP server |
+| `SMTP_PORT` | `465` | 465 uses TLS from the start; 587 uses STARTTLS |
+| `SMTP_SECURE` | `ssl` | Optional. `ssl`, `starttls` or `none`; worked out from the port when empty |
+| `SMTP_USER` | `info@yourdomain.com` | The mailbox address |
+| `SMTP_PASS` | (secret) | The mailbox password, or a Gmail app password |
+| `MAIL_FROM` | `Perkora <info@yourdomain.com>` | Optional. Defaults to `Perkora <SMTP_USER>` |
+| `NOTIFY_EMAIL` | `you@yourdomain.com` | Optional. Where new-message alerts go and where customers' replies land. Defaults to `SMTP_USER` |
+
+On Render: the service → **Environment** → add the variables → **Save changes**. The service restarts by itself. Each reply shows in the message thread as *emailed* or, if the mail server refused it, *not sent* with the reason.
 
 ## Scaling notes
 

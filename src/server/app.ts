@@ -33,7 +33,7 @@ const MIME: Record<string, string> = {
 const publicDir = path.resolve(process.cwd(), 'public');
 
 function serveStatic(req: IncomingMessage, res: ServerResponse, urlPath: string): boolean {
-  if (!/^\/(assets|fonts)\/|^\/(favicon\.svg|robots\.txt|manifest\.webmanifest)$/.test(urlPath)) return false;
+  if (!/^\/(assets|fonts|icons)\/|^\/(favicon\.svg|robots\.txt|manifest\.webmanifest)$/.test(urlPath)) return false;
   const rel = path.normalize(decodeURIComponent(urlPath)).replace(/^([/\\])+/, '');
   const file = path.join(publicDir, rel);
   if (!file.startsWith(publicDir + path.sep)) return false;

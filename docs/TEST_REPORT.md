@@ -1,6 +1,6 @@
 # Test report
 
-**Run date:** 1 November 2026, on the build delivered with this report (second release: camera scanning, two plans, referrals, messages, sign-up paths, café look).
+**Run date:** 2 November 2026, on the build delivered with this report (third release: email-only sign-up, replies to website messages, mobile fixes, home-screen install).
 
 **Environment:**
 
@@ -15,9 +15,10 @@
 | Loyalty engine (integration, real PostgreSQL) | `npm run test:integration` | 43 | 43 | 0 |
 | New features: referrals, plans (integration) | `npm run test:integration` | 6 | 6 | 0 |
 | HTTP: auth, roles, tenancy, CSRF, new pages (integration) | `npm run test:integration` | 32 | 32 | 0 |
-| **Unit and integration total** | `npm test` | **104** | **104** | **0** |
+| Email: SMTP client, new-message alert, admin replies (integration, local fake mail server) | `npm run test:integration` | 4 | 4 | 0 |
+| **Unit and integration total** | `npm test` | **108** | **108** | **0** |
 | Browser: 15-step sales demo | `npm run test:e2e` | 11 steps | 11 | 0 |
-| Browser: onboarding, café look and a referral | `npm run test:e2e` | 1 | 1 | 0 |
+| Browser: email-only sign-up, onboarding, café look and a referral | `npm run test:e2e` | 1 | 1 | 0 |
 | Browser: camera scanning (staff terminal and customer) | `npm run test:e2e` | 2 | 2 | 0 |
 | TypeScript | `npm run typecheck` | — | clean | — |
 
@@ -31,7 +32,7 @@
 
 ### Authentication and roles
 
-- Registering signs the user in, and sign-out works.
+- Registering needs only an email and a password (8+ characters), signs the user in, and sign-out works. The name comes from the email until the person adds one.
 - Invalid credentials are rejected.
 - Passwords are stored as scrypt hashes, never as plain text.
 - Protected pages require sign-in.
@@ -165,6 +166,14 @@
 
 **Campaign names:** any name is accepted ("Student exam week").
 
+### Third release (November 2026)
+
+**Sign-up:** customers and café owners register with an email and a password only (8+ characters). The browser test checks there is no name field on either form and that the member list and counter screen show a name taken from the email.
+
+**Replies to website messages:** with email set up, the admin's reply is sent over SMTP to the visitor and recorded as *emailed*; a refused login is recorded as *not sent* with the reason, not hidden. New messages are forwarded to the team with the visitor as Reply-To. Tested against a local fake mail server: UTF-8 bodies, encoded subjects, dot-stuffing and header injection. Without email set up, the reply opens already written in the admin's email app or WhatsApp. **Not tested against a real mail provider** — send one test reply after adding the settings.
+
+**Mobile:** every customer, owner, staff and admin page was opened at 390 px wide and checked for sideways scrolling; three layouts that pushed the page sideways were fixed (team, café look, transactions). The menu on the home page now opens full screen above the page instead of inside the header.
+
 ### Unit tests
 
 - **Member QR tokens:** round-trip, expiry, tamper rejection, extraction from a scanned URL.
@@ -196,12 +205,15 @@
 
 `tests/e2e/onboarding.test.ts` covers a new owner who:
 
-- signs up and stops partway through onboarding;
+- signs up with only an email and a password, and stops partway through onboarding;
 - signs back in and resumes at the right step;
 - finishes onboarding, downloads the QR poster and activates the café;
 - serves the café's first customer at the terminal.
 
 ## Issues found and fixed during testing
+
+- **Mobile menu overlapping the page.** The blurred header trapped the full-screen menu inside its own height, so the menu text ran over the page. The menu now opens above everything.
+- **Pages scrolling sideways on phones.** A file picker and wide tables could push some owner pages wider than the screen; a hidden table header made the transactions page 900 px wide. Fixed; secondary table columns step aside on phones.
 
 - **Deadlock between counters.** Two terminals awarding the same member could deadlock. Fixed by switching to `FOR NO KEY UPDATE` row locks; covered by a test.
 - **Audit-log crash.** Some audit inserts failed with a PostgreSQL type-inference error (`42P08`) when activating a café or joining a team. Fixed.
@@ -215,6 +227,6 @@
 ## Not tested (see KNOWN_LIMITATIONS.md)
 
 - Camera scanning on physical phones and tablets. It is tested with a simulated camera in Chromium; try it on the café's own device before relying on it.
-- Email, SMS, push notifications and payments. None are integrated.
+- Email against a real mail provider (tested only with a local fake SMTP server). SMS, push notifications and payments are not integrated.
 - Load beyond a single small server.
 - Screen readers. Semantic markup, labels, focus states and contrast were checked by hand, but no assistive-technology audit has been done.

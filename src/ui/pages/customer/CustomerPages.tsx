@@ -3,13 +3,13 @@ import { usePage } from '../../page-context';
 import { Island } from '../../islands/Island';
 import { CafeMark, Logo, RewardBadgeIcon } from '../../components/brand';
 import { CafeHero } from '../../components/cafe-look';
-import { Alert, Button, Checkbox, DemoBanner, Field, FlashMessage, Form, Input, LanguageSwitcher, Select, TermsNote } from '../../components/ui';
+import { Alert, Button, Checkbox, DemoBanner, Field, FlashMessage, Form, Input, LanguageSwitcher, PasswordField, Select, TermsNote } from '../../components/ui';
 import { PlainCustomerLayout, WalletLayout, type WalletCafe } from '../../layouts/WalletLayout';
-import { ActivityList, ChallengeCard, OfferCard, PointsPanel, ProgrammeSummary, StampCardPanel, VoucherCard } from './parts';
+import { ActivityList, ChallengeCard, OfferCard, PassButton, PointsPanel, ProgrammeSummary, StampCardPanel, VoucherCard } from './parts';
 import { fmt, plural, type Messages } from '../../../shared/i18n';
 import { dateShort, formatMemberCode, num } from '../../../shared/format';
 import type { MemberView, OfferView, ProgrammeView, PublicCafe } from '../../../server/domain/views';
-import { contrastText } from '../../cn';
+import { alpha, contrastText, mix } from '../../cn';
 
 /* ---------------------------------------------------------------- public café page */
 
@@ -59,21 +59,6 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
                   : t.cafe.referralInvalid}
               </Alert>
             )}
-            <section className="card p-5">
-              <h2 className="text-[17px] font-semibold">{t.cafe.programmes}</h2>
-              <div className="mt-3 space-y-4 divide-y divide-beige">
-                {programmes.map((p) => (
-                  <div key={p.id} className="flex gap-3 pt-4 first:pt-0">
-                    <RewardBadgeIcon icon={p.type === 'stamps' ? (p.cardReward?.icon ?? 'coffee') : 'star'} size="sm" />
-                    <div>
-                      <p className="text-[13px] font-medium text-muted-ink">{p.name}</p>
-                      <ProgrammeSummary p={p} currency={cafe.currency} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {state === 'member' ? (
               <section className="card p-5 text-center">
                 <p className="text-[15px] font-medium">{t.cafe.alreadyMember}</p>
@@ -93,19 +78,18 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
               </section>
             ) : (
               <section className="card p-5">
-                <h2 className="text-[17px] font-semibold">{t.cafe.join}</h2>
+                <h2 className="text-[19px] font-semibold">{t.cafe.join}</h2>
+                {(() => {
+                  const sp = programmes.find((p) => p.type === 'stamps');
+                  return sp?.cardReward ? <p className="mt-1 text-[14.5px] text-muted-ink">{fmt(t.cafe.stampRule, { n: Number(sp.config?.stampsRequired ?? 9), reward: sp.cardReward.name })}</p> : null;
+                })()}
                 <Form action={`/c/${cafe.slug}/join`} className="mt-4 space-y-4" noValidate>
                   {referral?.valid && <input type="hidden" name="ref" value={referral.code} />}
                   {errors.form && <Alert tone="error">{errors.form}</Alert>}
-                  <Field label={t.common.name} name="name" error={errors.name}>
-                    <Input name="name" autoComplete="name" required maxLength={120} defaultValue={values.name} error={errors.name} />
-                  </Field>
                   <Field label={t.common.email} name="email" error={errors.email}>
-                    <Input name="email" type="email" autoComplete="email" required defaultValue={values.email} error={errors.email} />
+                    <Input name="email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" required defaultValue={values.email} error={errors.email} />
                   </Field>
-                  <Field label={t.common.password} name="password" hint={t.auth.passwordHint} error={errors.password}>
-                    <Input name="password" type="password" autoComplete="new-password" required minLength={10} error={errors.password} />
-                  </Field>
+                  <PasswordField label={t.common.password} hint={t.auth.passwordHint} error={errors.password} autoComplete="new-password" />
                   <Checkbox name="marketing" value="1" defaultChecked={values.marketing === '1'} label={fmt(t.cafe.marketing, { cafe: cafe.name })} hint={t.cafe.marketingHelp} />
                   <TermsNote />
                   <Button size="lg" className="w-full">
@@ -119,6 +103,21 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
                 </p>
               </section>
             )}
+
+            <section className="card p-5">
+              <h2 className="text-[17px] font-semibold">{t.cafe.programmes}</h2>
+              <div className="mt-3 space-y-4 divide-y divide-beige">
+                {programmes.map((p) => (
+                  <div key={p.id} className="flex gap-3 pt-4 first:pt-0">
+                    <RewardBadgeIcon icon={p.type === 'stamps' ? (p.cardReward?.icon ?? 'coffee') : 'star'} size="sm" />
+                    <div>
+                      <p className="text-[13px] font-medium text-muted-ink">{p.name}</p>
+                      <ProgrammeSummary p={p} currency={cafe.currency} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
             {cafe.isDemo && state !== 'member' && (
               <section className="rounded-[14px] border border-dashed border-warning/60 bg-warning-tint/60 p-5">
@@ -220,24 +219,33 @@ export function WalletListPage({ items }: { items: WalletListItem[] }) {
         <ul className="space-y-3">
           {items.map((i) => (
             <li key={i.slug}>
-              <a href={`/wallet/${i.slug}`} className="card flex items-center gap-4 p-4 hover:border-beige-strong">
-                <CafeMark name={i.name} logoUrl={i.logoUrl} colour={i.primaryColour} size={48} />
+              <a
+                href={`/wallet/${i.slug}`}
+                className="rise relative flex items-center gap-4 overflow-hidden rounded-[22px] p-4 transition-transform active:scale-[0.985]"
+                style={{
+                  color: contrastText(i.primaryColour),
+                  background: `radial-gradient(120% 90% at 100% 0%, ${alpha(mix(i.primaryColour, '#ffffff', 0.35), 0.5)} 0%, transparent 60%), linear-gradient(165deg, ${mix(i.primaryColour, '#ffffff', 0.08)}, ${mix(i.primaryColour, '#000000', 0.2)})`,
+                  boxShadow: `0 14px 28px -18px ${alpha(mix(i.primaryColour, '#000000', 0.4), 0.8)}`,
+                }}
+              >
+                <CafeMark name={i.name} logoUrl={i.logoUrl} colour={mix(i.primaryColour, '#ffffff', 0.15)} size={48} className="ring-1 ring-white/25" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[16px] font-semibold">{i.name}</span>
-                  <span className="block truncate text-[14px] text-muted-ink">{i.summary}</span>
-                  {i.ready > 0 && <span className="badge badge-accent mt-1.5">{plural(t.wallet.rewardsReady, i.ready)}</span>}
+                  <span className="block truncate font-display text-[17px] font-semibold">{i.name}</span>
+                  <span className="block truncate text-[14px] opacity-80">{i.summary}</span>
+                  {i.ready > 0 && <span className="mt-1.5 inline-flex rounded-full bg-white/20 px-2.5 py-0.5 text-[12.5px] font-semibold">{plural(t.wallet.rewardsReady, i.ready)}</span>}
                 </span>
-                <LuChevronRight className="h-5 w-5 text-muted" aria-hidden="true" />
+                <LuChevronRight className="h-5 w-5 opacity-70" aria-hidden="true" />
               </a>
             </li>
           ))}
         </ul>
       )}
+      <Island name="InstallPrompt" props={{ title: t.wallet.installTitle, body: t.wallet.installBody, iosHint: t.wallet.installIos, install: t.wallet.install, close: t.common.close, bottom: 16 }} />
       {items.length > 0 && (
         <div className="card mt-6 p-5">
           <h2 className="text-[16px] font-semibold">{t.wallet.addAnotherTitle}</h2>
           <p className="mt-1 text-[14px] text-muted-ink">{t.wallet.addAnother}</p>
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <Island name="CafeScanner" props={{ labels: cafeScannerLabels(t), variant: 'secondary' }} />
             <a href="/cafes" className="btn btn-secondary w-full">
               {t.wallet.findCafe}
@@ -262,22 +270,32 @@ export function WalletCardPage({ cafe, view, offers, welcome, referralsOn, refer
         </Alert>
       )}
       <FlashMessage />
-      <p className="text-[15px] text-muted-ink">{fmt(t.wallet.hello, { name: (user?.name ?? view.customer.name).split(' ')[0] })}</p>
+      <p className="mb-3 text-[15px] text-muted-ink">{fmt(t.wallet.hello, { name: (user?.name ?? view.customer.name).split(' ')[0] })}</p>
 
-      <a
-        href={`/wallet/${cafe.slug}/code`}
-        className="mt-3 flex items-center gap-4 rounded-[16px] bg-espresso px-5 py-4 text-cream hover:bg-coffee"
-        style={{ boxShadow: 'var(--shadow-raised)' }}
-      >
-        <LuQrCode className="h-8 w-8 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-[16.5px] font-semibold">{t.wallet.showAtCounter}</span>
-          <span className="block text-[13px] text-cream/70">
-            {t.wallet.memberCode} {formatMemberCode(view.membership.memberCode)}
-          </span>
-        </span>
-        <LuChevronRight className="h-5 w-5 opacity-70" aria-hidden="true" />
-      </a>
+      {view.programmes.length === 0 && (
+        <a href={`/wallet/${cafe.slug}/code`} className="btn btn-primary btn-lg w-full">
+          <LuQrCode className="h-5 w-5" aria-hidden="true" /> {t.wallet.showAtCounter}
+        </a>
+      )}
+      <div className="space-y-4">
+        {view.programmes.map((p, i) => {
+          const pass = i === 0 ? { primary: cafe.primaryColour, secondary: cafe.secondaryColour } : undefined;
+          const footer =
+            i === 0 ? (
+              <PassButton href={`/wallet/${cafe.slug}/code`} colours={pass!}>
+                <LuQrCode className="h-5 w-5" aria-hidden="true" /> {t.wallet.showAtCounter}
+              </PassButton>
+            ) : undefined;
+          return p.type === 'stamps' ? (
+            <StampCardPanel key={p.id} p={p} color={stampColour} icon={cafe.stampIcon} pass={pass} footer={footer} />
+          ) : (
+            <PointsPanel key={p.id} p={p} pass={pass} footer={footer} />
+          );
+        })}
+      </div>
+      <p className="mt-2 text-center text-[12.5px] text-muted-ink tnum">
+        {t.wallet.memberCode} {formatMemberCode(view.membership.memberCode)}
+      </p>
 
       {ready.length > 0 && (
         <section className="mt-5">
@@ -293,7 +311,6 @@ export function WalletCardPage({ cafe, view, offers, welcome, referralsOn, refer
       )}
 
       <div className="mt-5 space-y-4">
-        {view.programmes.map((p) => (p.type === 'stamps' ? <StampCardPanel key={p.id} p={p} color={stampColour} icon={cafe.stampIcon} /> : <PointsPanel key={p.id} p={p} />))}
         {view.challenges.map((c) => (
           <ChallengeCard key={c.id} c={c} tz={tz} />
         ))}
@@ -335,6 +352,7 @@ export function WalletCardPage({ cafe, view, offers, welcome, referralsOn, refer
           <ActivityList items={view.activity.slice(0, 5)} tz={tz} />
         </div>
       </section>
+      <Island name="InstallPrompt" props={{ title: t.wallet.installTitle, body: t.wallet.installBody, iosHint: t.wallet.installIos, install: t.wallet.install, close: t.common.close }} />
     </WalletLayout>
   );
 }
@@ -575,12 +593,12 @@ export function AccountPage({ profile, memberships, errors = {} }: {
 
       <section className="card mt-4 p-5 sm:p-6">
         <h2 className="text-[17px] font-semibold">{t.account.passwordTitle}</h2>
-        <Form action="/account/password" className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Form action="/account/password" className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t.account.currentPassword} name="current" error={errors.current}>
             <Input name="current" type="password" autoComplete="current-password" required error={errors.current} />
           </Field>
           <Field label={t.account.newPassword} name="next" hint={t.auth.passwordHint} error={errors.next}>
-            <Input name="next" type="password" autoComplete="new-password" required minLength={10} error={errors.next} />
+            <Input name="next" type="password" autoComplete="new-password" required minLength={8} error={errors.next} />
           </Field>
           <div>
             <Button variant="secondary">{t.account.passwordTitle}</Button>
