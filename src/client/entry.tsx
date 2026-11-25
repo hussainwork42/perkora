@@ -18,6 +18,7 @@ const registry: Record<string, () => Promise<{ default: (p: any) => any }>> = {
   PasswordInput: () => import('../ui/islands/PasswordInput'),
   ReplyBox: () => import('../ui/islands/ReplyBox'),
   InstallPrompt: () => import('../ui/islands/InstallPrompt'),
+  ColourFromLogo: () => import('../ui/islands/ColourFromLogo'),
 };
 
 for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-island]'))) {

@@ -8,6 +8,7 @@ import { dashboardCoreRoutes } from './dashboard-core';
 import { dashboardManageRoutes } from './dashboard-manage';
 import { dashboardSettingsRoutes } from './dashboard-settings';
 import { adminRoutes } from './admin';
+import { previewRoutes } from './previews';
 
 export function registerRoutes(r: Router) {
   marketingRoutes(r);
@@ -18,5 +19,6 @@ export function registerRoutes(r: Router) {
   dashboardCoreRoutes(r);
   dashboardManageRoutes(r);
   dashboardSettingsRoutes(r);
+  previewRoutes(r);
   adminRoutes(r);
 }

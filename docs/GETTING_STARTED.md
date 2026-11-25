@@ -147,6 +147,17 @@ Perkora does not take card payments yet. When a café wants a paid plan:
 
 The 30-day trial end date is recorded, but nothing locks a café automatically when it passes. Follow up from the admin list.
 
+### Café previews for sales visits
+
+Before you visit a café, build its card so the owner sees their own café, not a demo.
+
+1. Sign in as admin and open **Admin → Previews → New preview**.
+2. Enter the café's name and area, add their logo (a screenshot of their Instagram picture is enough) and the reward you'll pitch. Colours are taken from the logo. Under **More** you can add a photo of the café as a banner.
+3. **Create preview.** Open it, copy the link, send it on WhatsApp, or show the QR code so the owner opens it on their own phone.
+4. The owner sees their loyalty card, the poster for their counter and how they appear in Find a café. **Make it mine** asks for an email and a password; the card goes live straight away with a 30-day free trial.
+
+Previews are private: they're not in the public café list and nobody can join until the owner makes it theirs. You can edit or delete a preview until then. Don't claim it yourself while signed in as admin — Perkora stops you.
+
 ### Replying to website messages
 
 Messages from the contact and demo forms appear in **Admin → Messages**. Press **Reply**, write your answer and send it.

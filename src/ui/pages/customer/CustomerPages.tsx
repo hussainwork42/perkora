@@ -13,11 +13,12 @@ import { alpha, contrastText, mix } from '../../cn';
 
 /* ---------------------------------------------------------------- public café page */
 
-export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, values = {}, referral }: {
+export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, values = {}, referral, previewToken }: {
   cafe: PublicCafe;
   programmes: ProgrammeView[];
   offers: OfferView[];
-  state: 'guest' | 'signed-in' | 'member' | 'unavailable';
+  state: 'guest' | 'signed-in' | 'member' | 'unavailable' | 'preview';
+  previewToken?: string | null;
   errors?: Record<string, string>;
   values?: Record<string, string>;
   referral?: { code: string; valid: boolean; on: 'join' | 'first_visit'; friendReward: string } | null;
@@ -27,6 +28,16 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
   return (
     <div className="min-h-screen bg-cream pb-16">
       {cafe.isDemo && <DemoBanner />}
+      {state === 'preview' && (
+        <div className="bg-espresso px-4 py-2.5 text-center text-[13.5px] text-cream" role="note">
+          <span className="font-semibold">{t.preview.badge}</span> · {fmt(t.preview.notLive, { cafe: cafe.name })}
+          {previewToken && (
+            <a href={`/p/${previewToken}`} className="ml-2 font-medium underline underline-offset-4">
+              {t.preview.backToPreview}
+            </a>
+          )}
+        </div>
+      )}
       <CafeHero
         look={{ name: cafe.name, logoUrl: cafe.logoUrl, bannerUrl: cafe.bannerUrl, primaryColour: cafe.primaryColour, secondaryColour: cafe.secondaryColour, layout: cafe.settings.pageLayout, tagline: cafe.settings.tagline }}
         title={fmt(t.cafe.joinTitle, { cafe: cafe.name })}
@@ -50,6 +61,45 @@ export function CafePublicPage({ cafe, programmes, offers, state, errors = {}, v
         <FlashMessage />
         {state === 'unavailable' ? (
           <Alert tone="warning">{t.cafe.unavailable}</Alert>
+        ) : state === 'preview' ? (
+          <>
+            <section className="card p-5">
+              <h2 className="text-[19px] font-semibold">{t.cafe.join}</h2>
+              {(() => {
+                const sp = programmes.find((p) => p.type === 'stamps');
+                return sp?.cardReward ? <p className="mt-1 text-[14.5px] text-muted-ink">{fmt(t.cafe.stampRule, { n: Number(sp.config?.stampsRequired ?? 9), reward: sp.cardReward.name })}</p> : null;
+              })()}
+              <div className="mt-4 grid gap-3 opacity-60" aria-hidden="true">
+                <span className="input flex items-center text-muted">{t.common.email}</span>
+                <span className="input flex items-center text-muted">{t.common.password}</span>
+                <span className="btn btn-primary btn-lg pointer-events-none w-full">{t.cafe.joinCta}</span>
+              </div>
+              <p className="mt-4 rounded-[12px] bg-sand px-4 py-3 text-[14px]">
+                <span className="font-semibold">{t.preview.joinTitle}.</span> {fmt(t.preview.joinBody, { cafe: cafe.name })}
+              </p>
+              {previewToken && (
+                <a href={`/p/${previewToken}/claim`} className="btn btn-primary btn-lg mt-4 w-full">
+                  {t.preview.cta}
+                </a>
+              )}
+            </section>
+            {programmes.length > 0 && (
+              <section className="card p-5">
+                <h2 className="text-[17px] font-semibold">{t.cafe.programmes}</h2>
+                <div className="mt-3 space-y-4 divide-y divide-beige">
+                  {programmes.map((p) => (
+                    <div key={p.id} className="flex gap-3 pt-4 first:pt-0">
+                      <RewardBadgeIcon icon={p.type === 'stamps' ? (p.cardReward?.icon ?? 'coffee') : 'star'} size="sm" />
+                      <div>
+                        <p className="text-[13px] font-medium text-muted-ink">{p.name}</p>
+                        <ProgrammeSummary p={p} currency={cafe.currency} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         ) : (
           <>
             {referral && (

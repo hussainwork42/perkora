@@ -34,7 +34,7 @@ export function StartPage() {
               <a href="/get-started" className="btn btn-primary btn-lg w-full">
                 {s.cafeCreate}
               </a>
-              <a href="/sign-in" className="btn btn-secondary w-full">
+              <a href="/sign-in?as=cafe" className="btn btn-secondary w-full">
                 {s.cafeSignIn}
               </a>
               <p className="text-[13px] text-muted-ink">{s.staffNote}</p>
@@ -75,6 +75,7 @@ export interface DirectoryCafe {
   logoUrl: string | null;
   primaryColour: string;
   isDemo: boolean;
+  preview?: boolean;
 }
 
 export function CafesPage({ cafes, q }: { cafes: DirectoryCafe[]; q: string }) {
@@ -103,7 +104,7 @@ export function CafesPage({ cafes, q }: { cafes: DirectoryCafe[]; q: string }) {
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {cafes.map((c) => (
               <li key={c.slug}>
-                <a href={`/c/${c.slug}`} className="card flex h-full items-start gap-4 p-4 hover:border-beige-strong">
+                <a href={`/c/${c.slug}`} className={`card flex h-full items-start gap-4 p-4 hover:border-beige-strong ${c.preview ? 'ring-2 ring-terracotta/50' : ''}`}>
                   <CafeMark name={c.name} logoUrl={c.logoUrl} colour={c.primaryColour} size={52} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[16.5px] font-semibold">{c.name}</span>
@@ -111,6 +112,7 @@ export function CafesPage({ cafes, q }: { cafes: DirectoryCafe[]; q: string }) {
                       {c.city}
                       {c.isDemo ? ` · ${s.demo}` : ''}
                     </span>
+                    {c.preview && <span className="badge badge-accent mt-1.5">{s.preview}</span>}
                     {c.description && <span className="mt-1 line-clamp-2 block text-[14px] text-muted-ink">{c.description}</span>}
                     <span className="mt-2 inline-block text-[14px] font-medium text-espresso underline underline-offset-4">{s.open}</span>
                   </span>

@@ -13,6 +13,7 @@ import { HomePage } from '../../ui/pages/marketing/Home';
 import { DemoRequestPage, FeaturesPage, LegalPage, PricingPage } from '../../ui/pages/marketing/Pages';
 import { CafesPage, StartPage } from '../../ui/pages/marketing/Start';
 import { DomainError } from '../domain/errors';
+import { previewTokens } from './preview-cookie';
 
 const demoSchema = z.object({
   name: z.string().trim().min(1, 'Enter your name.').max(120),
@@ -97,7 +98,19 @@ export function marketingRoutes(r: Router) {
         order by b.is_demo, b.name limit 200`,
       [config().DEMO_MODE, q, like],
     );
-    const cafes = rows.map((r) => ({ slug: r.slug, name: r.name, city: r.city, description: r.description, logoUrl: r.logo_upload_id ? `/media/${r.logo_upload_id}` : null, primaryColour: r.primary_colour, isDemo: r.is_demo }));
+    const toCafe = (r: any) => ({ slug: r.slug, name: r.name, city: r.city, description: r.description, logoUrl: r.logo_upload_id ? `/media/${r.logo_upload_id}` : null, primaryColour: r.primary_colour, isDemo: r.is_demo, preview: Boolean(r.preview) });
+    // previews only show up for the browser that opened their private link
+    const tokens = previewTokens(ctx);
+    const previews = tokens.length
+      ? await many<any>(
+          db,
+          `select b.slug, b.name, b.city, b.description, b.logo_upload_id, b.primary_colour, b.is_demo, true as preview
+             from businesses b where b.status = 'preview' and b.preview_token = any($1::text[]) and ($2 = '' or b.name ilike $3 or b.city ilike $3)
+            order by array_position($1::text[], b.preview_token)`,
+          [tokens, q, like],
+        )
+      : [];
+    const cafes = [...previews, ...rows].map(toCafe);
     return render(ctx, <CafesPage cafes={cafes} q={q} />, { title: ctx.t.cafes.metaTitle, description: ctx.t.cafes.intro });
   });
   r.get('/demo', (ctx) => render(ctx, <DemoRequestPage kind="demo" />, { title: ctx.t.demo.metaTitle }));

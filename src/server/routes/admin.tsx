@@ -16,7 +16,7 @@ import { mailSettings, sendMail, MailError } from '../mail/smtp';
 import { Island } from '../../ui/islands/Island';
 import { usePage } from '../../ui/page-context';
 
-function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
+export function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
   const { badges } = usePage();
   return (
     <div className="min-h-screen bg-cream">
@@ -36,6 +36,7 @@ function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
           current={tab}
           items={[
             { key: 'cafes', href: '/admin', label: 'Cafés' },
+            { key: 'previews', href: '/admin/previews', label: 'Previews' },
             { key: 'plans', href: '/admin/plans', label: 'Plans' },
             { key: 'requests', href: '/admin/requests', label: badges.messages ? `Messages (${badges.messages} new)` : 'Messages' },
             { key: 'logs', href: '/admin/logs', label: 'Error logs' },
@@ -49,7 +50,7 @@ function AdminLayout({ tab, children }: { tab: string; children: ReactNode }) {
   );
 }
 
-function guard(fn: (ctx: Ctx) => Promise<any>) {
+export function guard(fn: (ctx: Ctx) => Promise<any>) {
   return async (ctx: Ctx) => {
     const r = requireAdmin(ctx);
     if (r) return r;
@@ -69,7 +70,7 @@ export function adminRoutes(r: Router) {
     guard(async (ctx) => {
       const m = await one<any>(
         db,
-        `select (select count(*)::int from businesses where not is_demo) as cafes,
+        `select (select count(*)::int from businesses where not is_demo and status <> 'preview') as cafes,
                 (select count(*)::int from businesses where status = 'active' and not is_demo) as active_cafes,
                 (select count(*)::int from businesses where status = 'onboarding') as onboarding,
                 (select count(*)::int from businesses where status = 'suspended') as suspended,
@@ -83,7 +84,7 @@ export function adminRoutes(r: Router) {
         `select b.id, b.name, b.slug, b.city, b.status, b.is_demo, b.created_at, s.plan_id, s.status as sub_status, s.payment_status, s.requested_plan_id,
                 (select count(*)::int from loyalty_memberships m where m.business_id = b.id) as members,
                 (select count(*)::int from loyalty_transactions t where t.business_id = b.id and t.created_at > now() - interval '30 days') as txns_30d
-           from businesses b left join subscriptions s on s.business_id = b.id order by b.created_at desc limit 200`,
+           from businesses b left join subscriptions s on s.business_id = b.id where b.status <> 'preview' order by b.created_at desc limit 200`,
       );
       return render(
         ctx,

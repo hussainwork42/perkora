@@ -1,6 +1,6 @@
 # Test report
 
-**Run date:** 2 November 2026, on the build delivered with this report (third release: email-only sign-up, replies to website messages, mobile fixes, home-screen install).
+**Run date:** 25 November 2026, on the build delivered with this report (fourth release: café previews for sales visits, separate café and customer sign-in).
 
 **Environment:**
 
@@ -16,7 +16,8 @@
 | New features: referrals, plans (integration) | `npm run test:integration` | 6 | 6 | 0 |
 | HTTP: auth, roles, tenancy, CSRF, new pages (integration) | `npm run test:integration` | 32 | 32 | 0 |
 | Email: SMTP client, new-message alert, admin replies (integration, local fake mail server) | `npm run test:integration` | 4 | 4 | 0 |
-| **Unit and integration total** | `npm test` | **108** | **108** | **0** |
+| Café previews: create, hide, open, claim (integration) | `npm run test:integration` | 9 | 9 | 0 |
+| **Unit and integration total** | `npm test` | **117** | **117** | **0** |
 | Browser: 15-step sales demo | `npm run test:e2e` | 11 steps | 11 | 0 |
 | Browser: email-only sign-up, onboarding, café look and a referral | `npm run test:e2e` | 1 | 1 | 0 |
 | Browser: camera scanning (staff terminal and customer) | `npm run test:e2e` | 2 | 2 | 0 |
@@ -165,6 +166,12 @@
 **Café look:** layout, stamp design and welcome message are saved and shown on the join page; unknown values fall back to safe defaults. The onboarding browser test uploads a banner photo (resized in the browser before upload) and checks it on the public page.
 
 **Campaign names:** any name is accepted ("Student exam week").
+
+### Fourth release (November 2026)
+
+**Café previews:** only the platform admin can create, edit or delete one; invalid input is refused with clear errors. A preview is not in the public café list, nobody can join it, its page is marked noindex and shows no claim button to strangers; a wrong link is a 404. The owner who opens the link sees their card, poster and café list entry, and only their browser lists the café. The admin cannot claim a preview by accident. Claiming with an email and a password creates the account, makes them the owner, starts a 30-day trial and puts the card live; customers can then join and the café appears in the public list. A second claim is refused without creating an account, and the admin can no longer edit or delete it. Checked by hand in Chromium at 390 px and 1280 px: colours are taken from an uploaded logo, the flow works end to end in English and Turkish.
+
+**Sign-in:** separate tabs for customers and cafés, opened on the café tab when coming from café pages; the phone menu is split into "For cafés" and "For customers".
 
 ### Third release (November 2026)
 

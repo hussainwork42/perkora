@@ -26,16 +26,36 @@ export interface DemoAccounts {
   customer: string;
 }
 
-export function SignInPage({ next, email, error, demo }: { next: string; email?: string; error?: string; demo?: DemoAccounts | null }) {
+/** Customer or café: the same account system, but each side gets its own words and next steps. */
+function RoleTabs({ cafe, customerHref, cafeHref }: { cafe: boolean; customerHref: string; cafeHref: string }) {
   const { t } = usePage();
+  const tab = (on: boolean) => `rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${on ? 'bg-espresso text-cream' : 'text-muted-ink hover:text-ink'}`;
   return (
-    <AuthLayout aside={demo ? <DemoAccountsBox demo={demo} next={next} /> : undefined}>
-      <h1 className="text-[26px] font-semibold">{t.auth.signInTitle}</h1>
-      <p className="mt-1.5 text-muted-ink">{t.auth.signInIntro}</p>
+    <div className="mb-5 grid grid-cols-2 rounded-[12px] border border-beige bg-cream p-1" role="tablist" aria-label={t.start.title}>
+      <a role="tab" aria-selected={!cafe} href={customerHref} className={tab(!cafe)}>
+        {t.auth.switchCustomer}
+      </a>
+      <a role="tab" aria-selected={cafe} href={cafeHref} className={tab(cafe)}>
+        {t.auth.switchCafe}
+      </a>
+    </div>
+  );
+}
+
+export function SignInPage({ next, email, error, demo, as = 'customer' }: { next: string; email?: string; error?: string; demo?: DemoAccounts | null; as?: 'customer' | 'cafe' }) {
+  const { t } = usePage();
+  const cafe = as === 'cafe';
+  const q = (role: string) => `/sign-in?as=${role}${next ? `&next=${encodeURIComponent(next)}` : ''}`;
+  return (
+    <AuthLayout aside={demo ? <DemoAccountsBox demo={demo} next={next} only={cafe ? 'cafe' : 'customer'} /> : undefined}>
+      <RoleTabs cafe={cafe} customerHref={q('customer')} cafeHref={q('cafe')} />
+      <h1 className="text-[26px] font-semibold">{cafe ? t.auth.signInCafeTitle : t.auth.signInCustomerTitle}</h1>
+      <p className="mt-1.5 text-muted-ink">{cafe ? t.auth.signInCafeIntro : t.auth.signInCustomerIntro}</p>
       <Form action="/sign-in" className="mt-6 grid gap-5">
         <FlashMessage />
         {error && <Alert tone="error">{error}</Alert>}
         <input type="hidden" name="next" value={next} />
+        <input type="hidden" name="as" value={as} />
         <Field label={t.common.email} name="email">
           <Input name="email" type="email" autoComplete="email" required defaultValue={email} autoFocus={!email} />
         </Field>
@@ -43,32 +63,41 @@ export function SignInPage({ next, email, error, demo }: { next: string; email?:
         <Button size="lg">{t.common.signIn}</Button>
       </Form>
       <div className="mt-6 border-t border-beige pt-5">
-        <p className="text-[14.5px] font-medium">{t.auth.noAccount}</p>
-        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          <a className="btn btn-secondary w-full" href={`/sign-up${next ? `?next=${encodeURIComponent(next)}` : ''}`}>
-            {t.auth.createOne}
-          </a>
-          <a className="btn btn-secondary w-full" href="/get-started">
-            {t.auth.forBusinessLink}
-          </a>
-        </div>
-        <p className="mt-3 text-[13.5px] text-muted-ink">
-          <a className="link" href="/cafes">
-            {t.wallet.findCafe}
-          </a>
-        </p>
+        {cafe ? (
+          <>
+            <p className="text-[14.5px] font-medium">{t.auth.newCafe}</p>
+            <a className="btn btn-secondary mt-3 w-full" href="/get-started">
+              {t.auth.forBusinessLink}
+            </a>
+            <p className="mt-3 text-[13.5px] text-muted-ink">{t.start.staffNote}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-[14.5px] font-medium">{t.auth.noAccount}</p>
+            <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <a className="btn btn-secondary w-full" href={`/sign-up${next ? `?next=${encodeURIComponent(next)}` : ''}`}>
+                {t.auth.createOne}
+              </a>
+              <a className="btn btn-secondary w-full" href="/cafes">
+                {t.wallet.findCafe}
+              </a>
+            </div>
+          </>
+        )}
       </div>
     </AuthLayout>
   );
 }
 
-function DemoAccountsBox({ demo, next }: { demo: DemoAccounts; next: string }) {
+function DemoAccountsBox({ demo, next, only }: { demo: DemoAccounts; next: string; only?: 'cafe' | 'customer' }) {
   const { t } = usePage();
-  const rows = [
-    [t.auth.demoOwner, demo.owner],
-    [t.auth.demoStaff, demo.staff],
-    [t.auth.demoCustomer, demo.customer],
-  ];
+  const rows = (
+    [
+      [t.auth.demoOwner, demo.owner, 'cafe'],
+      [t.auth.demoStaff, demo.staff, 'cafe'],
+      [t.auth.demoCustomer, demo.customer, 'customer'],
+    ] as const
+  ).filter((r) => !only || r[2] === only);
   return (
     <div className="rounded-[20px] border border-dashed border-beige-strong p-6">
       <h2 className="text-[17px] font-semibold">{t.auth.demoAccounts}</h2>
@@ -117,14 +146,7 @@ export function SignUpPage({ next, values = {}, errors = {}, business, plan }: {
         ) : undefined
       }
     >
-      <div className="mb-5 grid grid-cols-2 rounded-[12px] border border-beige bg-cream p-1" role="tablist" aria-label={t.start.title}>
-        <a role="tab" aria-selected={!business} href={`/sign-up${next ? `?next=${encodeURIComponent(next)}` : ''}`} className={`rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${!business ? 'bg-espresso text-cream' : 'text-muted-ink hover:text-ink'}`}>
-          {t.auth.switchCustomer}
-        </a>
-        <a role="tab" aria-selected={Boolean(business)} href={`/get-started${plan ? `?plan=${encodeURIComponent(plan)}` : ''}`} className={`rounded-[9px] px-3 py-2 text-center text-[14px] font-medium ${business ? 'bg-espresso text-cream' : 'text-muted-ink hover:text-ink'}`}>
-          {t.auth.switchCafe}
-        </a>
-      </div>
+      <RoleTabs cafe={Boolean(business)} customerHref={`/sign-up${next ? `?next=${encodeURIComponent(next)}` : ''}`} cafeHref={`/get-started${plan ? `?plan=${encodeURIComponent(plan)}` : ''}`} />
       <h1 className="text-[26px] font-semibold">{business ? t.auth.businessSignUpTitle : t.auth.signUpTitle}</h1>
       <p className="mt-1.5 text-muted-ink">{business ? t.auth.businessSignUpIntro : t.auth.signUpIntro}</p>
       <Form action={business ? '/get-started' : '/sign-up'} className="mt-6 grid gap-5" noValidate>
@@ -155,7 +177,7 @@ export function SignUpPage({ next, values = {}, errors = {}, business, plan }: {
       </Form>
       <p className="mt-6 border-t border-beige pt-5 text-[14.5px] text-muted-ink">
         {t.auth.haveAccount}{' '}
-        <a className="link" href={`/sign-in?next=${encodeURIComponent(next)}`}>
+        <a className="link" href={`/sign-in?as=${business ? 'cafe' : 'customer'}${next ? `&next=${encodeURIComponent(next)}` : ''}`}>
           {t.common.signIn}
         </a>
       </p>

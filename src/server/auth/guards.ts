@@ -16,7 +16,7 @@ export interface BusinessContext {
   id: string;
   name: string;
   slug: string;
-  status: 'onboarding' | 'active' | 'suspended';
+  status: 'preview' | 'onboarding' | 'active' | 'suspended';
   onboardingStep: number;
   timezone: string;
   currency: 'EUR' | 'TRY';

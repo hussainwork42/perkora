@@ -41,7 +41,7 @@ export function MarketingLayout({ children, active }: { children: ReactNode; act
                 {t.nav.dashboard}
               </a>
             ) : (
-              <a href="/sign-in" className="btn btn-ghost btn-sm">
+              <a href="/sign-in?as=cafe" className="btn btn-ghost btn-sm">
                 {t.common.signIn}
               </a>
             )}
@@ -57,10 +57,26 @@ export function MarketingLayout({ children, active }: { children: ReactNode; act
             <Island
               name="MobileNav"
               props={{
-                links,
-                signIn: user ? { href: '/home', label: t.nav.dashboard } : { href: '/sign-in', label: t.common.signIn },
+                groups: [
+                  {
+                    title: t.nav.forCafes,
+                    links: [
+                      { href: '/#how-it-works', label: t.nav.howItWorks },
+                      { href: '/features', label: t.nav.features },
+                      { href: '/pricing', label: t.nav.pricing },
+                      user ? { href: '/home', label: t.nav.dashboard } : { href: '/sign-in?as=cafe', label: t.auth.signInCafeTitle },
+                    ],
+                  },
+                  {
+                    title: t.nav.forCustomers,
+                    links: [
+                      { href: '/cafes', label: t.nav.findCafe },
+                      user ? { href: '/wallet', label: t.nav.wallet } : { href: '/sign-in', label: t.auth.signInCustomerTitle },
+                    ],
+                  },
+                ],
                 demo: { href: '/demo', label: t.common.bookDemo },
-                start: { href: '/start', label: t.common.getStarted },
+                start: { href: '/get-started', label: t.start.cafeCreate },
                 menuLabel: t.nav.menu,
                 closeLabel: t.common.close,
               }}

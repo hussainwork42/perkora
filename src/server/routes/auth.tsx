@@ -40,7 +40,9 @@ export function authRoutes(r: Router) {
 
   r.get('/sign-in', async (ctx) => {
     if (ctx.user) return redirect(ctx, safeNext(ctx.query.get('next'), await homeFor(ctx)), undefined, 302);
-    return render(ctx, <SignInPage next={safeNext(ctx.query.get('next'), '')} demo={demoAccounts()} />, { title: ctx.t.common.signIn, noindex: true });
+    const nextPath = safeNext(ctx.query.get('next'), '');
+    const as = ctx.query.get('as') === 'cafe' || (ctx.query.get('as') !== 'customer' && /^\/(dashboard|terminal|onboarding|admin|p\/)/.test(nextPath)) ? 'cafe' : 'customer';
+    return render(ctx, <SignInPage next={safeNext(ctx.query.get('next'), '')} demo={demoAccounts()} as={as} />, { title: ctx.t.common.signIn, noindex: true });
   });
 
   r.post('/sign-in', async (ctx) => {
@@ -48,18 +50,19 @@ export function authRoutes(r: Router) {
     const email = field(body, 'email').trim().toLowerCase().slice(0, 254);
     const password = field(body, 'password').slice(0, 200);
     const next = safeNext(field(body, 'next'), '');
+    const as = field(body, 'as') === 'cafe' ? 'cafe' : 'customer';
     try {
       await rateLimit(`signin:ip:${ctx.ip}`, 30, 600);
       await rateLimit(`signin:email:${email}`, 8, 600);
     } catch (e) {
       if (e instanceof DomainError) {
-        return render(ctx, <SignInPage next={next} email={email} error={ctx.t.errors.tooMany} demo={demoAccounts()} />, { title: ctx.t.common.signIn, status: 429 });
+        return render(ctx, <SignInPage next={next} email={email} error={ctx.t.errors.tooMany} demo={demoAccounts()} as={as} />, { title: ctx.t.common.signIn, status: 429 });
       }
       throw e;
     }
     const user = email && password ? await authenticate(email, password) : null;
     if (!user) {
-      return render(ctx, <SignInPage next={next} email={email} error={ctx.t.auth.invalid} demo={demoAccounts()} />, { title: ctx.t.common.signIn, status: 401 });
+      return render(ctx, <SignInPage next={next} email={email} error={ctx.t.auth.invalid} demo={demoAccounts()} as={as} />, { title: ctx.t.common.signIn, status: 401 });
     }
     await createSession(ctx, user.id);
     const u = await maybeOne<any>(db, 'select id, name, email, platform_role, locale, is_demo from users where id = $1', [user.id]);
@@ -69,8 +72,9 @@ export function authRoutes(r: Router) {
   });
 
   r.post('/sign-out', async (ctx) => {
+    const next = safeNext(field(await readBody(ctx), 'next'), '/');
     await destroySession(ctx);
-    return redirect(ctx, '/');
+    return redirect(ctx, next);
   });
 
   const signUpGet = (business: boolean) => async (ctx: Ctx) => {

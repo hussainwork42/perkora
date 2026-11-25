@@ -11,9 +11,8 @@ interface L {
  * Full-screen menu for phones. Rendered into <body> through a portal: the sticky header
  * uses backdrop-filter, which would otherwise trap a fixed-position overlay inside it.
  */
-export default function MobileNav({ links, signIn, demo, start, menuLabel, closeLabel }: {
-  links: (L & { key: string })[];
-  signIn: L;
+export default function MobileNav({ groups, demo, start, menuLabel, closeLabel }: {
+  groups: { title: string; links: L[] }[];
   demo: L;
   start: L;
   menuLabel: string;
@@ -41,17 +40,22 @@ export default function MobileNav({ links, signIn, demo, start, menuLabel, close
           <span className="sr-only">{closeLabel}</span>
         </button>
       </div>
-      <nav className="flex-1 overflow-y-auto px-4 pt-2" aria-label={menuLabel}>
-        <ul>
-          {[...links, { ...signIn, key: 'signin' }].map((l) => (
-            <li key={l.key}>
-              <a href={l.href} onClick={() => setOpen(false)} className="flex items-center justify-between border-b border-beige/80 py-[18px] text-[19px] font-medium text-ink">
-                {l.label}
-                <LuChevronRight className="h-5 w-5 text-muted" aria-hidden="true" />
-              </a>
-            </li>
-          ))}
-        </ul>
+      <nav className="flex-1 overflow-y-auto px-4 pb-4" aria-label={menuLabel}>
+        {groups.map((g) => (
+          <div key={g.title} className="pt-5">
+            <p className="text-[13px] font-semibold text-terracotta">{g.title}</p>
+            <ul className="mt-1">
+              {g.links.map((l) => (
+                <li key={l.href}>
+                  <a href={l.href} onClick={() => setOpen(false)} className="flex items-center justify-between border-b border-beige/80 py-[15px] text-[18px] font-medium text-ink">
+                    {l.label}
+                    <LuChevronRight className="h-5 w-5 text-muted" aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
       <div className="grid shrink-0 gap-2.5 border-t border-beige/80 bg-paper px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-4">
         <a href={start.href} className="btn btn-primary btn-lg w-full">

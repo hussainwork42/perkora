@@ -34,6 +34,7 @@ import {
 } from '../../ui/pages/customer/CustomerPages';
 import type { WalletCafe } from '../../ui/layouts/WalletLayout';
 import { randomCode } from '../auth/crypto';
+import { previewTokens } from './preview-cookie';
 
 function walletCafe(c: PublicCafe): WalletCafe {
   return {
@@ -92,8 +93,16 @@ async function cafePage(ctx: Ctx, cafe: PublicCafe, extra: { errors?: Record<str
   const today = localDate(new Date(), cafe.timezone);
   const programmes = await loadProgrammes(db, cafe.id, today);
   const offers = cafe.settings.showOffersPublicly ? await loadRunningOffers(db, cafe.id, today, { publicOnly: true }) : [];
-  let state: 'guest' | 'signed-in' | 'member' | 'unavailable' = 'guest';
-  if (cafe.status !== 'active' || programmes.length === 0) state = 'unavailable';
+  let state: 'guest' | 'signed-in' | 'member' | 'unavailable' | 'preview' = 'guest';
+  let previewToken: string | null = null;
+  if (cafe.status === 'preview') {
+    state = 'preview';
+    const tokens = previewTokens(ctx);
+    if (tokens.length) {
+      const row = await maybeOne<{ preview_token: string }>(db, `select preview_token from businesses where id = $1`, [cafe.id]);
+      if (row && tokens.includes(row.preview_token)) previewToken = row.preview_token;
+    }
+  } else if (cafe.status !== 'active' || programmes.length === 0) state = 'unavailable';
   else if (ctx.user) state = (await membershipFor(ctx, cafe)) ? 'member' : 'signed-in';
   let referral: { code: string; valid: boolean; on: 'join' | 'first_visit'; friendReward: string } | null = null;
   const ref = (ctx.query.get('ref') ?? extra.values?.ref ?? '').trim().toUpperCase();
@@ -104,8 +113,8 @@ async function cafePage(ctx: Ctx, cafe: PublicCafe, extra: { errors?: Record<str
   }
   return render(
     ctx,
-    <CafePublicPage cafe={cafe} programmes={programmes} offers={offers} state={state} errors={extra.errors} values={extra.values} referral={referral} />,
-    { title: fmt(ctx.t.cafe.joinTitle, { cafe: cafe.name }), description: cafe.description ?? undefined, status: extra.status, themeColor: cafe.primaryColour },
+    <CafePublicPage cafe={cafe} programmes={programmes} offers={offers} state={state} errors={extra.errors} values={extra.values} referral={referral} previewToken={previewToken} />,
+    { title: fmt(ctx.t.cafe.joinTitle, { cafe: cafe.name }), description: cafe.description ?? undefined, status: extra.status, themeColor: cafe.primaryColour, noindex: state === 'preview' },
   );
 }
 
