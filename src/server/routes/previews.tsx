@@ -497,7 +497,7 @@ export function previewRoutes(r: Router) {
     const { cafe, row } = found;
     if (row.status !== 'preview') return render(ctx, <ClaimedPage cafe={cafe} />, { title: cafe.name, noindex: true });
     rememberPreview(ctx, ctx.params.token);
-    return render(ctx, <ClaimPage cafe={cafe} token={ctx.params.token} rule={await previewRule(cafe.id)} adminBlocked={ctx.user?.platformRole === 'admin'} />, {
+    return render(ctx, <ClaimPage cafe={cafe} token={ctx.params.token} rule={await previewRule(cafe.id)} blocked={claimBlock(ctx)} />, {
       title: fmt(ctx.t.preview.claimTitle, { cafe: cafe.name }),
       noindex: true,
       themeColor: cafe.primaryColour,
@@ -514,12 +514,12 @@ export function previewRoutes(r: Router) {
     const body = await readBody(ctx);
     const values = formObject(body);
     const page = (errors: Record<string, string>, status: number) =>
-      render(ctx, <ClaimPage cafe={cafe} token={token} rule={rule} errors={errors} values={values} adminBlocked={ctx.user?.platformRole === 'admin'} />, {
+      render(ctx, <ClaimPage cafe={cafe} token={token} rule={rule} errors={errors} values={values} blocked={claimBlock(ctx)} />, {
         title: fmt(ctx.t.preview.claimTitle, { cafe: cafe.name }),
         status,
         noindex: true,
       });
-    if (ctx.user?.platformRole === 'admin') return page({}, 409);
+    if (claimBlock(ctx)) return page({}, 409);
     if (!ctx.user) {
       const parsed = signUpSchema.safeParse(values);
       if (!parsed.success) return page(zodErrors(parsed.error), 422);
@@ -544,6 +544,13 @@ export function previewRoutes(r: Router) {
     selectBusiness(ctx, cafe.id);
     return redirect(ctx, '/onboarding/done', { type: 'success', message: fmt(ctx.t.preview.welcome, { cafe: cafe.name }) });
   });
+}
+
+/** The admin and the shared demo accounts must never become a café's owner. */
+function claimBlock(ctx: Ctx): 'admin' | 'demo' | null {
+  if (ctx.user?.platformRole === 'admin') return 'admin';
+  if (ctx.user?.isDemo) return 'demo';
+  return null;
 }
 
 /* ------------------------------------------------------------------ data */

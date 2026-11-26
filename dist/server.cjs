@@ -7627,6 +7627,7 @@ var init_en2 = __esm({
         claimContinue: "Make it mine",
         claimOther: "Use a different account",
         claimAdmin: "You\u2019re signed in as the Perkora admin. The caf\xE9 owner should open the preview on their own phone and tap \u201CMake it mine\u201D there.",
+        claimDemo: "You\u2019re signed in with a demo account. Tap \u201CUse a different account\u201D below, then make it yours with your own email.",
         haveAccount: "Already use Perkora?",
         claimed: "{cafe} is already set up on Perkora.",
         claimedSignIn: "Sign in to manage it",
@@ -8171,6 +8172,7 @@ var init_tr = __esm({
         claimContinue: "Kart\u0131m\u0131 etkinle\u015Ftir",
         claimOther: "Ba\u015Fka bir hesap kullan",
         claimAdmin: "Perkora y\xF6neticisi olarak giri\u015F yapt\u0131n\u0131z. Kafe sahibi \xF6nizlemeyi kendi telefonunda a\xE7\u0131p \u201CKart\u0131m\u0131 etkinle\u015Ftir\u201De dokunmal\u0131.",
+        claimDemo: "Bir demo hesab\u0131yla giri\u015F yapt\u0131n\u0131z. A\u015Fa\u011F\u0131daki \u201CBa\u015Fka bir hesap kullan\u201Da dokunun, sonra kendi e-postan\u0131zla etkinle\u015Ftirin.",
         haveAccount: "Zaten Perkora kullan\u0131yor musunuz?",
         claimed: "{cafe} zaten Perkora\u2019da kurulu.",
         claimedSignIn: "Y\xF6netmek i\xE7in giri\u015F yap\u0131n",
@@ -38007,7 +38009,7 @@ function PreviewPage({ cafe, token, rule, previewUrl, joinUrl, posterSvg, phoneS
     ] })
   ] });
 }
-function ClaimPage({ cafe, token, rule, errors = {}, values = {}, adminBlocked }) {
+function ClaimPage({ cafe, token, rule, errors = {}, values = {}, blocked }) {
   const { t, user } = usePage();
   const p = t.preview;
   const action = `/p/${token}/claim`;
@@ -38019,7 +38021,7 @@ function ClaimPage({ cafe, token, rule, errors = {}, values = {}, adminBlocked }
         /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("h1", { className: "mt-4 text-[26px] font-semibold leading-tight", children: fmt(p.claimTitle, { cafe: cafe.name }) }),
         /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "mt-1.5 text-muted-ink", children: p.claimIntro }),
         errors.form && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Alert, { tone: "error", className: "mt-5", children: errors.form }),
-        adminBlocked ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Alert, { tone: "warning", className: "mt-5", children: p.claimAdmin }) : user ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(Form, { action, className: "mt-6 grid gap-4", children: [
+        blocked ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Alert, { tone: "warning", className: "mt-5", children: blocked === "admin" ? p.claimAdmin : p.claimDemo }) : user ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(Form, { action, className: "mt-6 grid gap-4", children: [
           /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "rounded-[12px] border border-beige bg-cream px-4 py-3 text-[14.5px]", children: fmt(p.claimSignedIn, { email: user.email }) }),
           /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Button, { size: "lg", children: p.claimContinue }),
           /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-[13.5px] text-muted-ink", children: p.ctaNote })
@@ -38484,7 +38486,7 @@ function previewRoutes(r2) {
     const { cafe, row } = found;
     if (row.status !== "preview") return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ClaimedPage, { cafe }), { title: cafe.name, noindex: true });
     rememberPreview(ctx, ctx.params.token);
-    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ClaimPage, { cafe, token: ctx.params.token, rule: await previewRule(cafe.id), adminBlocked: ctx.user?.platformRole === "admin" }), {
+    return render(ctx, /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ClaimPage, { cafe, token: ctx.params.token, rule: await previewRule(cafe.id), blocked: claimBlock(ctx) }), {
       title: fmt(ctx.t.preview.claimTitle, { cafe: cafe.name }),
       noindex: true,
       themeColor: cafe.primaryColour
@@ -38499,12 +38501,12 @@ function previewRoutes(r2) {
     const rule = await previewRule(cafe.id);
     const body = await readBody(ctx);
     const values = formObject(body);
-    const page = (errors, status) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ClaimPage, { cafe, token, rule, errors, values, adminBlocked: ctx.user?.platformRole === "admin" }), {
+    const page = (errors, status) => render(ctx, /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ClaimPage, { cafe, token, rule, errors, values, blocked: claimBlock(ctx) }), {
       title: fmt(ctx.t.preview.claimTitle, { cafe: cafe.name }),
       status,
       noindex: true
     });
-    if (ctx.user?.platformRole === "admin") return page({}, 409);
+    if (claimBlock(ctx)) return page({}, 409);
     if (!ctx.user) {
       const parsed = signUpSchema.safeParse(values);
       if (!parsed.success) return page(zodErrors(parsed.error), 422);
@@ -38529,6 +38531,11 @@ function previewRoutes(r2) {
     selectBusiness(ctx, cafe.id);
     return redirect(ctx, "/onboarding/done", { type: "success", message: fmt(ctx.t.preview.welcome, { cafe: cafe.name }) });
   });
+}
+function claimBlock(ctx) {
+  if (ctx.user?.platformRole === "admin") return "admin";
+  if (ctx.user?.isDemo) return "demo";
+  return null;
 }
 async function createPreview(adminId, d) {
   return tx(async (q) => {

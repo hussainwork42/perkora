@@ -151,6 +151,19 @@ describe('café previews', () => {
     assert.equal((await one(db, 'select status from businesses where id = $1', [previewId])).status, 'preview');
   });
 
+  test('a shared demo account can’t claim it either', async () => {
+    const d = await one(db, `insert into users (name, email, is_demo) values ('Demo Guest', 'demo.guest@example.com', true) returning id`);
+    await db.query('insert into user_credentials (user_id, password_hash) values ($1, $2)', [d.id, await hashPassword('demo-password-123')]);
+    const demo = new Client();
+    await demo.get('/sign-in');
+    await demo.post('/sign-in', { email: 'demo.guest@example.com', password: 'demo-password-123' });
+    const page = await demo.get(`/p/${token}/claim`);
+    assert.match(page.text, /demo account/);
+    const r = await demo.post(`/p/${token}/claim`, {});
+    assert.equal(r.status, 409);
+    assert.equal((await one(db, 'select status from businesses where id = $1', [previewId])).status, 'preview');
+  });
+
   test('the owner makes it theirs with an email and a password, and it goes live', async () => {
     const owner = new Client();
     await owner.get(`/p/${token}`);

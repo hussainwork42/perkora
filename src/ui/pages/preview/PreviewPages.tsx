@@ -199,13 +199,13 @@ export function PreviewPage({ cafe, token, rule, previewUrl, joinUrl, posterSvg,
   );
 }
 
-export function ClaimPage({ cafe, token, rule, errors = {}, values = {}, adminBlocked }: {
+export function ClaimPage({ cafe, token, rule, errors = {}, values = {}, blocked }: {
   cafe: PublicCafe;
   token: string;
   rule: PreviewRule;
   errors?: Record<string, string>;
   values?: Record<string, string>;
-  adminBlocked?: boolean;
+  blocked?: 'admin' | 'demo' | null;
 }) {
   const { t, user } = usePage();
   const p = t.preview;
@@ -223,9 +223,9 @@ export function ClaimPage({ cafe, token, rule, errors = {}, values = {}, adminBl
               {errors.form}
             </Alert>
           )}
-          {adminBlocked ? (
+          {blocked ? (
             <Alert tone="warning" className="mt-5">
-              {p.claimAdmin}
+              {blocked === 'admin' ? p.claimAdmin : p.claimDemo}
             </Alert>
           ) : user ? (
             <Form action={action} className="mt-6 grid gap-4">

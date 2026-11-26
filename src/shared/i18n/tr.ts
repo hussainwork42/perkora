@@ -510,6 +510,7 @@ export const tr: Messages = {
     claimContinue: 'Kartımı etkinleştir',
     claimOther: 'Başka bir hesap kullan',
     claimAdmin: 'Perkora yöneticisi olarak giriş yaptınız. Kafe sahibi önizlemeyi kendi telefonunda açıp “Kartımı etkinleştir”e dokunmalı.',
+    claimDemo: 'Bir demo hesabıyla giriş yaptınız. Aşağıdaki “Başka bir hesap kullan”a dokunun, sonra kendi e-postanızla etkinleştirin.',
     haveAccount: 'Zaten Perkora kullanıyor musunuz?',
     claimed: '{cafe} zaten Perkora’da kurulu.',
     claimedSignIn: 'Yönetmek için giriş yapın',

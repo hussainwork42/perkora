@@ -16,8 +16,8 @@
 | New features: referrals, plans (integration) | `npm run test:integration` | 6 | 6 | 0 |
 | HTTP: auth, roles, tenancy, CSRF, new pages (integration) | `npm run test:integration` | 32 | 32 | 0 |
 | Email: SMTP client, new-message alert, admin replies (integration, local fake mail server) | `npm run test:integration` | 4 | 4 | 0 |
-| Café previews: create, hide, open, claim (integration) | `npm run test:integration` | 9 | 9 | 0 |
-| **Unit and integration total** | `npm test` | **117** | **117** | **0** |
+| Café previews: create, hide, open, claim (integration) | `npm run test:integration` | 10 | 10 | 0 |
+| **Unit and integration total** | `npm test` | **118** | **118** | **0** |
 | Browser: 15-step sales demo | `npm run test:e2e` | 11 steps | 11 | 0 |
 | Browser: email-only sign-up, onboarding, café look and a referral | `npm run test:e2e` | 1 | 1 | 0 |
 | Browser: camera scanning (staff terminal and customer) | `npm run test:e2e` | 2 | 2 | 0 |
@@ -169,7 +169,7 @@
 
 ### Fourth release (November 2026)
 
-**Café previews:** only the platform admin can create, edit or delete one; invalid input is refused with clear errors. A preview is not in the public café list, nobody can join it, its page is marked noindex and shows no claim button to strangers; a wrong link is a 404. The owner who opens the link sees their card, poster and café list entry, and only their browser lists the café. The admin cannot claim a preview by accident. Claiming with an email and a password creates the account, makes them the owner, starts a 30-day trial and puts the card live; customers can then join and the café appears in the public list. A second claim is refused without creating an account, and the admin can no longer edit or delete it. Checked by hand in Chromium at 390 px and 1280 px: colours are taken from an uploaded logo, the flow works end to end in English and Turkish.
+**Café previews:** only the platform admin can create, edit or delete one; invalid input is refused with clear errors. A preview is not in the public café list, nobody can join it, its page is marked noindex and shows no claim button to strangers; a wrong link is a 404. The owner who opens the link sees their card, poster and café list entry, and only their browser lists the café. The admin and the shared demo accounts cannot claim a preview. Claiming with an email and a password creates the account, makes them the owner, starts a 30-day trial and puts the card live; customers can then join and the café appears in the public list. A second claim is refused without creating an account, and the admin can no longer edit or delete it. Checked by hand in Chromium at 390 px and 1280 px: colours are taken from an uploaded logo, the flow works end to end in English and Turkish.
 
 **Sign-in:** separate tabs for customers and cafés, opened on the café tab when coming from café pages; the phone menu is split into "For cafés" and "For customers".
 

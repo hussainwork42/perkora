@@ -508,6 +508,7 @@ export const en = {
     claimContinue: 'Make it mine',
     claimOther: 'Use a different account',
     claimAdmin: 'You’re signed in as the Perkora admin. The café owner should open the preview on their own phone and tap “Make it mine” there.',
+    claimDemo: 'You’re signed in with a demo account. Tap “Use a different account” below, then make it yours with your own email.',
     haveAccount: 'Already use Perkora?',
     claimed: '{cafe} is already set up on Perkora.',
     claimedSignIn: 'Sign in to manage it',
