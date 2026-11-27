@@ -212,39 +212,112 @@ function PrivacyContent() {
   return (
     <>
       <h1 className="text-[38px] font-semibold tracking-[-0.03em]">Privacy policy</h1>
-      <p className="text-muted-ink">Draft for pilot use. Last updated 27 October 2026.</p>
-      <DraftNotice />
-      <h2>Who is responsible</h2>
+      <p className="text-muted-ink">Last updated 27 November 2026.</p>
       <p>
-        Each participating café runs its own loyalty programme and decides how it uses its members’ data. Perkora provides the software that stores and processes that data on the café’s
-        behalf. The operator’s contact details will be added here before launch.
+        This policy explains what Perkora stores when you use a café’s loyalty card or run one, why, who can see it, and how you can see, change or delete it. We keep it short and
+        plain on purpose.
       </p>
-      <h2>What we collect</h2>
+
+      <h2>Who we are</h2>
+      <p>
+        Perkora is a loyalty-card service for independent cafés, run by Hussain Abbas in Girne, Northern Cyprus. Each café that uses Perkora runs its own loyalty programme and decides
+        its rules and rewards; Perkora stores and processes the programme’s data for the café. For any privacy question or request, write to us through the{' '}
+        <a href="/contact">contact page</a>.
+      </p>
+
+      <h2>What we store</h2>
       <ul>
-        <li>Account details: your name, email address and a securely hashed password.</li>
-        <li>Optional details you choose to add: phone number, and the day and month of your birthday (never the year).</li>
-        <li>Loyalty activity at each café you join: verified visits, stamps and points earned or used, rewards unlocked and redeemed, and which staff member recorded each action.</li>
-        <li>Your marketing choice for each café, and when you changed it.</li>
-        <li>Basic technical data needed to keep the service secure, such as session cookies and rate-limit counters.</li>
+        <li>
+          <strong>Your account:</strong> your email address, a name (taken from your email until you change it) and your password, stored only as a secure hash that no one can read.
+        </li>
+        <li>
+          <strong>Details you choose to add:</strong> a phone number, and the day and month of your birthday (never the year) if a café offers a birthday treat.
+        </li>
+        <li>
+          <strong>Your loyalty activity at each café you join:</strong> visits, stamps and points earned or used, rewards unlocked and collected, and which staff member recorded each
+          action.
+        </li>
+        <li>
+          <strong>Your marketing choice for each café</strong>, and when you changed it.
+        </li>
+        <li>
+          <strong>Café owners and staff:</strong> the café’s details (name, address, logo, photos, colours), team members’ names and email addresses, and what each one did in the
+          dashboard, so changes can be traced.
+        </li>
+        <li>
+          <strong>Messages you send us</strong> through the contact or demo form, so we can reply.
+        </li>
+        <li>
+          <strong>Technical data needed to keep the service secure:</strong> sign-in sessions and short-lived counters that stop repeated failed sign-ins.
+        </li>
       </ul>
-      <p>We do not collect your precise location, payment card details, or the contents of your purchases beyond an optional receipt number and amount entered by staff.</p>
-      <h2>How it is used</h2>
+      <p>
+        We do not store your location, payment card details or what you bought, apart from an optional receipt number and amount that staff may enter for points. Perkora does not
+        connect to a café’s till.
+      </p>
+
+      <h2>How we use it</h2>
       <ul>
-        <li>To operate the loyalty programmes you joined: show your balance, add stamps or points, and let you redeem rewards.</li>
-        <li>To show each café reports about its own programme. A café never sees your activity at another café.</li>
-        <li>To show you offers inside your card. A café may contact you about offers only if you opted in for that café; joining never depends on it.</li>
-        <li>To prevent fraud and mistakes, for example duplicate awards.</li>
+        <li>To run the loyalty cards you joined: show your stamps and points, add new ones, and let you collect rewards.</li>
+        <li>To show you offers from Perkora cafés on your home screen and inside your cards.</li>
+        <li>To give each café reports about its own programme.</li>
+        <li>To prevent fraud and mistakes, such as a stamp being added twice.</li>
+        <li>To answer your messages and support requests.</li>
       </ul>
+      <p>We do not sell your data, and we do not use it for advertising.</p>
+
+      <h2>Who can see it</h2>
+      <ul>
+        <li>
+          <strong>Each café sees only its own members</strong> and their activity at that café. A café never sees your activity at another café, or which other cafés you joined.
+        </li>
+        <li>A café may contact you about its offers only if you said yes for that café. Joining never depends on it, and you can change it at any time.</li>
+        <li>Perkora sees data only when needed to run the service, fix a problem or answer a request.</li>
+        <li>
+          Our hosting provider, Render (render.com), runs the servers and database that store the data. If email is switched on, our email provider delivers the messages we send.
+        </li>
+        <li>We share data with authorities only if the law requires it.</li>
+      </ul>
+
       <h2>Cookies</h2>
-      <p>We use only the cookies needed to run the service: a sign-in session, a security token for forms, your language choice and the café you are working in. We do not use advertising or tracking cookies.</p>
-      <h2>Your choices</h2>
+      <p>
+        We use only the cookies the service needs: one that keeps you signed in until you sign out, a security token for forms, your language, the café you are working in, and the
+        café previews you opened. No advertising or tracking cookies.
+      </p>
+
+      <h2>How long we keep it</h2>
       <ul>
-        <li>Change your details and marketing choices at any time under Account settings.</li>
-        <li>Download a copy of your data from Account settings.</li>
-        <li>Delete your account. Your name and contact details are removed and your memberships closed. Cafés may keep anonymised transaction records where they need them.</li>
+        <li>Your account and loyalty activity: for as long as you have an account.</li>
+        <li>Sign-in: until you sign out, or after 400 days without using Perkora.</li>
+        <li>
+          When you delete your account, your name and contact details are removed straight away and your cards are closed. Cafés keep their own visit and reward records without your
+          name, so their reports stay correct.
+        </li>
+        <li>Messages to us: as long as needed to answer them and follow up.</li>
       </ul>
-      <h2>Retention</h2>
-      <p>Retention periods will be set with each café before launch, according to the applicable record-keeping rules.</p>
+
+      <h2>Your rights and choices</h2>
+      <ul>
+        <li>
+          <strong>See and correct</strong> your details in <a href="/account">Account settings</a>.
+        </li>
+        <li>
+          <strong>Download</strong> a copy of your data from Account settings.
+        </li>
+        <li>
+          <strong>Delete</strong> your account from Account settings.
+        </li>
+        <li>
+          <strong>Stop offers</strong> from any café in Account settings.
+        </li>
+        <li>
+          For anything else, or if you can’t sign in, write to us through the <a href="/contact">contact page</a>. You can also complain to the data protection authority where you
+          live.
+        </li>
+      </ul>
+
+      <h2>Changes</h2>
+      <p>If we change this policy, we update the date at the top of this page.</p>
     </>
   );
 }

@@ -109,7 +109,19 @@ export function dashboardCoreRoutes(r: Router) {
         insights(db, biz.id, biz.timezone, biz.settings),
       ]);
       const any = await maybeOne(db, 'select 1 from loyalty_memberships where business_id = $1 limit 1', [biz.id]);
-      return render(ctx, <OverviewPage biz={biz} range={range} m={m} series={series} activity={activity} insights={hasFeature(biz, 'segments') ? ins : ins.filter((i) => !i.href?.includes('segment=inactive') && !i.href?.includes('approaching'))} hasMembers={Boolean(any)} />, {
+      const started = await one<{ stamped: boolean; staff: boolean }>(
+        db,
+        `select exists(select 1 from loyalty_transactions where business_id = $1) as stamped,
+                exists(select 1 from business_members where business_id = $1 and role = 'staff') as staff`,
+        [biz.id],
+      );
+      const steps = [
+        { key: 'look', done: Boolean(biz.logoUploadId), title: 'Make it look like your café', body: 'Add your logo and a photo.', href: '/dashboard/cafe', cta: 'Open My café' },
+        { key: 'qr', done: Boolean(any), title: 'Put your QR code by the till', body: 'Customers scan it to get your card.', href: '/dashboard/settings/qr', cta: 'Download poster' },
+        { key: 'stamp', done: started.stamped, title: 'Give your first stamp', body: 'Scan a customer’s card at the counter.', href: '/terminal', cta: 'Open the counter' },
+        { key: 'staff', done: started.staff, title: 'Add your staff', body: 'So they can scan cards too. Optional.', href: '/dashboard/team', cta: 'Invite staff' },
+      ];
+      return render(ctx, <OverviewPage biz={biz} range={range} m={m} series={series} activity={activity} insights={hasFeature(biz, 'segments') ? ins : ins.filter((i) => !i.href?.includes('segment=inactive') && !i.href?.includes('approaching'))} hasMembers={Boolean(any)} steps={biz.role === 'owner' && !(started.stamped && m.totalMembers >= 10) ? steps : []} firstName={(ctx.user!.name || '').split(' ')[0]} />, {
         title: 'Overview',
         noindex: true,
       });

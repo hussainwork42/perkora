@@ -147,7 +147,7 @@ test('the full sales demo works end to end', async (t) => {
 
   await t.test('13. analytics reflect the activity', async () => {
     await owner.goto(`${BASE}/dashboard/analytics?range=7`);
-    await owner.getByRole('heading', { name: 'Analytics' }).waitFor();
+    await owner.getByRole('heading', { name: 'Reports' }).waitFor();
     await shot(owner, '13-analytics');
     await owner.goto(`${BASE}/dashboard`);
     await owner.getByText(/Redeemed: Free Regular Coffee|Free Regular Coffee unlocked/).first().waitFor();

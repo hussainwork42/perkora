@@ -4,7 +4,8 @@ import type { Ctx, SessionUser } from '../http/core';
 import { clearCookie, setCookie } from '../http/core';
 
 const SESSION_COOKIE = 'pk_session';
-const SESSION_DAYS = 30;
+// People stay signed in until they sign out: the session renews itself whenever it is used (400 days is the longest browsers keep a cookie).
+const SESSION_DAYS = 400;
 
 export async function createSession(ctx: Ctx, userId: string) {
   const token = randomToken(32);

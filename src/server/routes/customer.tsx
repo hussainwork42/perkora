@@ -229,21 +229,52 @@ export function customerRoutes(r: Router) {
     if (!ctx.user) return redirect(ctx, '/sign-in?next=/wallet');
     const rows = await many<any>(
       db,
-      `select b.slug, b.name, b.logo_upload_id, b.primary_colour, m.id as membership_id,
+      `select b.slug, b.name, b.logo_upload_id, b.primary_colour, b.address, b.city, m.id as membership_id, m.last_visit_at,
               (select count(*)::int from customer_rewards cr where cr.membership_id = m.id and cr.status = 'available' and (cr.expires_at is null or cr.expires_at > now())) as ready,
-              (select string_agg(case when lp.programme_type = 'stamps' then mb.balance || '/' || (lp.config->>'stampsRequired') || ' ' || lp.name else mb.balance || ' pts' end, ' · ' order by lp.programme_type desc)
-                 from membership_balances mb join loyalty_programmes lp on lp.id = mb.programme_id and lp.status = 'active' where mb.membership_id = m.id) as summary
+              (select json_agg(json_build_object('type', lp.programme_type, 'balance', mb.balance, 'need', (lp.config->>'stampsRequired')::int,
+                        'reward', (select r.name from rewards r where r.programme_id = lp.id and r.is_card_reward and r.status <> 'archived' limit 1)) order by lp.programme_type desc)
+                 from membership_balances mb join loyalty_programmes lp on lp.id = mb.programme_id and lp.status = 'active' where mb.membership_id = m.id) as progs
          from loyalty_memberships m
          join customers c on c.id = m.customer_id
          join businesses b on b.id = m.business_id
-        where c.user_id = $1 and m.status = 'active' and b.status = 'active'
-        order by m.last_visit_at desc nulls last, m.joined_at desc`,
+        where c.user_id = $1 and m.status = 'active' and b.status = 'active'`,
       [ctx.user.id],
+    );
+    const items = rows
+      .map((r) => {
+        const progs: any[] = r.progs ?? [];
+        const stamps = progs.filter((p) => p.type === 'stamps' && p.need > 0).map((p) => ({ have: Math.min(p.balance, p.need), need: p.need, left: Math.max(0, p.need - p.balance), reward: p.reward ?? '' })).sort((a, b) => a.left - b.left)[0] ?? null;
+        const points = progs.find((p) => p.type === 'points');
+        return {
+          slug: r.slug,
+          name: r.name,
+          logoUrl: r.logo_upload_id ? `/media/${r.logo_upload_id}` : null,
+          primaryColour: r.primary_colour,
+          place: [r.address, r.city].filter(Boolean).join(', '),
+          ready: r.ready as number,
+          stamps,
+          points: points ? Number(points.balance) : null,
+          lastVisit: r.last_visit_at ? new Date(r.last_visit_at).getTime() : 0,
+        };
+      })
+      // reward waiting first, then the card closest to its reward, then the most recent visit
+      .sort((a, b) => (b.ready > 0 ? 1 : 0) - (a.ready > 0 ? 1 : 0) || (a.stamps?.left ?? 99) - (b.stamps?.left ?? 99) || b.lastVisit - a.lastVisit);
+    const offers = await many<any>(
+      db,
+      `select c.id, c.name, c.description, c.start_date::text as start_date, c.end_date::text as end_date, b.slug, b.name as cafe, b.logo_upload_id, b.primary_colour,
+              (b.id = any($1::uuid[])) as member, ((now() at time zone b.timezone)::date >= c.start_date) as running
+         from campaigns c join businesses b on b.id = c.business_id
+        where c.status = 'published' and c.is_public and c.target_segment = 'all' and c.campaign_type not in ('birthday', 'win_back', 'referral')
+          and b.status = 'active' and (b.list_in_directory or b.id = any($1::uuid[]))
+          and c.start_date <= (now() at time zone b.timezone)::date + 14 and (c.end_date is null or c.end_date >= (now() at time zone b.timezone)::date)
+        order by (b.id = any($1::uuid[])) desc, c.start_date, c.created_at limit 12`,
+      [await many<{ id: string }>(db, `select m.business_id as id from loyalty_memberships m join customers c on c.id = m.customer_id where c.user_id = $1 and m.status = 'active'`, [ctx.user.id]).then((x) => x.map((y) => y.id))],
     );
     return render(
       ctx,
       <WalletListPage
-        items={rows.map((r) => ({ slug: r.slug, name: r.name, logoUrl: r.logo_upload_id ? `/media/${r.logo_upload_id}` : null, primaryColour: r.primary_colour, summary: r.summary ?? '', ready: r.ready }))}
+        items={items}
+        offers={offers.map((o) => ({ id: o.id, name: o.name, description: o.description, start: o.start_date, end: o.end_date, running: o.running, member: o.member, cafe: { slug: o.slug, name: o.cafe, logoUrl: o.logo_upload_id ? `/media/${o.logo_upload_id}` : null, primaryColour: o.primary_colour } }))}
       />,
       { title: ctx.t.wallet.title, noindex: true },
     );

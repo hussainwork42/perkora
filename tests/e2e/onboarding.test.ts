@@ -98,7 +98,9 @@ test('a café owner can onboard, resume, activate and serve a first customer', a
 
   // the empty dashboard explains what to do next
   await p.getByRole('link', { name: 'Open the dashboard' }).click();
-  await p.getByText('Your loyalty programme is ready.').waitFor();
+  await p.getByText('No customers yet').waitFor();
+  // a new café sees what to do next
+  await p.getByRole('heading', { name: 'Get started' }).waitFor();
   await shot('onb-dashboard-empty');
 
   // the public page now accepts members and shows the café's look

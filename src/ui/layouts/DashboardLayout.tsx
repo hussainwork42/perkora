@@ -12,6 +12,7 @@ import {
   LuScanLine,
   LuSettings,
   LuStamp,
+  LuStore,
   LuUsers,
   LuUserCog,
   LuUserPlus,
@@ -22,7 +23,7 @@ import { DemoBanner, Form, FlashMessage, Alert } from '../components/ui';
 import { Island } from '../islands/Island';
 import type { BusinessContext } from '../../server/auth/guards';
 import { can } from '../../server/auth/guards';
-import { cn } from '../cn';
+import { cafeTheme, cn, contrastText, mix } from '../cn';
 
 export interface NavItem {
   key: string;
@@ -30,62 +31,91 @@ export interface NavItem {
   label: string;
   Icon: (p: { className?: string }) => ReactNode;
   show: boolean;
+  group: string;
 }
 
 export function dashboardNav(biz: BusinessContext): NavItem[] {
   const owner = biz.role === 'owner';
   return [
-    { key: 'overview', href: '/dashboard', label: 'Overview', Icon: LuLayoutDashboard, show: owner || can(biz, 'view_reports') },
-    { key: 'customers', href: '/dashboard/customers', label: 'Customers', Icon: LuUsers, show: can(biz, 'view_customers') },
-    { key: 'programmes', href: '/dashboard/programmes', label: 'Loyalty Programmes', Icon: LuStamp, show: owner },
-    { key: 'rewards', href: '/dashboard/rewards', label: 'Rewards', Icon: LuGift, show: can(biz, 'manage_rewards') },
-    { key: 'campaigns', href: '/dashboard/campaigns', label: 'Campaigns', Icon: LuMegaphone, show: can(biz, 'manage_rewards') },
-    { key: 'referrals', href: '/dashboard/referrals', label: 'Referrals', Icon: LuUserPlus, show: owner },
-    { key: 'transactions', href: '/dashboard/transactions', label: 'Transactions', Icon: LuReceiptText, show: true },
-    { key: 'analytics', href: '/dashboard/analytics', label: 'Analytics', Icon: LuChartColumn, show: can(biz, 'view_reports') },
-    { key: 'team', href: '/dashboard/team', label: 'Team', Icon: LuUserCog, show: owner },
-    { key: 'settings', href: '/dashboard/settings', label: 'Café Settings', Icon: LuSettings, show: owner },
-    { key: 'subscription', href: '/dashboard/subscription', label: 'Subscription', Icon: LuCreditCard, show: owner },
-    { key: 'help', href: '/dashboard/help', label: 'Help', Icon: LuLifeBuoy, show: true },
+    { key: 'cafe', href: '/dashboard/cafe', label: 'My café', Icon: LuStore, show: owner, group: '' },
+    { key: 'overview', href: '/dashboard', label: 'Overview', Icon: LuLayoutDashboard, show: owner || can(biz, 'view_reports'), group: '' },
+    { key: 'customers', href: '/dashboard/customers', label: 'Customers', Icon: LuUsers, show: can(biz, 'view_customers'), group: 'Customers' },
+    { key: 'transactions', href: '/dashboard/transactions', label: 'Visits & stamps', Icon: LuReceiptText, show: true, group: 'Customers' },
+    { key: 'referrals', href: '/dashboard/referrals', label: 'Referrals', Icon: LuUserPlus, show: owner, group: 'Customers' },
+    { key: 'programmes', href: '/dashboard/programmes', label: 'Loyalty card', Icon: LuStamp, show: owner, group: 'Loyalty' },
+    { key: 'rewards', href: '/dashboard/rewards', label: 'Rewards', Icon: LuGift, show: can(biz, 'manage_rewards'), group: 'Loyalty' },
+    { key: 'campaigns', href: '/dashboard/campaigns', label: 'Offers & campaigns', Icon: LuMegaphone, show: can(biz, 'manage_rewards'), group: 'Loyalty' },
+    { key: 'analytics', href: '/dashboard/analytics', label: 'Reports', Icon: LuChartColumn, show: can(biz, 'view_reports'), group: 'Business' },
+    { key: 'team', href: '/dashboard/team', label: 'Team', Icon: LuUserCog, show: owner, group: 'Business' },
+    { key: 'settings', href: '/dashboard/settings', label: 'Settings', Icon: LuSettings, show: owner, group: 'Business' },
+    { key: 'subscription', href: '/dashboard/subscription', label: 'Subscription', Icon: LuCreditCard, show: owner, group: 'Business' },
+    { key: 'help', href: '/dashboard/help', label: 'Help', Icon: LuLifeBuoy, show: true, group: 'Business' },
   ].filter((i) => i.show);
+}
+
+/** The café's own block at the top of the menu: their colours and photo; it opens "My café". */
+function CafeBlock({ biz, logo, compact }: { biz: BusinessContext; logo: string | null; compact?: boolean }) {
+  const fg = contrastText(biz.primaryColour);
+  const banner = biz.bannerUploadId ? `/media/${biz.bannerUploadId}` : null;
+  const bg = `linear-gradient(160deg, ${mix(biz.primaryColour, '#ffffff', 0.08)}, ${mix(biz.primaryColour, '#000000', 0.22)})`;
+  return (
+    <a
+      href={biz.role === 'owner' ? '/dashboard/cafe' : '/dashboard'}
+      className={cn('dash-link relative flex items-center gap-3 overflow-hidden rounded-[16px] p-3 transition-transform active:scale-[0.98]', compact && 'rounded-[12px] p-2')}
+      style={{ color: fg, background: banner ? `linear-gradient(160deg, ${mix(biz.primaryColour, '#000000', 0.05)}e6, ${mix(biz.primaryColour, '#000000', 0.35)}f0), center/cover url(${banner})` : bg }}
+      title={biz.role === 'owner' ? 'My café' : biz.name}
+    >
+      <CafeMark name={biz.name} logoUrl={logo} colour={mix(biz.primaryColour, '#ffffff', 0.15)} size={compact ? 30 : 40} className="ring-2 ring-white/30" />
+      <span className="dash-label min-w-0">
+        <span className={cn('block truncate font-semibold leading-tight', compact ? 'text-[15px]' : 'text-[15.5px]')}>{biz.name}</span>
+        {!compact && <span className="block truncate text-[12.5px] opacity-80">{biz.role === 'owner' ? `My café · ${biz.plan.name}` : 'Staff'}</span>}
+      </span>
+    </a>
+  );
 }
 
 export function DashboardLayout({ biz, active, children, wide }: { biz: BusinessContext; active: string; children: ReactNode; wide?: boolean }) {
   const { user } = usePage();
   const nav = dashboardNav(biz);
   const logo = biz.logoUploadId ? `/media/${biz.logoUploadId}` : null;
+  const groups = [...new Set(nav.map((n) => n.group))];
   const navList = (
-    <ul className="space-y-0.5">
-      {nav.map(({ key, href, label, Icon }) => (
-        <li key={key}>
-          <a
-            href={href}
-            aria-current={active === key ? 'page' : undefined}
-            title={label}
-            className={cn(
-              'dash-link flex items-center gap-3 rounded-[10px] px-3 py-2 text-[14.5px]',
-              active === key ? 'bg-espresso text-cream' : 'text-ink/80 hover:bg-sand hover:text-ink',
-            )}
-          >
-            <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
-            <span className="dash-label truncate">{label}</span>
-          </a>
-        </li>
+    <div className="space-y-3">
+      {groups.map((g) => (
+        <div key={g || 'main'}>
+          {g && <p className="dash-label px-3 pb-1 text-[12px] font-semibold text-muted-ink">{g}</p>}
+          <ul className="space-y-0.5">
+            {nav
+              .filter((n) => n.group === g)
+              .map(({ key, href, label, Icon }) => (
+                <li key={key}>
+                  <a
+                    href={href}
+                    aria-current={active === key ? 'page' : undefined}
+                    title={label}
+                    className={cn(
+                      'dash-link flex items-center gap-3 rounded-[10px] px-3 py-2 text-[14.5px]',
+                      active === key ? 'bg-espresso text-cream' : 'text-ink/80 hover:bg-sand hover:text-ink',
+                    )}
+                  >
+                    <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+                    <span className="dash-label truncate">{label}</span>
+                  </a>
+                </li>
+              ))}
+          </ul>
+        </div>
       ))}
-    </ul>
+    </div>
   );
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream" style={cafeTheme(biz.primaryColour, biz.secondaryColour) as any}>
       {biz.isDemo && <DemoBanner />}
       <div className="flex">
         {/* desktop sidebar */}
         <aside className="dash-sidebar sticky top-0 hidden h-screen w-[252px] shrink-0 flex-col border-r border-beige bg-paper lg:flex">
-          <div className="flex items-center gap-3 px-4 pb-3 pt-5">
-            <CafeMark name={biz.name} logoUrl={logo} colour={biz.primaryColour} size={38} />
-            <div className="dash-label min-w-0">
-              <p className="truncate text-[15px] font-semibold leading-tight">{biz.name}</p>
-              <p className="text-[12.5px] text-muted-ink">{biz.plan.name} plan</p>
-            </div>
+          <div className="px-3 pb-3 pt-4">
+            <CafeBlock biz={biz} logo={logo} />
           </div>
           {biz.memberships.length > 1 && <CafeSwitcher biz={biz} />}
           <div className="px-3 pb-3">
@@ -114,6 +144,9 @@ export function DashboardLayout({ biz, active, children, wide }: { biz: Business
                 <a href="/wallet" className="block rounded-lg px-3 py-2 text-[14px] hover:bg-sand">
                   My loyalty cards
                 </a>
+                <a href="/privacy" className="block rounded-lg px-3 py-2 text-[14px] hover:bg-sand">
+                  Privacy policy
+                </a>
                 <Form action="/sign-out">
                   <button className="block w-full rounded-lg px-3 py-2 text-left text-[14px] hover:bg-sand" type="submit">
                     Sign out
@@ -132,9 +165,10 @@ export function DashboardLayout({ biz, active, children, wide }: { biz: Business
 
         <div className="min-w-0 flex-1">
           {/* mobile header */}
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-beige bg-paper/95 px-4 backdrop-blur lg:hidden">
-            <CafeMark name={biz.name} logoUrl={logo} colour={biz.primaryColour} size={30} />
-            <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{biz.name}</p>
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-beige bg-paper/95 px-3 backdrop-blur lg:hidden">
+            <div className="min-w-0 flex-1">
+              <CafeBlock biz={biz} logo={logo} compact />
+            </div>
             <a href="/terminal" className="btn btn-accent btn-sm" aria-label="Counter terminal">
               <LuScanLine className="h-4 w-4" aria-hidden="true" />
             </a>
@@ -142,7 +176,7 @@ export function DashboardLayout({ biz, active, children, wide }: { biz: Business
               <summary className="btn btn-ghost btn-sm list-none" aria-label="Menu">
                 <LuMenu className="h-5 w-5" aria-hidden="true" />
               </summary>
-              <div className="absolute right-0 top-full mt-2 w-64 rounded-[14px] border border-beige bg-paper p-2 shadow-xl">
+              <div className="absolute right-0 top-full mt-2 max-h-[80vh] w-64 overflow-y-auto rounded-[14px] border border-beige bg-paper p-2 shadow-xl">
                 {navList}
                 <div className="mt-2 border-t border-beige pt-2">
                   <a href="/account" className="block rounded-lg px-3 py-2 text-[14px] hover:bg-sand">

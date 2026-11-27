@@ -84,12 +84,20 @@ function readPreviewForm(body: any, errors: Record<string, string>) {
       need,
       reward: reward.slice(0, 80),
       eligible: (v.eligible_purchase ?? '').trim().slice(0, 120) || 'Any coffee',
+      planId: (v.plan_id ?? '').trim() || null,
       look,
     },
   };
 }
 
-function PreviewForm({ action, values, errors = {}, logoUrl, bannerUrl, submit }: { action: string; values: PreviewValues; errors?: Record<string, string>; logoUrl: string | null; bannerUrl: string | null; submit: string }) {
+type PlanOption = { id: string; label: string; recommended: boolean };
+
+async function planOptions(): Promise<PlanOption[]> {
+  const plans = await loadPlans(db);
+  return plans.filter((p) => p.monthlyPriceMinor > 0).map((p) => ({ id: p.id, label: `${p.name} · ${moneyWhole(p.monthlyPriceMinor, p.currency)} a month`, recommended: p.recommended }));
+}
+
+function PreviewForm({ action, values, errors = {}, logoUrl, bannerUrl, submit, plans }: { action: string; values: PreviewValues; errors?: Record<string, string>; logoUrl: string | null; bannerUrl: string | null; submit: string; plans: PlanOption[] }) {
   const primary = values.primary_colour || '#3B2925';
   const secondary = values.secondary_colour || '#B86F52';
   return (
@@ -134,6 +142,17 @@ function PreviewForm({ action, values, errors = {}, logoUrl, bannerUrl, submit }
               <Input name="eligible_purchase" maxLength={120} defaultValue={values.eligible_purchase || 'Any coffee'} />
             </Field>
           </fieldset>
+          {plans.length > 0 && (
+            <Field label="Plan after the free month" name="plan_id" hint="The preview shows this price, and their free trial starts on this plan." error={errors.plan_id}>
+              <Select name="plan_id" defaultValue={values.plan_id || plans.find((p) => p.recommended)?.id || plans[plans.length - 1].id}>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <details className="group rounded-[16px] border border-beige p-4" open={Boolean(errors.banner || errors.tagline || errors.instagram)}>
             <summary className="cursor-pointer text-[14px] font-semibold">More: photo banner, layout, stamp design, Instagram</summary>
             <div className="mt-5 grid gap-6">
@@ -227,6 +246,7 @@ async function previewValues(id: string): Promise<{ values: PreviewValues; logoU
       primary_colour: b.primary_colour,
       secondary_colour: b.secondary_colour,
       default_currency: b.default_currency,
+      plan_id: b.preview_plan_id ?? '',
       stamps_required: String(rule?.config?.stampsRequired ?? 9),
       reward_name: rule?.reward ?? 'Free coffee',
       eligible_purchase: rule?.config?.eligiblePurchase ?? 'Any coffee',
@@ -358,7 +378,7 @@ export function previewRoutes(r: Router) {
         ctx,
         <AdminLayout tab="previews">
           <PageHeader title="New café preview" back={{ href: '/admin/previews', label: 'Previews' }} />
-          <PreviewForm action="/admin/previews/new" values={{}} logoUrl={null} bannerUrl={null} submit="Create preview" />
+          <PreviewForm action="/admin/previews/new" values={{}} logoUrl={null} bannerUrl={null} submit="Create preview" plans={await planOptions()} />
         </AdminLayout>,
         { title: 'New café preview', noindex: true },
       ),
@@ -371,12 +391,14 @@ export function previewRoutes(r: Router) {
       const body = await readBody(ctx, 6 * 1024 * 1024);
       const errors: Record<string, string> = {};
       const { v, data } = readPreviewForm(body, errors);
+      const plans = await planOptions();
+      if (data.planId && !plans.some((p) => p.id === data.planId)) errors.plan_id = 'Choose a plan.';
       const page = (status: number) =>
         render(
           ctx,
           <AdminLayout tab="previews">
             <PageHeader title="New café preview" back={{ href: '/admin/previews', label: 'Previews' }} />
-            <PreviewForm action="/admin/previews/new" values={v} errors={errors} logoUrl={null} bannerUrl={null} submit="Create preview" />
+            <PreviewForm action="/admin/previews/new" values={v} errors={errors} logoUrl={null} bannerUrl={null} submit="Create preview" plans={plans} />
           </AdminLayout>,
           { title: 'New café preview', status, noindex: true },
         );
@@ -401,7 +423,7 @@ export function previewRoutes(r: Router) {
         ctx,
         <AdminLayout tab="previews">
           <PageHeader title={p.values.name} back={{ href: '/admin/previews', label: 'Previews' }} />
-          <PreviewForm action={`/admin/previews/${ctx.params.id}`} values={p.values} logoUrl={p.logoUrl} bannerUrl={p.bannerUrl} submit="Save preview" />
+          <PreviewForm action={`/admin/previews/${ctx.params.id}`} values={p.values} logoUrl={p.logoUrl} bannerUrl={p.bannerUrl} submit="Save preview" plans={await planOptions()} />
         </AdminLayout>,
         { title: `Edit ${p.values.name}`, noindex: true },
       );
@@ -418,12 +440,14 @@ export function previewRoutes(r: Router) {
       const body = await readBody(ctx, 6 * 1024 * 1024);
       const errors: Record<string, string> = {};
       const { v, data } = readPreviewForm(body, errors);
+      const plans = await planOptions();
+      if (data.planId && !plans.some((p) => p.id === data.planId)) errors.plan_id = 'Choose a plan.';
       if (Object.keys(errors).length) {
         return render(
           ctx,
           <AdminLayout tab="previews">
             <PageHeader title={current.values.name} back={{ href: '/admin/previews', label: 'Previews' }} />
-            <PreviewForm action={`/admin/previews/${id}`} values={v} errors={errors} logoUrl={current.logoUrl} bannerUrl={current.bannerUrl} submit="Save preview" />
+            <PreviewForm action={`/admin/previews/${id}`} values={v} errors={errors} logoUrl={current.logoUrl} bannerUrl={current.bannerUrl} submit="Save preview" plans={plans} />
           </AdminLayout>,
           { title: 'Edit preview', status: 422, noindex: true },
         );
@@ -471,8 +495,7 @@ export function previewRoutes(r: Router) {
     const { cafe, row } = found;
     if (row.status !== 'preview') return render(ctx, <ClaimedPage cafe={cafe} />, { title: cafe.name, noindex: true });
     rememberPreview(ctx, ctx.params.token);
-    const plans = await loadPlans(db);
-    const cheapest = plans.filter((p) => p.monthlyPriceMinor > 0).sort((a, b) => a.monthlyPriceMinor - b.monthlyPriceMinor)[0];
+    const offered = await offeredPlan(cafe.id);
     const previewUrl = `${appUrl()}/p/${ctx.params.token}`;
     const joinUrl = `${appUrl()}/c/${cafe.slug}`;
     return render(
@@ -485,7 +508,7 @@ export function previewRoutes(r: Router) {
         joinUrl={`/c/${cafe.slug}`}
         posterSvg={qrSvg(joinUrl, { ecc: 'Q' })}
         phoneSvg={qrSvg(previewUrl, { ecc: 'M' })}
-        price={cheapest ? moneyWhole(cheapest.monthlyPriceMinor, cheapest.currency) : null}
+        price={offered ? moneyWhole(offered.monthlyPriceMinor, offered.currency) : null}
       />,
       { title: fmt(ctx.t.preview.metaTitle, { cafe: cafe.name }), noindex: true, themeColor: cafe.primaryColour },
     );
@@ -553,6 +576,13 @@ function claimBlock(ctx: Ctx): 'admin' | 'demo' | null {
   return null;
 }
 
+/** The plan a preview is offered on: the one chosen for it, else the recommended plan, else the cheapest paid one. */
+async function offeredPlan(businessId: string) {
+  const b = await maybeOne<{ preview_plan_id: string | null }>(db, 'select preview_plan_id from businesses where id = $1', [businessId]);
+  const plans = (await loadPlans(db)).filter((p) => p.monthlyPriceMinor > 0);
+  return plans.find((p) => p.id === b?.preview_plan_id) ?? plans.find((p) => p.recommended) ?? plans.sort((a, c) => a.monthlyPriceMinor - c.monthlyPriceMinor)[0] ?? null;
+}
+
 /* ------------------------------------------------------------------ data */
 
 type PreviewData = ReturnType<typeof readPreviewForm>['data'];
@@ -565,9 +595,9 @@ export async function createPreview(adminId: string, d: PreviewData): Promise<st
     const b = await one<{ id: string }>(
       q,
       `insert into businesses (name, slug, owner_user_id, city, address, website, primary_colour, secondary_colour, timezone, default_currency,
-                               status, onboarding_step, settings, preview_token, preview_created_by)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,'Asia/Famagusta',$9,'preview',6,$10,$11,$3) returning id`,
-      [d.name, slug, adminId, d.city, d.address, d.website, d.primary, d.secondary, d.currency, settings, token],
+                               status, onboarding_step, settings, preview_token, preview_created_by, preview_plan_id)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,'Asia/Famagusta',$9,'preview',6,$10,$11,$3,$12) returning id`,
+      [d.name, slug, adminId, d.city, d.address, d.website, d.primary, d.secondary, d.currency, settings, token, d.planId],
     );
     const p = await one<{ id: string }>(
       q,
@@ -590,8 +620,9 @@ async function updatePreview(id: string, d: PreviewData) {
     const b = await one<any>(q, `select settings from businesses where id = $1 and status = 'preview' for update`, [id]);
     const settings = businessSettingsSchema.parse({ ...(b.settings ?? {}), pageLayout: d.look.pageLayout, stampIcon: d.look.stampIcon, tagline: d.look.tagline });
     await q.query(
-      `update businesses set name=$2, city=$3, address=$4, website=$5, primary_colour=$6, secondary_colour=$7, default_currency=$8, settings=$9, updated_at=now() where id=$1`,
-      [id, d.name, d.city, d.address, d.website, d.primary, d.secondary, d.currency, settings],
+      `update businesses set name=$2, city=$3, address=$4, website=$5, primary_colour=$6, secondary_colour=$7, default_currency=$8, settings=$9,
+              preview_plan_id = coalesce($10, preview_plan_id), updated_at=now() where id=$1`,
+      [id, d.name, d.city, d.address, d.website, d.primary, d.secondary, d.currency, settings, d.planId],
     );
     const p = await maybeOne<any>(q, `select id, config from loyalty_programmes where business_id = $1 and programme_type = 'stamps' order by created_at limit 1`, [id]);
     if (p) {
@@ -614,7 +645,12 @@ export async function claimPreview(businessId: string, user: { id: string; name:
     await q.query(`insert into business_members (business_id, user_id, role) values ($1, $2, 'owner') on conflict do nothing`, [b.id, user.id]);
     const sub = await maybeOne(q, `select 1 from subscriptions where business_id = $1`, [b.id]);
     if (!sub) {
-      await q.query(`insert into subscriptions (business_id, plan_id, status, payment_status, trial_ends_at) values ($1, 'premium', 'trialing', 'not_collected', now() + interval '30 days')`, [b.id]);
+      const plan = await maybeOne<{ id: string }>(
+        q,
+        `select coalesce((select p.id from plans p join businesses x on x.preview_plan_id = p.id where x.id = $1 and p.status = 'active'), 'premium') as id`,
+        [b.id],
+      );
+      await q.query(`insert into subscriptions (business_id, plan_id, status, payment_status, trial_ends_at) values ($1, $2, 'trialing', 'not_collected', now() + interval '30 days')`, [b.id, plan?.id ?? 'premium']);
     }
     await q.query(`insert into audit_logs (business_id, actor_user_id, action, target_type, target_id) values ($1, $2, 'business.claimed', 'business', $3)`, [b.id, user.id, b.id]);
     return true;

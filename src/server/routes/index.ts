@@ -9,6 +9,7 @@ import { dashboardManageRoutes } from './dashboard-manage';
 import { dashboardSettingsRoutes } from './dashboard-settings';
 import { adminRoutes } from './admin';
 import { previewRoutes } from './previews';
+import { dashboardCafeRoutes } from './dashboard-cafe';
 
 export function registerRoutes(r: Router) {
   marketingRoutes(r);
@@ -20,5 +21,6 @@ export function registerRoutes(r: Router) {
   dashboardManageRoutes(r);
   dashboardSettingsRoutes(r);
   previewRoutes(r);
+  dashboardCafeRoutes(r);
   adminRoutes(r);
 }

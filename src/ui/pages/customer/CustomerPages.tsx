@@ -1,4 +1,4 @@
-import { LuChevronRight, LuMapPin, LuMessageCircle, LuQrCode, LuSparkles, LuUserPlus } from 'react-icons/lu';
+import { LuChevronRight, LuMapPin, LuMessageCircle, LuQrCode, LuSparkles, LuUser, LuUserPlus } from 'react-icons/lu';
 import { usePage } from '../../page-context';
 import { Island } from '../../islands/Island';
 import { CafeMark, Logo, RewardBadgeIcon } from '../../components/brand';
@@ -7,7 +7,7 @@ import { Alert, Button, Checkbox, DemoBanner, Field, FlashMessage, Form, Input, 
 import { PlainCustomerLayout, WalletLayout, type WalletCafe } from '../../layouts/WalletLayout';
 import { ActivityList, ChallengeCard, OfferCard, PassButton, PointsPanel, ProgrammeSummary, StampCardPanel, VoucherCard } from './parts';
 import { fmt, plural, type Messages } from '../../../shared/i18n';
-import { dateShort, formatMemberCode, num } from '../../../shared/format';
+import { dateNoYear, dateShort, formatMemberCode, num } from '../../../shared/format';
 import type { MemberView, OfferView, ProgrammeView, PublicCafe } from '../../../server/domain/views';
 import { alpha, contrastText, mix } from '../../cn';
 
@@ -223,8 +223,21 @@ export interface WalletListItem {
   name: string;
   logoUrl: string | null;
   primaryColour: string;
-  summary: string;
+  place: string;
   ready: number;
+  stamps: { have: number; need: number; left: number; reward: string } | null;
+  points: number | null;
+}
+
+export interface PublicOffer {
+  id: string;
+  name: string;
+  description: string | null;
+  start: string;
+  end: string | null;
+  running: boolean;
+  member: boolean;
+  cafe: { slug: string; name: string; logoUrl: string | null; primaryColour: string };
 }
 
 export function cafeScannerLabels(t: Messages) {
@@ -242,15 +255,73 @@ export function cafeScannerLabels(t: Messages) {
   };
 }
 
-export function WalletListPage({ items }: { items: WalletListItem[] }) {
-  const { t, user } = usePage();
+/** One café card on the customer's home: their progress there, in the café's colours. */
+function CafePass({ i }: { i: WalletListItem }) {
+  const { t } = usePage();
+  const fg = contrastText(i.primaryColour);
+  const s = i.stamps;
+  return (
+    <a
+      href={`/wallet/${i.slug}`}
+      className="rise relative block overflow-hidden rounded-[22px] p-4 transition-transform active:scale-[0.985]"
+      style={{
+        color: fg,
+        background: `radial-gradient(120% 90% at 100% 0%, ${alpha(mix(i.primaryColour, '#ffffff', 0.35), 0.5)} 0%, transparent 60%), linear-gradient(165deg, ${mix(i.primaryColour, '#ffffff', 0.08)}, ${mix(i.primaryColour, '#000000', 0.2)})`,
+        boxShadow: `0 14px 28px -18px ${alpha(mix(i.primaryColour, '#000000', 0.4), 0.8)}`,
+      }}
+    >
+      <div className="flex items-center gap-3.5">
+        <CafeMark name={i.name} logoUrl={i.logoUrl} colour={mix(i.primaryColour, '#ffffff', 0.15)} size={46} className="ring-1 ring-white/25" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-display text-[17px] font-semibold">{i.name}</span>
+          {i.place && <span className="block truncate text-[13px] opacity-75">{i.place}</span>}
+        </span>
+        {s && (
+          <span className="rounded-full bg-white/20 px-2.5 py-1 text-[13px] font-semibold tnum">
+            {`${s.have}/${s.need}`}
+          </span>
+        )}
+        <LuChevronRight className="h-5 w-5 shrink-0 opacity-70" aria-hidden="true" />
+      </div>
+      {s && (
+        <div className="mt-3.5">
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/20" aria-hidden="true">
+            <div className="h-full rounded-full" style={{ width: `${(s.have / s.need) * 100}%`, background: fg }} />
+          </div>
+          <p className="mt-2 text-[13.5px] font-medium">{i.ready > 0 ? `${t.wallet.rewardWaiting} · ${plural(t.wallet.rewardsReady, i.ready)}` : s.left === 0 ? t.wallet.cardFull : plural(t.wallet.stampsToGo, s.left, { reward: s.reward.toLowerCase() })}</p>
+        </div>
+      )}
+      {!s && (
+        <p className="mt-2 text-[13.5px] font-medium">
+          {i.ready > 0 ? `${t.wallet.rewardWaiting} · ${plural(t.wallet.rewardsReady, i.ready)}` : i.points !== null ? `${i.points} ${t.wallet.pointsUnit}` : ''}
+        </p>
+      )}
+    </a>
+  );
+}
+
+export function WalletListPage({ items, offers = [] }: { items: WalletListItem[]; offers?: PublicOffer[] }) {
+  const { t, user, locale } = usePage();
+  const first = (user?.name ?? '').split(' ')[0];
   return (
     <PlainCustomerLayout>
-      <h1 className="text-[28px] font-semibold">{t.wallet.title}</h1>
-      {user && <p className="mt-1 text-muted-ink">{fmt(t.wallet.hello, { name: user.name.split(' ')[0] })}</p>}
-      <div className="mt-6">
+      {/* who you are */}
+      {user && (
+        <a href="/account" className="card flex items-center gap-3.5 p-4 hover:border-beige-strong">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-espresso font-display text-[19px] font-semibold text-cream">{first.slice(0, 1).toUpperCase() || '?'}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[19px] font-semibold leading-tight">{fmt(t.wallet.hello, { name: first })}</span>
+            <span className="block truncate text-[13.5px] text-muted-ink">{user.email}</span>
+          </span>
+          <span className="btn btn-secondary btn-sm shrink-0">
+            <LuUser className="h-4 w-4" aria-hidden="true" /> {t.wallet.profile}
+          </span>
+        </a>
+      )}
+      <div className="mt-4">
         <FlashMessage />
       </div>
+
       {items.length === 0 ? (
         <div className="card mt-2 px-6 py-12 text-center">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sand">
@@ -266,33 +337,53 @@ export function WalletListPage({ items }: { items: WalletListItem[] }) {
           </div>
         </div>
       ) : (
-        <ul className="space-y-3">
-          {items.map((i) => (
-            <li key={i.slug}>
-              <a
-                href={`/wallet/${i.slug}`}
-                className="rise relative flex items-center gap-4 overflow-hidden rounded-[22px] p-4 transition-transform active:scale-[0.985]"
-                style={{
-                  color: contrastText(i.primaryColour),
-                  background: `radial-gradient(120% 90% at 100% 0%, ${alpha(mix(i.primaryColour, '#ffffff', 0.35), 0.5)} 0%, transparent 60%), linear-gradient(165deg, ${mix(i.primaryColour, '#ffffff', 0.08)}, ${mix(i.primaryColour, '#000000', 0.2)})`,
-                  boxShadow: `0 14px 28px -18px ${alpha(mix(i.primaryColour, '#000000', 0.4), 0.8)}`,
-                }}
-              >
-                <CafeMark name={i.name} logoUrl={i.logoUrl} colour={mix(i.primaryColour, '#ffffff', 0.15)} size={48} className="ring-1 ring-white/25" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-display text-[17px] font-semibold">{i.name}</span>
-                  <span className="block truncate text-[14px] opacity-80">{i.summary}</span>
-                  {i.ready > 0 && <span className="mt-1.5 inline-flex rounded-full bg-white/20 px-2.5 py-0.5 text-[12.5px] font-semibold">{plural(t.wallet.rewardsReady, i.ready)}</span>}
-                </span>
-                <LuChevronRight className="h-5 w-5 opacity-70" aria-hidden="true" />
-              </a>
-            </li>
-          ))}
-        </ul>
+        <section className="mt-2">
+          <h1 className="text-[22px] font-semibold">{t.wallet.whereToGo}</h1>
+          <p className="text-[14px] text-muted-ink">{t.wallet.whereToGoBody}</p>
+          <ul className="mt-4 space-y-3">
+            {items.map((i) => (
+              <li key={i.slug}>
+                <CafePass i={i} />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
+
+      {/* offers across Perkora cafés */}
+      <section className="mt-8">
+        <h2 className="text-[20px] font-semibold">{t.wallet.offersTitle}</h2>
+        <p className="text-[14px] text-muted-ink">{t.wallet.offersBody}</p>
+        {offers.length === 0 ? (
+          <p className="card mt-4 p-5 text-[14.5px] text-muted-ink">{t.wallet.noOffers}</p>
+        ) : (
+          <ul className="mt-4 space-y-2.5">
+            {offers.map((o) => (
+              <li key={o.id}>
+                <a href={o.member ? `/wallet/${o.cafe.slug}/offers` : `/c/${o.cafe.slug}`} className="card flex items-start gap-3.5 p-4 hover:border-beige-strong">
+                  <CafeMark name={o.cafe.name} logoUrl={o.cafe.logoUrl} colour={o.cafe.primaryColour} size={44} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-[13px] font-medium text-muted-ink">{o.cafe.name}</span>
+                      {o.member && <span className="badge badge-sage">{t.wallet.yourCafe}</span>}
+                    </span>
+                    <span className="mt-0.5 block text-[16px] font-semibold leading-snug">{o.name}</span>
+                    {o.description && <span className="mt-0.5 line-clamp-2 block text-[13.5px] text-muted-ink">{o.description}</span>}
+                    <span className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12.5px] font-semibold ${o.running ? 'bg-success-tint text-success' : 'bg-sand text-ink'}`}>
+                      {o.running ? t.wallet.offerNow : fmt(t.wallet.offerStarts, { date: dateNoYear(o.start, 'UTC', locale) })}
+                      {o.end ? ` · ${fmt(t.wallet.offerUntil, { date: dateNoYear(o.end, 'UTC', locale) })}` : ''}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <Island name="InstallPrompt" props={{ title: t.wallet.installTitle, body: t.wallet.installBody, iosHint: t.wallet.installIos, install: t.wallet.install, close: t.common.close, bottom: 16 }} />
       {items.length > 0 && (
-        <div className="card mt-6 p-5">
+        <div className="card mt-8 p-5">
           <h2 className="text-[16px] font-semibold">{t.wallet.addAnotherTitle}</h2>
           <p className="mt-1 text-[14px] text-muted-ink">{t.wallet.addAnother}</p>
           <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -303,6 +394,15 @@ export function WalletListPage({ items }: { items: WalletListItem[] }) {
           </div>
         </div>
       )}
+      <p className="mt-8 text-center text-[13px] text-muted-ink">
+        <a className="link" href="/privacy">
+          {t.nav.privacy}
+        </a>
+        <span className="mx-2">·</span>
+        <a className="link" href="/terms">
+          {t.nav.terms}
+        </a>
+      </p>
     </PlainCustomerLayout>
   );
 }

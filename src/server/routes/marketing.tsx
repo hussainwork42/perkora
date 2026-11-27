@@ -75,6 +75,8 @@ async function demoPost(ctx: Ctx, kind: 'demo' | 'contact') {
 
 export function marketingRoutes(r: Router) {
   r.get('/', async (ctx) => {
+    // signed in: straight back to their own place (café dashboard, or their cards); ?site shows the website
+    if (ctx.user && !ctx.query.has('site')) return redirect(ctx, '/home', undefined, 302);
     const plans = await loadPlans(db);
     return render(ctx, <HomePage plans={plans} />, { title: ctx.t.home.metaTitle, description: ctx.t.home.metaDescription });
   });

@@ -1,6 +1,6 @@
 # Test report
 
-**Run date:** 25 November 2026, on the build delivered with this report (fourth release: café previews for sales visits, separate café and customer sign-in).
+**Run date:** 27 November 2026, on the build delivered with this report (fifth release: My café page, café colours in the dashboard, simpler Overview, customer home with offers, staying signed in, plan choice on previews, privacy policy).
 
 **Environment:**
 
@@ -16,8 +16,9 @@
 | New features: referrals, plans (integration) | `npm run test:integration` | 6 | 6 | 0 |
 | HTTP: auth, roles, tenancy, CSRF, new pages (integration) | `npm run test:integration` | 32 | 32 | 0 |
 | Email: SMTP client, new-message alert, admin replies (integration, local fake mail server) | `npm run test:integration` | 4 | 4 | 0 |
-| Café previews: create, hide, open, claim (integration) | `npm run test:integration` | 10 | 10 | 0 |
-| **Unit and integration total** | `npm test` | **118** | **118** | **0** |
+| Café previews: create, hide, open, claim, plan choice (integration) | `npm run test:integration` | 11 | 11 | 0 |
+| My café, café colours, staying signed in, customer home and offers (integration) | `npm run test:integration` | 7 | 7 | 0 |
+| **Unit and integration total** | `npm test` | **126** | **126** | **0** |
 | Browser: 15-step sales demo | `npm run test:e2e` | 11 steps | 11 | 0 |
 | Browser: email-only sign-up, onboarding, café look and a referral | `npm run test:e2e` | 1 | 1 | 0 |
 | Browser: camera scanning (staff terminal and customer) | `npm run test:e2e` | 2 | 2 | 0 |
@@ -166,6 +167,20 @@
 **Café look:** layout, stamp design and welcome message are saved and shown on the join page; unknown values fall back to safe defaults. The onboarding browser test uploads a banner photo (resized in the browser before upload) and checks it on the public page.
 
 **Campaign names:** any name is accepted ("Student exam week").
+
+### Fifth release (November 2026)
+
+**Staying signed in:** the session cookie lasts 400 days and renews itself on use, so people stay signed in until they sign out. Opening the site while signed in goes straight to the café dashboard or the customer's cards (`/?site` still shows the website).
+
+**My café:** owners only (staff are refused). Logo, photo, colours, welcome line and location are saved from the page; invalid colours and an empty upload are refused; extra rewards can be removed, the main card reward cannot. The dashboard uses the café's colours, with the main colour darkened where needed so white text stays readable (WCAG contrast 4.6:1 or better).
+
+**Overview:** a new café sees a four-step "Get started" list; established cafés (10+ customers and stamps given) don't.
+
+**Customer home:** shows each card's progress, closest to a reward first, and public offers from listed Perkora cafés that are on now or start within 14 days. Private offers (win-back, birthday, referral, or aimed at a customer group) are never shown there.
+
+**Previews:** the admin picks the plan; the preview shows that plan's exact price and the trial starts on it. An unknown plan is refused.
+
+**Privacy policy:** rewritten as a complete, plain-language policy; it has not been reviewed by a lawyer.
 
 ### Fourth release (November 2026)
 

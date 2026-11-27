@@ -56,7 +56,7 @@ function displayStatus(c: { status: string; start_date: string; end_date: string
   return 'active';
 }
 
-async function benefitLabel(biz: BusinessContext, c: any): Promise<string> {
+export async function benefitLabel(biz: BusinessContext, c: any): Promise<string> {
   if (c.campaign_type === 'referral') return 'Referral rewards';
   const b = c.benefit ?? {};
   if (b.kind === 'voucher') {

@@ -1,4 +1,4 @@
-import { LuDownload, LuGift, LuMegaphone, LuQrCode, LuStamp, LuUserPlus, LuInfo } from 'react-icons/lu';
+import { LuCheck, LuDownload, LuQrCode, LuScanLine, LuUserPlus, LuInfo } from 'react-icons/lu';
 import { DashboardLayout } from '../../layouts/DashboardLayout';
 import { Card, CardHeader, EmptyState, PageHeader, Stat } from '../../components/ui';
 import { BarChart, AreaChart, type Point } from '../../charts/charts';
@@ -86,7 +86,60 @@ export function MetricTile({ label, k, value, hint }: { label: string; k: string
   );
 }
 
-export function OverviewPage({ biz, range, m, series, activity, insights, hasMembers }: {
+export interface Step {
+  key: string;
+  done: boolean;
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+}
+
+/** What to do next, for a café that has just started. Disappears once everything is done. */
+function NextSteps({ steps }: { steps: Step[] }) {
+  const done = steps.filter((x) => x.done).length;
+  if (!steps.length || done === steps.length) return null;
+  const next = steps.find((x) => !x.done);
+  return (
+    <section className="card mb-6 overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
+        <div>
+          <h2 className="text-[18px] font-semibold">Get started</h2>
+          <p className="text-[13.5px] text-muted-ink">
+            {done} of {steps.length} done
+          </p>
+        </div>
+        <div className="h-2 w-40 overflow-hidden rounded-full bg-sand" role="progressbar" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={done} aria-label="Getting started">
+          <div className="h-full rounded-full bg-espresso" style={{ width: `${(done / steps.length) * 100}%` }} />
+        </div>
+      </div>
+      <ol className="mt-4 divide-y divide-beige border-t border-beige">
+        {steps.map((x, i) => (
+          <li key={x.key} className={cn('flex items-center gap-3.5 px-5 py-3.5', x === next && 'bg-sand/60')}>
+            <span
+              className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold', x.done ? 'bg-success text-white' : x === next ? 'bg-espresso text-cream' : 'bg-sand text-muted-ink')}
+              aria-hidden="true"
+            >
+              {x.done ? <LuCheck className="h-4 w-4" /> : i + 1}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className={cn('block text-[15px] font-semibold', x.done && 'text-muted-ink line-through decoration-1')}>{x.title}</span>
+              {!x.done && <span className="block text-[13.5px] text-muted-ink">{x.body}</span>}
+              <span className="sr-only">{x.done ? 'Done' : 'Not done yet'}</span>
+            </span>
+            {!x.done && (
+              <a href={x.href} className={cn('btn btn-sm shrink-0', x === next ? 'btn-primary' : 'btn-secondary')}>
+                {x.cta}
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+export function OverviewPage({ biz, range, m, series, activity, insights, hasMembers, steps, firstName }: {
   biz: BusinessContext;
   range: Range;
   m: OverviewMetrics;
@@ -94,26 +147,37 @@ export function OverviewPage({ biz, range, m, series, activity, insights, hasMem
   activity: ActivityEvent[];
   insights: Insight[];
   hasMembers: boolean;
+  steps: Step[];
+  firstName: string;
 }) {
   const tz = biz.timezone;
-  const label = range.key === 'custom' ? 'in range' : `last ${range.days} days`;
-  const quick = [
-    { href: '/dashboard/customers/new', label: 'Add customer', Icon: LuUserPlus },
-    { href: '/terminal', label: 'Award loyalty credit', Icon: LuStamp },
-    { href: '/dashboard/rewards/new', label: 'Create reward', Icon: LuGift },
-    { href: '/dashboard/campaigns/new', label: 'Create campaign', Icon: LuMegaphone },
-    { href: '/dashboard/settings/qr', label: 'Download QR code', Icon: LuQrCode },
+  const label = range.key === 'custom' ? 'in this period' : `last ${range.days} days`;
+  const actions = [
+    { href: '/terminal', label: 'Scan a card', body: 'Add a stamp or give a reward', Icon: LuScanLine, primary: true },
+    { href: '/dashboard/customers/new', label: 'Add a customer', body: 'For someone without a phone', Icon: LuUserPlus },
+    { href: '/dashboard/settings/qr', label: 'QR poster', body: 'Print it for the counter', Icon: LuQrCode },
   ];
   return (
     <DashboardLayout biz={biz} active="overview">
-      <PageHeader title="Overview" description={`How ${biz.name}’s loyalty programme is doing.`} actions={hasMembers ? <RangeFilter range={range} base="/dashboard" /> : undefined} />
-      <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-        {quick.map(({ href, label, Icon }) => (
-          <a key={href} href={href} className="card flex items-center gap-2.5 px-3.5 py-3 text-[14px] font-medium hover:border-beige-strong">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta-tint text-terracotta-ink">
-              <Icon className="h-4 w-4" aria-hidden="true" />
+      <PageHeader title={firstName ? `Hello, ${firstName}` : 'Overview'} description={`Here’s how ${biz.name} is doing.`} actions={hasMembers ? <RangeFilter range={range} base="/dashboard" /> : undefined} />
+      <NextSteps steps={steps} />
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {actions.map(({ href, label: l, body, Icon, primary }) => (
+          <a
+            key={href}
+            href={href}
+            className={cn(
+              'flex items-center gap-3.5 rounded-[16px] p-4 transition-transform active:scale-[0.98]',
+              primary ? 'bg-espresso text-cream shadow-[var(--shadow-raised)]' : 'card hover:border-beige-strong',
+            )}
+          >
+            <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-full', primary ? 'bg-white/15' : 'bg-terracotta-tint text-terracotta-ink')}>
+              <Icon className="h-5 w-5" aria-hidden="true" />
             </span>
-            {label}
+            <span className="min-w-0">
+              <span className="block text-[15.5px] font-semibold">{l}</span>
+              <span className={cn('block text-[13px]', primary ? 'opacity-80' : 'text-muted-ink')}>{body}</span>
+            </span>
           </a>
         ))}
       </div>
@@ -121,43 +185,36 @@ export function OverviewPage({ biz, range, m, series, activity, insights, hasMem
         <Card>
           <EmptyState
             icon={<LuQrCode className="h-6 w-6" aria-hidden="true" />}
-            title="Your loyalty programme is ready."
-            body="Invite your first customers to start seeing activity here. Print your QR code and place it by the till; customers scan it to join."
+            title="No customers yet"
+            body="When customers scan your QR code and join, you’ll see them here: who joined, who came back and who collected a reward."
             action={
               <a href="/dashboard/settings/qr" className="btn btn-primary">
-                <LuDownload className="h-4 w-4" aria-hidden="true" /> Download QR code
+                <LuDownload className="h-4 w-4" aria-hidden="true" /> Download QR poster
               </a>
             }
           />
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6">
-            <MetricTile label="Loyalty members" k="totalMembers" value={num(m.totalMembers)} hint="today" />
-            <MetricTile label="Active members" k="activeMembers" value={num(m.activeMembers)} hint={`visited in ${biz.settings.inactivityDays} days`} />
-            <MetricTile label="Verified visits" k="visits" value={num(m.visits)} hint={label} />
-            <MetricTile label="Rewards redeemed" k="rewardsRedeemed" value={num(m.rewardsRedeemed)} hint={label} />
-            <MetricTile label="New members" k="newMembers" value={num(m.newMembers)} hint={label} />
-            <MetricTile
-              label="Returning members"
-              k="returningRate"
-              value={m.returningRate === null ? '—' : pct(m.returningRate)}
-              hint={m.returningRate === null ? 'needs 5+ visiting members' : `of ${m.returningDenominator} who visited`}
-            />
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <MetricTile label="Customers" k="totalMembers" value={num(m.totalMembers)} hint="on your card" />
+            <MetricTile label="Visits" k="visits" value={num(m.visits)} hint={label} />
+            <MetricTile label="New customers" k="newMembers" value={num(m.newMembers)} hint={label} />
+            <MetricTile label="Rewards collected" k="rewardsRedeemed" value={num(m.rewardsRedeemed)} hint={label} />
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_1fr]">
             <Card>
-              <CardHeader title="Customer activity" description="Verified visits per day" />
+              <CardHeader title="Visits" description="Customers who got a stamp or points, per day" action={<a href="/dashboard/analytics" className="text-[13.5px] link">Reports</a>} />
               <div className="px-4 pb-4">
-                <BarChart ariaLabel="Verified visits over time" data={seriesPoints(series, 'visits', tz)} color="#3B2925" />
+                <BarChart ariaLabel="Visits over time" data={seriesPoints(series, 'visits', tz)} color={biz.primaryColour} />
               </div>
             </Card>
             <Card>
-              <CardHeader title="Insights" description="Written from your own data." />
+              <CardHeader title="Worth knowing" description="From your own customers." />
               <ul className="divide-y divide-beige px-5 pb-3">
-                {insights.length === 0 && <li className="py-3 text-[14px] text-muted-ink">Insights appear once there is more activity.</li>}
-                {insights.slice(0, 5).map((i, n) => (
+                {insights.length === 0 && <li className="py-3 text-[14px] text-muted-ink">Tips appear here once there is more activity.</li>}
+                {insights.slice(0, 4).map((i, n) => (
                   <li key={n} className="py-3 text-[14.5px]">
                     {i.href ? (
                       <a href={i.href} className="hover:underline">
@@ -172,23 +229,8 @@ export function OverviewPage({ biz, range, m, series, activity, insights, hasMem
             </Card>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader title="New members" description="Loyalty enrolments per day" />
-              <div className="px-4 pb-4">
-                <AreaChart ariaLabel="New members over time" data={seriesPoints(series, 'joins', tz)} color="#87947A" />
-              </div>
-            </Card>
-            <Card>
-              <CardHeader title="Rewards redeemed" description="Redemptions per day" />
-              <div className="px-4 pb-4">
-                <BarChart ariaLabel="Rewards redeemed over time" data={seriesPoints(series, 'redemptions', tz)} color="#B86F52" />
-              </div>
-            </Card>
-          </div>
-
           <Card className="mt-4">
-            <CardHeader title="Recent activity" action={<a href="/dashboard/transactions" className="text-[13.5px] link">All transactions</a>} />
+            <CardHeader title="What’s happening" action={<a href="/dashboard/transactions" className="text-[13.5px] link">See all</a>} />
             <ul className="divide-y divide-beige px-5 pb-2">
               {activity.map((a, i) => (
                 <li key={i} className="flex items-center gap-3 py-3">
@@ -227,7 +269,7 @@ export function AnalyticsPage({ biz, range, m, d, series, segments, top, campaig
   return (
     <DashboardLayout biz={biz} active="analytics">
       <PageHeader
-        title="Analytics"
+        title="Reports"
         description="Loyalty programme activity from your own records. Hover the ⓘ icons for each definition."
         actions={
           <>
@@ -272,6 +314,12 @@ export function AnalyticsPage({ biz, range, m, d, series, segments, top, campaig
               </div>
             </Card>
           </div>
+          <Card className="mt-4">
+            <CardHeader title="New customers" description="People who joined your card, per day" />
+            <div className="px-4 pb-4">
+              <AreaChart ariaLabel="New customers over time" data={seriesPoints(series, 'joins', tz)} color="#87947A" height={140} />
+            </div>
+          </Card>
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader title="Most redeemed rewards" description={label} />

@@ -208,6 +208,23 @@ describe('café previews', () => {
     assert.equal(del.status, 404);
   });
 
+  test('a preview offered on a chosen plan shows that price, and the trial starts on it', async () => {
+    const r = await admin.post('/admin/previews/new', { name: 'Plan Choice Test', stamps_required: '9', reward_name: 'Free coffee', plan_id: 'basic' });
+    assert.equal(r.status, 303);
+    const b = await one(db, `select id, preview_token, preview_plan_id from businesses where name = 'Plan Choice Test'`);
+    assert.equal(b.preview_plan_id, 'basic');
+    await db.query(`update plans set monthly_price_minor = 5000 where id = 'basic'`);
+    const page = await new Client().get(`/p/${b.preview_token}`);
+    assert.match(page.text, /Then €50 a month/);
+    const bad = await admin.post('/admin/previews/new', { name: 'Bad Plan Test', stamps_required: '9', reward_name: 'x', plan_id: 'gold' });
+    assert.equal(bad.status, 422);
+    const o = new Client();
+    await o.get(`/p/${b.preview_token}`);
+    await o.post(`/p/${b.preview_token}/claim`, { email: 'plan.owner@example.com', password: 'plan-owner-123' });
+    assert.equal((await one(db, 'select plan_id from subscriptions where business_id = $1', [b.id])).plan_id, 'basic');
+    await db.query(`update plans set monthly_price_minor = 900 where id = 'basic'`);
+  });
+
   test('an unclaimed preview can be edited and deleted', async () => {
     await admin.post('/admin/previews/new', { name: 'Old Town Test', stamps_required: '10', reward_name: 'Free tea' });
     const b = await one(db, `select id from businesses where name = 'Old Town Test'`);
